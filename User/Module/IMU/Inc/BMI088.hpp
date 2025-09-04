@@ -7,6 +7,9 @@
 
 #include "IMU.hpp"
 #include "pid.hpp"
+#include "filter.hpp"
+
+using namespace Filter
 
 namespace BMI088
 {
@@ -200,6 +203,14 @@ enum BMI088_SENSOR
         void ReadGyroData(gyro_data_t *data) override;
         void ReadAccTemperature(float *temp) override;
         void Update() override;
+
+    private:
+        float Gyro_offset[3]; // 陀螺仪零飘
+        float Acc_coef;       // 加速度计灵敏度，标定完后要乘以9.805/gNorm
+        float gNorm;          // 重力加速度模长
+        LowPassFilter_333Hz SensorFilter[6];
+        FirstOrderFilter TempFdbFilter;
+        PID TempPid;
     };
 
 }

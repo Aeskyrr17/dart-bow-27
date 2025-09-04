@@ -47,7 +47,26 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+UX_SLAVE_CLASS_CDC_ACM  *cdc_acm;
+UX_SLAVE_CLASS_CDC_ACM_LINE_CODING_PARAMETER CDC_VCP_LineCoding =
+{
+  115200, /* baud rate */
+  0x00,   /* stop bits-1 */
+  0x00,   /* parity - none */
+  0x08    /* nb. of bits 8 */
+};
 
+uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
+uint32_t UserRxBufPtrIn;
+uint32_t UserRxBufPtrOut;
+
+uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
+uint32_t UserTxBufPtrIn;
+uint32_t UserTxBufPtrOut;
+
+volatile UINT USB_TX_BUSY;
+volatile UINT USB_TX_SUCCESS;
+volatile UINT USB_RX_SUCCESS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,9 +88,15 @@
 VOID USBD_CDC_ACM_Activate(VOID *cdc_acm_instance)
 {
   /* USER CODE BEGIN USBD_CDC_ACM_Activate */
-  UX_PARAMETER_NOT_USED(cdc_acm_instance);
-  /* USER CODE END USBD_CDC_ACM_Activate */
+  cdc_acm = (UX_SLAVE_CLASS_CDC_ACM*) cdc_acm_instance;
 
+  /* Set device class_cdc_acm with default parameters */
+  if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_LINE_CODING,
+                                    &CDC_VCP_LineCoding) != UX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  /* USER CODE END USBD_CDC_ACM_Activate */
   return;
 }
 
@@ -85,6 +110,7 @@ VOID USBD_CDC_ACM_Deactivate(VOID *cdc_acm_instance)
 {
   /* USER CODE BEGIN USBD_CDC_ACM_Deactivate */
   UX_PARAMETER_NOT_USED(cdc_acm_instance);
+  cdc_acm = UX_NULL;
   /* USER CODE END USBD_CDC_ACM_Deactivate */
 
   return;
@@ -100,11 +126,170 @@ VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance)
 {
   /* USER CODE BEGIN USBD_CDC_ACM_ParameterChange */
   UX_PARAMETER_NOT_USED(cdc_acm_instance);
+  ULONG request;
+  UX_SLAVE_TRANSFER *transfer_request;
+  UX_SLAVE_DEVICE *device;
+
+  /* Get the pointer to the device */
+  device = &_ux_system_slave -> ux_system_slave_device;
+
+  /* Get the pointer to the transfer request associated with the control endpoint */
+  transfer_request = &device -> ux_slave_device_control_endpoint.ux_slave_endpoint_transfer_request;
+
+  request = *(transfer_request -> ux_slave_transfer_request_setup + UX_SETUP_REQUEST);
+
+  switch (request)
+  {
+    case UX_SLAVE_CLASS_CDC_ACM_SET_LINE_CODING :
+
+      /* Get the Line Coding parameters */
+      if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_GET_LINE_CODING,
+                                        &CDC_VCP_LineCoding) != UX_SUCCESS)
+      {
+        Error_Handler();
+      }
+
+      /* Check if baudrate < 9600) then set it to 9600 */
+      if (CDC_VCP_LineCoding.ux_slave_class_cdc_acm_parameter_baudrate < 9600)
+      {
+        CDC_VCP_LineCoding.ux_slave_class_cdc_acm_parameter_baudrate = 9600;
+      }
+      break;
+
+    case UX_SLAVE_CLASS_CDC_ACM_GET_LINE_CODING :
+
+      /* Set the Line Coding parameters */
+      if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_LINE_CODING,
+                                        &CDC_VCP_LineCoding) != UX_SUCCESS)
+      {
+        Error_Handler();
+      }
+
+      break;
+
+    case UX_SLAVE_CLASS_CDC_ACM_SET_CONTROL_LINE_STATE :
+    default :
+      break;
+  }
   /* USER CODE END USBD_CDC_ACM_ParameterChange */
 
   return;
 }
 
 /* USER CODE BEGIN 2 */
+/**
+  * @brief  Function implementing USBX_DEVICE_CDC_ACM_Read_TASK.
+  * @param  thread_input: Not used.
+  * @retval none
+  */
+VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
+{
+  ULONG actual_length;
+  UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
+  UX_PARAMETER_NOT_USED(thread_input);
+
+  while (1)
+  {
+    if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
+    {
+      if (ux_device_class_cdc_acm_read(cdc_acm,
+                                           (UCHAR *)&UserRxBufferFS[UserRxBufPtrIn],
+                                           64, &actual_length) == UX_STATE_NEXT)
+      {
+        if (actual_length != 0)
+        {
+          UserRxBufPtrIn += actual_length;
+          if (UserRxBufPtrIn >= APP_RX_DATA_SIZE)
+            UserRxBufPtrIn = 0;
+          else
+            USB_RX_SUCCESS = 1;
+        }
+      }
+    }
+  }
+}
+
+/**
+  * @brief  Function implementing usbx_cdc_acm_write_thread_entry.
+  * @param  thread_input: Not used
+  * @retval none
+  */
+VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
+{
+  ULONG actual_length, buffsize, buffptr;
+  UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
+
+  UX_PARAMETER_NOT_USED(thread_input);
+  while (1)
+  {
+    if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
+    {
+      if (UserTxBufPtrOut != UserTxBufPtrIn)
+      {
+        /* Check buffer overflow and Rollback */
+        if (UserTxBufPtrOut > UserTxBufPtrIn)
+        {
+          buffsize = APP_RX_DATA_SIZE - UserTxBufPtrOut;
+        }
+        else
+        {
+          /* Calculate data size */
+          buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
+        }
+
+        /* Copy UserTxBufPtrOut in buffptr */
+        buffptr = UserTxBufPtrOut;
+
+        /* Send data over the class cdc_acm_write */
+        if (ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)(&UserTxBufferFS[buffptr]),
+                                          buffsize, &actual_length) == UX_SUCCESS)
+        {
+          /* Increment the UserTxBufPtrOut pointer */
+          UserTxBufPtrOut += buffsize;
+
+          /* Rollback UserTxBufPtrOut if it equal to APP_TX_DATA_SIZE */
+          if (UserTxBufPtrOut == APP_TX_DATA_SIZE)
+          {
+            UserTxBufPtrOut = 0;
+          }
+        }
+      }
+      // switch (USB_TX_BUSY)
+      // {
+      //   case 0:
+      //     if (UserTxBufPtrOut != UserTxBufPtrIn)
+      //     {
+      //       if (UserTxBufPtrOut > UserTxBufPtrIn)
+      //         buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOut;
+      //       else
+      //         buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
+      //
+      //       if (ux_device_class_cdc_acm_write_run(cdc_acm,
+      //                                             (UCHAR *)(&UserTxBuffer[UserTxBufPtrOut]),
+      //                                             buffsize, &actual_length) == UX_STATE_WAIT)
+      //       {
+      //         USB_TX_BUSY = 1;
+      //       }
+      //     }
+      //     break;
+      //
+      //   case 1:
+      //     if (ux_device_class_cdc_acm_write_run(cdc_acm, UX_NULL, 0, &actual_length) == UX_STATE_NEXT)
+      //     {
+      //       UserTxBufPtrOut += actual_length;
+      //       if (UserTxBufPtrOut >= APP_TX_DATA_SIZE)
+      //         UserTxBufPtrOut = 0;
+      //       USB_TX_BUSY = 0;
+      //       USB_TX_SUCCESS = 1;
+      //     }
+      //     break;
+      //
+      //   default:
+      //     break;
+      // }
+    }
+  }
+
+}
 /* USER CODE END 2 */

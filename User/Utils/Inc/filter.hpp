@@ -27,26 +27,6 @@ namespace Filter
         FirstOrderFilter();
 
         /**
-         * @brief 设置滤波器的输入值
-         */
-        void SetInput(float in);
-
-        /*
-         * @brief 设置滤波器的时间常数
-         */
-        void SetTau(float tau);
-
-        /**
-         * @brief 设置滤波器的输出值
-         */
-        void SetResult(float out);
-
-        /**
-         * @brief 设置滤波器的更新周期，以毫秒为单位
-         */
-        void SetUpdatePeriod(float t);
-
-        /**
          * @brief 获取滤波器的输出值
          */
         float GetResult();
@@ -55,16 +35,6 @@ namespace Filter
          * @brief 获取滤波器的输入值
          */
         float GetTau();
-
-        /**
-         * @brief 获取滤波器的更新周期
-         */
-        float GetUpdatePeriod();
-
-        /**
-         * @brief 初始化滤波器
-         */
-        void Init();
 
         /**
          * @brief 更新滤波器
@@ -124,7 +94,7 @@ namespace Filter
     private:
         float Output;
         float buff[8] = {0};
-        float coeff[NUM_STAGE * 5] = {
+        float coeff[5] = {
             //b0  b1    b2    a1                                           a2
             1.0f, 2.0f, 1.0f, -0.617669743139197424675046477204887196422f, -0.239839843702840921357832826288358774036f
         };  //滤波器系数，MATLAB生成去掉a0,a1a2取反
@@ -134,7 +104,7 @@ namespace Filter
     public:
 
         LowPassFilter_333Hz(){
-            arm_biquad_cascade_df1_init_f32(&S, NUM_STAGE, coeff, buff);
+            arm_biquad_cascade_df1_init_f32(&S, 1, coeff, buff);
         }
 
         float calculate(float _input)

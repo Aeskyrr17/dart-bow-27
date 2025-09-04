@@ -36,6 +36,11 @@ namespace Filter
         OutPut = OutPut + alpha * (Input - OutPut);
     }
 
+    float FirstOrderFilter::GetResult()
+    {
+        return OutPut;
+    }
+
     KalmanFilter::KalmanFilter()
     {
         LastP = 0.02f;

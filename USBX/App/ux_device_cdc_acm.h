@@ -35,7 +35,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -50,7 +50,19 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define APP_RX_DATA_SIZE    512
+#define APP_TX_DATA_SIZE    512
+extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
+extern uint32_t UserRxBufPtrIn;
+extern uint32_t UserRxBufPtrOut;
 
+extern uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
+extern uint32_t UserTxBufPtrIn;
+extern uint32_t UserTxBufPtrOut;
+
+extern volatile UINT USB_TX_BUSY;
+extern volatile UINT USB_TX_SUCCESS;
+extern volatile UINT USB_RX_SUCCESS;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -59,7 +71,8 @@ VOID USBD_CDC_ACM_Deactivate(VOID *cdc_acm_instance);
 VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance);
 
 /* USER CODE BEGIN EFP */
-
+VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input);
+VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

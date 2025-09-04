@@ -30,12 +30,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/User/BSP/Inc/bsp_ws2812.hpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_ws2812.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.h" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Inc/bsp_usb.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Inc/bsp_usb.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usb.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usb.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,28 +80,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/cosmosmount/Desktop/robomaster/DAMIAO_MC_02_BOARD/Chassis",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Errors",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/cosmosmount/Desktop/robomaster/DAMIAO_MC_02_BOARD/Chassis&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Core" />
@@ -103,11 +109,6 @@
   </component>
   <component name="RunManager">
     <configuration name="RM26_H7.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="RM26_H7.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RM26_H7" RUN_TARGET_NAME="RM26_H7.elf">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -127,7 +128,9 @@
       <workItem from="1756718470268" duration="609000" />
       <workItem from="1756723235739" duration="208000" />
       <workItem from="1756728636330" duration="7751000" />
-      <workItem from="1756771796886" duration="12219000" />
+      <workItem from="1756771796886" duration="12393000" />
+      <workItem from="1756790960295" duration="4974000" />
+      <workItem from="1756950259075" duration="11341000" />
     </task>
     <servers />
   </component>
@@ -149,6 +152,11 @@
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/User/BSP/Inc/bsp_pwm.hpp</url>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp</url>
+          <line>4</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
