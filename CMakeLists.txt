@@ -66,6 +66,7 @@ include_directories(
         USBX/App
         USBX/Target
         User/BSP/Inc
+        User/Module/RemoteControl/Inc
         User/Module/AHRS/Inc
         User/Module/DJIMotor/Inc
         User/Module/DMMotor/Inc

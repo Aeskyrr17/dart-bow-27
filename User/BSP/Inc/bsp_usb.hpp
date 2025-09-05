@@ -7,6 +7,7 @@
 
 #include "tx_api.h"
 #include "ux_api.h"
+#include <cstdint>
 #include "usertypes.hpp"
 
 PortStatus USB_CDC_Send(uint8_t *data, uint16_t len);

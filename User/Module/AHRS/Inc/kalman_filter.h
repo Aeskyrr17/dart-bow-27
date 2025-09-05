@@ -22,6 +22,7 @@
 #define ARM_MATH_DSP    // define in arm_math.h
 */
 
+#include "stm32h7xx.h"
 #include "arm_math.h"
 // #include "dsp/matrix_functions.h"
 #include "math.h"
