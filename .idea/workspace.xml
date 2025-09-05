@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="4" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="3" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
@@ -31,17 +31,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.h" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Inc/bsp_usb.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Inc/bsp_usb.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usb.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usb.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +119,8 @@
       <workItem from="1756728636330" duration="7751000" />
       <workItem from="1756771796886" duration="12393000" />
       <workItem from="1756790960295" duration="4974000" />
-      <workItem from="1756950259075" duration="11341000" />
+      <workItem from="1756950259075" duration="11948000" />
+      <workItem from="1757038435100" duration="12000" />
     </task>
     <servers />
   </component>
