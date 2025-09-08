@@ -13,18 +13,18 @@
  *
  * 这个类实现了M3508电机的控制方法，包括输出设置等。
  */
-class M3508 : public DJIMotor
+class M3508 final : public DJIMotor
 {
 public:
     /**
-     * @brief 构造函数，初始化GM6020电机控制类。
+     * @brief 构造函数，初始化M3508电机控制类。
      */
     M3508();
 
     /**
-     * @brief 构造函数，初始化GM6020电机控制类。
+     * @brief 构造函数，初始化M3508电机控制类。
      */
-    ~M3508();
+    virtual ~M3508() = default;
 
     /**
      * @brief 实现电机输出设置。

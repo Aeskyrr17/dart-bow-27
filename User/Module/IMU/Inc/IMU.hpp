@@ -64,9 +64,11 @@ typedef struct imu_error_t
 #define IMU_GYRO_250_SEN 0.00013315805450396191230191732547673f
 #define IMU_GYRO_125_SEN 0.000066579027251980956150958662738366f
 
-class IMU
+class cIMU
 {
 public:
+    virtual ~cIMU() = default;
+
     /*Config IMU*/
     // virtual void Config() = 0;
     // /*Read raw acceleration data from imu*/

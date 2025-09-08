@@ -26,6 +26,16 @@ enum GearBox
  */
 class DJIMotor
 {
+private:
+    float P_MIN; ///< 位置最小值
+    float P_MAX; ///< 位置最大值
+
+    float V_MIN; ///< 速度最小值
+    float V_MAX; ///< 速度最大值
+
+    float T_MIN; ///< 扭矩最小值
+    float T_MAX; ///< 扭矩最大值
+
 public:
     /**
      * @brief 定义电机测量数据的结构体。
@@ -62,7 +72,7 @@ public:
         MOTOR_ONLINE = 1
     };
 
-    // 位置值转换为弧度的转换因子，编码器为十三位，2^13-1 = 8191, 2*PI / 8191 (rad)，这样，当编码器的值增加或减少 1 时，它表示电机轴旋转了 2*PI / 8191 (rad)
+    /* 位置值转换为弧度的转换因子，编码器为十三位，2^13-1 = 8191, 2*PI / 8191 (rad)，这样，当编码器的值增加或减少 1 时，它表示电机轴旋转了 2*PI / 8191 (rad) */
     struct GearRatio_Pos2Rad
     {
         static constexpr float None = 0.0007669903939f;   /*!< 2Pi / 8191 */

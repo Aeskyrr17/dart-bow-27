@@ -13,18 +13,18 @@
  *
  * 这个类实现了M2006电机的控制方法，包括输出设置等。
  */
-class M2006 : public DJIMotor
+class M2006 final : public DJIMotor
 {
 public:
     /**
-     * @brief 构造函数，初始化M6020电机控制类。
+     * @brief 构造函数，初始化M2006电机控制类。
      */
     M2006();
 
     /**
-     * @brief 构造函数，初始化M6020电机控制类。
+     * @brief 构造函数，初始化M2006电机控制类。
      */
-    ~M2006();
+    virtual ~M2006() = default;
 
     /**
      * @brief 实现电机输出设置。

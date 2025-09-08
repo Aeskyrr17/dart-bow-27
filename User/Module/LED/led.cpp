@@ -14,11 +14,12 @@ void LED_ALL_OFF()
     WS2812_Ctrl(0, 0, 0);
 }
 
+static uint32_t flash_count = 0; // 静态变量，保存闪烁次数
+
 void LED_blink()
 {
-    static uint32_t flash_count = 0; // 静态变量，保存闪烁次数
     flash_count++;
-    if (flash_count % 199 >= 0 && flash_count % 199 <= 100)
+    if (flash_count % 20 == 0)
     {
         WS2812_Ctrl(0, 0, 0); // 关闭LED灯
     }

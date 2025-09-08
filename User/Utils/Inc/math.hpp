@@ -201,6 +201,32 @@ namespace Math
      * @brief 四元数转欧拉角
      */
     void QuaternionToEularAngle(float *q, float *euler);
+
+    /**
+    ************************************************************************
+    * @brief:      	float_to_uint: Function to convert a float to an unsigned integer
+    * @param[in]:   x_float:	Float value to be converted
+    * @param[in]:   x_min:		Minimum range value
+    * @param[in]:   x_max:		Maximum range value
+    * @param[in]:   bits: 		Bit width of the target unsigned integer
+    * @retval:     	Unsigned integer result
+    * @details:    	Maps the given float x linearly within the specified range [x_min, x_max] to an unsigned integer of the specified bit width.
+    ************************************************************************
+    **/
+    int float_to_uint(float x_float, float x_min, float x_max, int bits);
+
+    /**
+    ************************************************************************
+    * @brief:      	uint_to_float: Function to convert an unsigned integer to a float
+    * @param[in]:   x_int: Unsigned integer to be converted
+    * @param[in]:   x_min: Minimum range value
+    * @param[in]:   x_max: Maximum range value
+    * @param[in]:   bits:  Bit width of the unsigned integer
+    * @retval:     	Float result
+    * @details:    	Maps the given unsigned integer x_int linearly within the specified range [x_min, x_max] to a float.
+    ************************************************************************
+    **/
+    float uint_to_float(int x_int, float x_min, float x_max, int bits);
 };
 
 #endif //RM26_MATH_HPP

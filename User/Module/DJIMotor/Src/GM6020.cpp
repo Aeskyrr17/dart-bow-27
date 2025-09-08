@@ -40,13 +40,8 @@ GM6020::GM6020()
     positionPid.kd = 0.0;
     positionPid.maxOut = 25000;
     positionPid.maxIOut = 3;
-}
 
-/**
- * @brief GM6020类的析构函数。
- */
-GM6020::~GM6020()
-{
+    Offset = 0.0f;
 }
 
 /**

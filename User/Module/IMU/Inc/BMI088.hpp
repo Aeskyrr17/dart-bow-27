@@ -9,7 +9,7 @@
 #include "pid.hpp"
 #include "filter.hpp"
 
-using namespace Filter
+using namespace Filter;
 
 namespace BMI088
 {
@@ -176,7 +176,7 @@ enum BMI088_SENSOR
 #define GYRO_SELF_TEST_ADDR 0x3C
 #define GYRO_SELF_TEST_ON 0x01
 
-    class cBMI088: public IMU
+    class cBMI088: public cIMU
     {
     public:
         imu_error_t bmi088_selfTest; // BMI088错误结构体

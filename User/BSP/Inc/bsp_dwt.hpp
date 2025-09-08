@@ -6,7 +6,7 @@
 #define RM26_BSP_DWT_HPP
 
 #include "stdint.h"
-
+#include "main.h"
 
 typedef struct
 {

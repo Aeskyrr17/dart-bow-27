@@ -73,7 +73,7 @@ static TX_BYTE_POOL ux_device_app_byte_pool;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+extern void TaskBooster();
 /* USER CODE END PFP */
 
 /**
@@ -113,6 +113,7 @@ VOID tx_application_define(VOID *first_unused_memory)
       /* USER CODE END  App_ThreadX_Init_Error */
     }
 
+    TaskBooster();
     /* USER CODE BEGIN  App_ThreadX_Init_Success */
 
     /* USER CODE END  App_ThreadX_Init_Success */
