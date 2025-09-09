@@ -114,7 +114,7 @@ VOID tx_application_define(VOID *first_unused_memory)
     }
 
     /* USER CODE BEGIN  App_ThreadX_Init_Success */
-
+    TaskBooster();
     /* USER CODE END  App_ThreadX_Init_Success */
 
   }

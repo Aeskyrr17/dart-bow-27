@@ -5,6 +5,7 @@
 #include "main.h"
 #include "tx_api.h"
 #include "led.hpp"
+#include "TaskBooster.hpp"
 
 TX_THREAD my_thread1;
 uint8_t my_thread_stack1[1024];
@@ -43,7 +44,7 @@ uint8_t my_thread_stack2[1024];
 
 #define TX_NAME(s) const_cast<CHAR*>(s)
 
-extern "C" void TaskBooster()
+void TaskBooster()
 {
     tx_semaphore_create(&my_semaphore1, TX_NAME("my_semaphore1"), 0);
 

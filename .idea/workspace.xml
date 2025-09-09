@@ -25,345 +25,18 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" NO_GENERATOR="true" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/debugServers/SEGGER_J_Link.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/debugServers/SEGGER_J_Link.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/debugServers/ST_LINK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/debugServers/ST_LINK.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" beforeDir="false" afterPath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos_config.h" beforeDir="false" afterPath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos_config.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Drivers/CMSIS/Device/ST/STM32H7xx/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/CMSIS/Device/ST/STM32H7xx/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Drivers/CMSIS/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/CMSIS/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Drivers/STM32H7xx_HAL_Driver/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/STM32H7xx_HAL_Driver/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/LICENSED-HARDWARE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_api.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_block_pool.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_byte_pool.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_event_flags.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_initialize.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_mutex.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_queue.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_semaphore.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_thread.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_timer.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_trace.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/inc/tx_user_sample.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_allocate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_pool_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_block_release.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_allocate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_pool_search.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_byte_release.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_event_flags_set_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_initialize_high_level.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_initialize_kernel_enter.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_initialize_kernel_setup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_priority_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_mutex_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_flush.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_front_send.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_receive.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_send.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_queue_send_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_ceiling_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_cleanup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_semaphore_put_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_entry_exit_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_identify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_preemption_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_priority_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_relinquish.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_reset.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_resume.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_shell_entry.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_sleep.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_stack_analyze.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_stack_error_handler.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_stack_error_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_suspend.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_system_preempt_check.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_system_resume.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_system_suspend.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_terminate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_time_slice.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_time_slice_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_timeout.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_thread_wait_abort.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_time_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_time_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_activate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_deactivate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_expiration_process.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_system_activate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_system_deactivate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/tx_timer_thread_entry.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_allocate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_pool_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_pool_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_pool_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_pool_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_block_release.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_allocate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_pool_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_pool_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_pool_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_pool_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_byte_release.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_event_flags_set_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_mutex_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_flush.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_front_send.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_receive.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_send.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_queue_send_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_ceiling_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_prioritize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_semaphore_put_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_entry_exit_notify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_preemption_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_priority_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_relinquish.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_reset.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_resume.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_suspend.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_terminate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_time_slice_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_thread_wait_abort.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_activate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_change.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_deactivate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/common/src/txe_timer_info_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/tx_port.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_context_restore.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_context_save.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_control.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_disable.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_restore.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_schedule.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_stack_build.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_system_return.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_timer_interrupt.S" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/LICENSED-HARDWARE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_api.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_class_audio10.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_class_audio20.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_dcd_sim_slave.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_device_class_dpump.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_device_stack.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_hcd_sim_host.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_host_class_dpump.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_host_stack.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_system.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_user_sample.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/inc/ux_utility.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_alternate_setting_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_alternate_setting_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_class_register.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_class_unregister.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_clear_feature.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_configuration_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_configuration_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_descriptor_send.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_disconnect.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_endpoint_stall.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_get_status.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_interface_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_interface_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_interface_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_interface_start.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_microsoft_extension_register.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_set_feature.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_abort.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_request.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_device_stack_uninitialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_system_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_system_uninitialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_debug_callback_register.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_debug_log.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_delay_ms.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_pack.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_error_callback_register.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_event_flags_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_event_flags_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_event_flags_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_event_flags_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_long_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_long_get_big_endian.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_long_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_long_put_big_endian.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_allocate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_allocate_add_safe.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_allocate_mulc_safe.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_allocate_mulv_safe.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_compare.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_copy.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_free.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_memory_set.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_mutex_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_mutex_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_mutex_off.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_mutex_on.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_pci_read.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_pci_write.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_physical_address.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_semaphore_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_semaphore_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_semaphore_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_semaphore_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_set_interrupt_handler.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_short_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_short_get_big_endian.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_short_put.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_short_put_big_endian.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_string_length_check.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_string_length_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_identify.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_relinquish.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_resume.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_schedule_other.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_sleep.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_thread_suspend.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_timer_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_timer_delete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_unicode_to_string.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_utility_virtual_address.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_audio.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_audio10.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_audio20.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_ccid.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_cdc_acm.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_cdc_ecm.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_dfu.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_hid.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_pima.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_printer.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_rndis.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_storage.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_video.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_activate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_bulkin_thread.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_bulkout_thread.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_control_request.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_deactivate.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_entry.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_ioctl.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_read.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_unitialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_write.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_cdc_acm_write_with_callback.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_callback.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_destroy.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_reset.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_stall.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_status.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_frame_number_get.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_function.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_initialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_initialize_complete.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_interrupt_handler.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_transfer_abort.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_transfer_request.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_uninitialize.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Middlewares/ST/usbx/ports/generic/inc/ux_port.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/RM26_H7.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.ioc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/app_usbx_device.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/app_usbx_device.h" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/app_usbx_device.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" beforeDir="false" afterPath="$PROJECT_DIR$/USBX/App/ux_device_cdc_acm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/VT03.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Task/TaskBooster.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -387,8 +60,11 @@
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_can.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_dwt.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_flash.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -407,38 +83,48 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/cosmosmount/Desktop/robomaster/RM26_H7&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CMake Application.RM26_H7.elf.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/Aprojects/RM/Agithub_projects/RM26_H7/User/Task",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.cidr.cpp.execution.gdbserver.debugtargets.NamedDebugTargetConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Inc" />
+      <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Src" />
       <recent name="$PROJECT_DIR$/User/Module/RemoteControl/Inc" />
       <recent name="$PROJECT_DIR$/User/Service/Inc" />
       <recent name="$PROJECT_DIR$/User/Service/Src" />
-      <recent name="$PROJECT_DIR$/Core" />
     </key>
   </component>
   <component name="RunManager">
     <configuration name="RM26_H7.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="RM26_H7.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RM26_H7" RUN_TARGET_NAME="RM26_H7.elf">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -470,6 +156,7 @@
       <workItem from="1757340289031" duration="6566000" />
       <workItem from="1757347560439" duration="549000" />
       <workItem from="1757379825858" duration="672000" />
+      <workItem from="1757414792643" duration="1833000" />
     </task>
     <servers />
   </component>
@@ -494,7 +181,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp</url>
-          <line>4</line>
+          <line>3</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

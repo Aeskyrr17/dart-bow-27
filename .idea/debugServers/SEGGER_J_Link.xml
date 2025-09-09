@@ -1,10 +1,10 @@
 <component name="DebugServers">
-  <jlink-debug-target name="SEGGER J-Link" uniqueID="a36844a5-8cdf-4da0-8c4c-eed17912952b">
+  <jlink-debug-target name="SEGGER J-Link" uniqueID="a36844a5-8cdf-4da0-8c4c-eed17912952b" selected="true">
     <debugger version="1">
       <debugger kind="GDB" isBundled="true" />
       <env />
     </debugger>
-    <gdbserver exe="$PROJECT_DIR$/../../ClionToolchain/Configurations/H7/jlink.cfg" />
+    <gdbserver exe="$PROJECT_DIR$/../../../../Jlink/JLinkGDBServerCL.exe" />
     <console enabled="false" port="2334" />
     <target device="STM32H723VG" reset-before="false" frequency="4000" />
     <connection port="4444" warmup-ms="500" />
