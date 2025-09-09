@@ -176,8 +176,8 @@ enum BMI088_SENSOR
 #define GYRO_SELF_TEST_ADDR 0x3C
 #define GYRO_SELF_TEST_ON 0x01
 
-    class cBMI088: public cIMU
-    {
+class cBMI088: public cIMU
+{
     public:
         imu_error_t bmi088_selfTest; // BMI088错误结构体
         bmi088_data_t bmi088_data;   // BMI088数据结构体
@@ -203,6 +203,12 @@ enum BMI088_SENSOR
         void ReadGyroData(gyro_data_t *data) override;
         void ReadAccTemperature(float *temp) override;
         void Update() override;
+
+        static cBMI088 *Instance()
+        {
+            static cBMI088 instance;
+            return &instance;
+        }
 
     private:
         float Gyro_offset[3]; // 陀螺仪零飘

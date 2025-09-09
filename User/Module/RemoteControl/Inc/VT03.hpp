@@ -2,7 +2,7 @@
 #define VT03_HPP
 
 #include "crc.hpp"
-#include "../Inc/RemoteControl.hpp"
+#include "RemoteControl.hpp"
 
 #define VT03_DATA_SIZE 21u
 

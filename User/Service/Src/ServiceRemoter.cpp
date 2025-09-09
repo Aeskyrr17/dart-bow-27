@@ -10,7 +10,6 @@ TX_SEMAPHORE RemoterThreadSem;
 static uint8_t size_of_data;
 extern Dr16 dr16;
 
-
 [[noreturn]] void RemoterThreadFun(ULONG initial_input) {
     UNUSED(initial_input);
     dr16.Init();

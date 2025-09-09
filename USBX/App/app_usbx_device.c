@@ -223,10 +223,64 @@ UINT MX_USBX_Device_Init(VOID *memory_ptr)
 static VOID app_ux_device_thread_entry(ULONG thread_input)
 {
   /* USER CODE BEGIN app_ux_device_thread_entry */
-  TX_PARAMETER_NOT_USED(thread_input);
+  // TX_PARAMETER_NOT_USED(thread_input);
+  USBX_APP_Device_Init();
   /* USER CODE END app_ux_device_thread_entry */
 }
 
 /* USER CODE BEGIN 2 */
+/**
+  * @brief  USBX_APP_Device_Init
+  *         Initialization of USB device.
+  * @param  none
+  * @retval none
+  */
+VOID USBX_APP_Device_Init(VOID)
+{
+  /* USER CODE BEGIN USB_Device_Init_PreTreatment_0 */
 
+  /* USER CODE END USB_Device_Init_PreTreatment_0 */
+
+  /* USB_OTG_HS init function */
+  MX_USB_OTG_HS_PCD_Init();
+
+  /* USER CODE BEGIN USB_Device_Init_PreTreatment_1 */
+
+  /* Set Rx FIFO */
+  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_HS, 0x200);
+
+  /* Set Tx FIFO 0 */
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 0, 0x10);
+
+  /* Set Tx FIFO 2 */
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 1, 0x10);
+
+  /* Set Tx FIFO 3 */
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 2, 0x20);
+  /* USER CODE END USB_Device_Init_PreTreatment_1 */
+
+  /* Initialize and link controller HAL driver */
+  ux_dcd_stm32_initialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS);
+
+  /* Start the USB device */
+  HAL_PCD_Start(&hpcd_USB_OTG_HS);
+
+  /* USER CODE BEGIN USB_Device_Init_PostTreatment */
+
+  /* USER CODE END USB_Device_Init_PostTreatment */
+}
+
+// /**
+//   * @brief  USBX_APP_UART_Init
+//   *         Initialization of UART.
+//   * @param  huart: Pointer to UART handler
+//   * @retval none
+//   */
+// VOID USBX_APP_UART_Init(UART_HandleTypeDef **huart)
+// {
+//   /* USER CODE BEGIN USBX_APP_UART_Init */
+//
+//
+//   /* USER CODE END USBX_APP_UART_Init */
+// }
 /* USER CODE END 2 */

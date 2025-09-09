@@ -31,7 +31,6 @@
 #define UX_SOURCE_CODE
 
 #include "ux_api.h"
-#include "ux_user.h"
 #include "ux_system.h"
 
 /* Define the USBX system data structure.  */

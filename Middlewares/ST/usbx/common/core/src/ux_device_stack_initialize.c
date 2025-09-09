@@ -114,7 +114,7 @@ UX_SYSTEM_SLAVE *_ux_system_slave;
 /*                                            endpoint buffer in classes, */
 /*                                            resulting in version 6.3.0  */
 /*                                                                        */
-/************************************************************************* */
+/**************************************************************************/
 UINT  _ux_device_stack_initialize(UCHAR * device_framework_high_speed, ULONG device_framework_length_high_speed,
                                   UCHAR * device_framework_full_speed, ULONG device_framework_length_full_speed,
                                   UCHAR * string_framework, ULONG string_framework_length,

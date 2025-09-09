@@ -97,6 +97,7 @@ VOID USBD_CDC_ACM_Activate(VOID *cdc_acm_instance)
     Error_Handler();
   }
   /* USER CODE END USBD_CDC_ACM_Activate */
+
   return;
 }
 
@@ -177,6 +178,7 @@ VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance)
 }
 
 /* USER CODE BEGIN 2 */
+uint32_t new_data_ = 0;
 /**
   * @brief  Function implementing USBX_DEVICE_CDC_ACM_Read_TASK.
   * @param  thread_input: Not used.
@@ -188,24 +190,25 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   UX_PARAMETER_NOT_USED(thread_input);
-
+  // tx_thread_sleep(TX_WAIT_FOREVER);
   while (1)
   {
     if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
     {
-      if (ux_device_class_cdc_acm_read(cdc_acm,
-                                           (UCHAR *)&UserRxBufferFS[UserRxBufPtrIn],
-                                           64, &actual_length) == UX_STATE_NEXT)
-      {
-        if (actual_length != 0)
-        {
-          UserRxBufPtrIn += actual_length;
-          if (UserRxBufPtrIn >= APP_RX_DATA_SIZE)
-            UserRxBufPtrIn = 0;
-          else
-            USB_RX_SUCCESS = 1;
-        }
-      }
+      // cdc_acm -> ux_slave_class_cdc_acm_transmission_status = UX_FALSE;
+      ux_device_class_cdc_acm_read(cdc_acm,
+                                           (UCHAR *)UserRxBufferFS,
+                                           64, &actual_length);
+        // if (actual_length != 0)
+        // {
+        //   UserRxBufPtrIn += actual_length;
+        //   if (UserRxBufPtrIn >= APP_RX_DATA_SIZE)
+        //     UserRxBufPtrIn = 0;
+        //   else
+        //     USB_RX_SUCCESS = 1;
+        // }
+      new_data_ = actual_length;
+      tx_thread_sleep(1);
     }
   }
 }
@@ -215,81 +218,27 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   * @param  thread_input: Not used
   * @retval none
   */
-VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
-{
+VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input) {
   ULONG actual_length, buffsize, buffptr;
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   UX_PARAMETER_NOT_USED(thread_input);
+  tx_thread_sleep(10);
   while (1)
   {
+    tx_thread_sleep(1);
     if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
     {
-      if (UserTxBufPtrOut != UserTxBufPtrIn)
-      {
-        /* Check buffer overflow and Rollback */
-        if (UserTxBufPtrOut > UserTxBufPtrIn)
-        {
-          buffsize = APP_RX_DATA_SIZE - UserTxBufPtrOut;
-        }
-        else
-        {
-          /* Calculate data size */
-          buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
-        }
-
-        /* Copy UserTxBufPtrOut in buffptr */
-        buffptr = UserTxBufPtrOut;
-
-        /* Send data over the class cdc_acm_write */
-        if (ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)(&UserTxBufferFS[buffptr]),
-                                          buffsize, &actual_length) == UX_SUCCESS)
-        {
-          /* Increment the UserTxBufPtrOut pointer */
-          UserTxBufPtrOut += buffsize;
-
-          /* Rollback UserTxBufPtrOut if it equal to APP_TX_DATA_SIZE */
-          if (UserTxBufPtrOut == APP_TX_DATA_SIZE)
-          {
-            UserTxBufPtrOut = 0;
-          }
-        }
+      // new_data_ = 10;
+      if (new_data_) {
+        ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , new_data_ , &actual_length);
+        new_data_ = 0;
       }
-      // switch (USB_TX_BUSY)
-      // {
-      //   case 0:
-      //     if (UserTxBufPtrOut != UserTxBufPtrIn)
-      //     {
-      //       if (UserTxBufPtrOut > UserTxBufPtrIn)
-      //         buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOut;
-      //       else
-      //         buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
-      //
-      //       if (ux_device_class_cdc_acm_write_run(cdc_acm,
-      //                                             (UCHAR *)(&UserTxBuffer[UserTxBufPtrOut]),
-      //                                             buffsize, &actual_length) == UX_STATE_WAIT)
-      //       {
-      //         USB_TX_BUSY = 1;
-      //       }
-      //     }
-      //     break;
-      //
-      //   case 1:
-      //     if (ux_device_class_cdc_acm_write_run(cdc_acm, UX_NULL, 0, &actual_length) == UX_STATE_NEXT)
-      //     {
-      //       UserTxBufPtrOut += actual_length;
-      //       if (UserTxBufPtrOut >= APP_TX_DATA_SIZE)
-      //         UserTxBufPtrOut = 0;
-      //       USB_TX_BUSY = 0;
-      //       USB_TX_SUCCESS = 1;
-      //     }
-      //     break;
-      //
-      //   default:
-      //     break;
-      // }
+      else {
+        uint8_t test_data_ = 10;
+        ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , test_data_ , &actual_length);
+      }
     }
   }
-
 }
 /* USER CODE END 2 */
