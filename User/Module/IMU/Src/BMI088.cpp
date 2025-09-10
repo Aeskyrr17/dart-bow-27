@@ -7,6 +7,61 @@
 
 namespace BMI088
 {
+    void cBMI088::Init() {
+        gNorm = 9.805f;
+
+        bmi088_selfTest.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
+        bmi088_selfTest.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
+        bmi088_selfTest.GYRO_CHIP_ID_ERR = true;      // 陀螺仪ID错误则为true
+        bmi088_selfTest.GYRO_DATA_ERR = true;         // 陀螺仪数据错误则为true
+        bmi088_selfTest.INIT_ERR = true;       // BMI088初始化错误则为true
+        bmi088_selfTest.CALIBRATE_ERR = false; // BMI088标定错误则为true
+        bmi088_selfTest.TEMP_CTRL_ERR = false; // BMI088温度控制错误则为true
+
+        Acc_coef = IMU_ACCEL_3G_SEN; // 标定完后要乘以9.805/gNorm，注意这里需要和配置的范围对应
+
+        BMI088_CONF_INIT(); //< 初始化配置
+
+        VerifyAccChipID();  //< 验证加速度计ID
+        VerifyGyroChipID(); //< 验证陀螺仪ID
+
+        TempPid.mode = PID_POSITION | PID_Integral_Limit | PID_Changing_Integral_Rate | PID_Derivative_On_Measurement; // 位置式PID，积分限幅
+        TempPid.kp = 650.0f;
+        TempPid.ki = 0.06f;
+        TempPid.kd = 0.1f;
+        TempPid.maxOut = 300.0f;
+        TempPid.maxIOut = 300.0f;
+        TempPid.ScalarA = 3.5f;
+        TempPid.ScalarB = 0.08f;
+
+        TempFdbFilter.SetTau(0.1f);       // 设置滤波时间常数
+        TempFdbFilter.SetUpdatePeriod(1); // 设置更新周期
+
+    SetTargetTemp(45.0f);                              //< 设置目标温度，一般为40度以上
+    PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
+
+   float startTime; // 开始升温时间,用于确定是否超时
+   startTime = DWT_GetTimeline_s();
+   while (fabs(bmi088_data.acc_data.temperature - TargetTemp) > 0.1f)
+   {
+       if (DWT_GetTimeline_s() - startTime > 1.00) // 超时则直接进入下一步
+       {
+           bmi088_selfTest.BMI088_TEMP_CTRL_ERR = true;
+           startTime = DWT_GetTimeline_s();
+           break;
+       }
+       ReadAccTemperature(&bmi088_data.acc_data.temperature);
+       TemperatureControl(TargetTemp);
+   }
+   startTime = DWT_GetTimeline_s();
+   while (DWT_GetTimeline_s() - startTime < 2.01)
+   {
+       ReadAccTemperature(&bmi088_data.acc_data.temperature);
+       TemperatureControl(TargetTemp);
+   }
+    CalibrateIMU(); //< 标定IMU
+    }
+
     void cBMI088::ReadReg(enum BMI088_SENSOR cs, uint8_t addr, uint8_t *data, uint8_t len)
     {
         //< 片选，考虑以后进行bsp_gpio封装

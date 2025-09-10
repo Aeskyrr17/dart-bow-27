@@ -80,6 +80,7 @@ public:
     // /*Read temperature data from imu(optional)*/
     // virtual void UpdateTem() = 0;
 
+    virtual void Init() = 0;
 
     /*Read all data*/
     virtual void Update() = 0;

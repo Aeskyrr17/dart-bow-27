@@ -1,8 +1,8 @@
 #include "bsp_usart.hpp"
-#include "remoteControl.hpp"
+#include "RemoteControl.hpp"
 #include "Dr16.hpp"
 #include "xrobot.hpp"
-#include "Referee.hpp"
+#include "referee.hpp"
 // #include "ServiceRemoter.hpp"
 
 /*------------全局变量------------*/

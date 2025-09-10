@@ -62,6 +62,7 @@ include_directories(Core/Inc
         Middlewares/ST/usbx/common/usbx_stm32_device_controllers/
         Middlewares/ST/usbx/common/usbx_device_classes/inc/
         User/BSP/Inc
+        User/Controller/Inc
         User/Utils/Inc
         User/Module/AHRS/Inc
         User/Module/LED
@@ -85,6 +86,11 @@ add_link_options(-mcpu=cortex-m7 -mthumb -mthumb-interwork)
 add_link_options(-T ${LINKER_SCRIPT})
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
+
+# Add OneMessage
+add_subdirectory(User/Module/OneMessage om)
+target_include_directories(${PROJECT_NAME}.elf PUBLIC $<TARGET_PROPERTY:OneMessage,INCLUDE_DIRECTORIES>)
+target_link_libraries(${PROJECT_NAME}.elf PUBLIC OneMessage)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

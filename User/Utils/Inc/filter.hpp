@@ -27,6 +27,26 @@ namespace Filter
         FirstOrderFilter();
 
         /**
+     * @brief 设置滤波器的输入值
+     */
+        void SetInput(float in);
+
+        /*
+         * @brief 设置滤波器的时间常数
+         */
+        void SetTau(float tau);
+
+        /**
+         * @brief 设置滤波器的输出值
+         */
+        void SetResult(float out);
+
+        /**
+         * @brief 设置滤波器的更新周期
+         */
+        void SetUpdatePeriod(float t);
+
+        /**
          * @brief 获取滤波器的输出值
          */
         float GetResult();
@@ -35,6 +55,16 @@ namespace Filter
          * @brief 获取滤波器的输入值
          */
         float GetTau();
+
+        /**
+         * @brief 获取滤波器的更新周期
+         */
+        float GetUpdatePeriod();
+
+        /**
+         * @brief 初始化滤波器
+         */
+        void Init();
 
         /**
          * @brief 更新滤波器

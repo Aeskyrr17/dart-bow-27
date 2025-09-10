@@ -203,6 +203,7 @@ class cBMI088: public cIMU
         void ReadGyroData(gyro_data_t *data) override;
         void ReadAccTemperature(float *temp) override;
         void Update() override;
+        void Init() override;
 
         static cBMI088 *Instance()
         {
