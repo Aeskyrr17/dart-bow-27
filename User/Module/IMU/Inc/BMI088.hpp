@@ -204,6 +204,16 @@ class cBMI088: public cIMU
         void ReadAccTemperature(float *temp) override;
         void Update() override;
         void Init() override;
+        void VerifyAccChipID() override;
+        void VerifyGyroChipID() override;
+        void VerifyAccData() override;
+        void VerifyGyroData() override;
+
+        void CalibrateIMU();
+
+        static void BMI088Config();
+        void SetTargetTemp(float temp);
+        void TemperatureControl(float target_temp);
 
         static cBMI088 *Instance()
         {
@@ -211,13 +221,18 @@ class cBMI088: public cIMU
             return &instance;
         }
 
+        FirstOrderFilter TempFdbFilter;
+        PID TempPid;
+        float TargetTemp;
+
+
+
     private:
         float Gyro_offset[3]; // 陀螺仪零飘
         float Acc_coef;       // 加速度计灵敏度，标定完后要乘以9.805/gNorm
         float gNorm;          // 重力加速度模长
         LowPassFilter_333Hz SensorFilter[6];
-        FirstOrderFilter TempFdbFilter;
-        PID TempPid;
+
     };
 
 }

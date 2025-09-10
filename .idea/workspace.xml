@@ -20,6 +20,7 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
+      <config projectName="RM26_H7" targetName="OneMessage" />
       <config projectName="RM26_H7" targetName="RM26_H7.elf" />
     </generated>
   </component>
@@ -32,11 +33,12 @@
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/filter.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,12 +120,26 @@
       <recent name="$PROJECT_DIR$/User/Service/Src" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="CMake Application.RM26_H7.elf">
+    <configuration name="OneMessage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="OneMessage" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="RM26_H7.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="RM26_H7.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RM26_H7" RUN_TARGET_NAME="RM26_H7.elf">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.RM26_H7.elf" />
+      <item itemvalue="CMake Application.OneMessage" />
+    </list>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -152,6 +168,7 @@
       <workItem from="1757347560439" duration="549000" />
       <workItem from="1757379825858" duration="672000" />
       <workItem from="1757414792643" duration="1833000" />
+      <workItem from="1757510302807" duration="6273000" />
     </task>
     <servers />
   </component>

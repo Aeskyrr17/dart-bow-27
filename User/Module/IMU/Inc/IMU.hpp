@@ -89,43 +89,43 @@ public:
      * @brief 读取加速度计数据
      * @param data 加速度计数据结构体
      */
-    virtual void ReadAccData(acc_data_t *data);
+    virtual void ReadAccData(acc_data_t *data) = 0;
 
     /**
      * @brief 读取陀螺仪数据
      * @param data 陀螺仪数据结构体
      */
-    virtual void ReadGyroData(gyro_data_t *data);
+    virtual void ReadGyroData(gyro_data_t *data) = 0;
 
     /**
      * @brief 读取加速度计温度
      * @param temp 温度指针
      */
-    virtual void ReadAccTemperature(float *temp);
+    virtual void ReadAccTemperature(float *temp) = 0;
 
     /**
      * @brief 验证加速度计ID
      * 若不正确则设置错误标志
      */
-    virtual void VerifyAccChipID();
+    virtual void VerifyAccChipID() = 0;
 
     /**
      * @brief 验证陀螺仪ID
      * 若不正确则设置错误标志
      */
-    virtual void VerifyGyroChipID();
+    virtual void VerifyGyroChipID() = 0;
 
     /**
      * @brief 验证加速度计数据
      * @todo 未实现
      */
-    virtual void VerifyAccData();
+    virtual void VerifyAccData() = 0;
 
     /**
      * @brief 验证陀螺仪数据
      * @todo 未实现
      */
-    virtual void VerifyGyroData();
+    virtual void VerifyGyroData() = 0;
 };
 
 #endif //RM26_H7_IMU_HPP

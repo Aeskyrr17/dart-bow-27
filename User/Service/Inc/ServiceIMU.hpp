@@ -7,4 +7,6 @@
 
 #include "tx_api.h"
 
+void BMI088ConfigWrap();
+
 #endif //RM26_H7_SERVICEIMU_HPP
