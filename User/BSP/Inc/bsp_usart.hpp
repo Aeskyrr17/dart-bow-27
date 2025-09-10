@@ -1,22 +1,27 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
+#ifndef BSP_USART_HPP
+#define BSP_USART_HPP
 
-#ifndef RM26_BSP_USART_HPP
-#define RM26_BSP_USART_HPP
-
-#include "dma.h"
+#include "main.h"
+#include "string.h"
+#include "stm32h7xx.h"
 #include "usart.h"
+#include "dma.h"
+#include "bsp_cache.hpp"
 
-extern UART_HandleTypeDef huart5;
-extern UART_HandleTypeDef huart7;
-extern UART_HandleTypeDef huart1;
-extern DMA_HandleTypeDef hdma_uart5_rx;
-extern DMA_HandleTypeDef hdma_uart7_rx;
-extern DMA_HandleTypeDef hdma_uart7_tx;
-extern DMA_HandleTypeDef hdma_usart1_rx;
-extern DMA_HandleTypeDef hdma_usart1_tx;
+#define SBUS_RX_BUF_NUM 18u
+
+
+enum USART_Mode
+{
+    USART_MODE_BLOCK = 0,
+    USART_MODE_DMA = 1,
+    USART_MODE_IT = 2
+  };
 
 void USART_Init(void);
 
-#endif //RM26_BSP_USART_HPP
+extern uint8_t SBUS_MultiRx_Buf[2][18u];
+
+
+
+#endif //  __BSP_USART_H

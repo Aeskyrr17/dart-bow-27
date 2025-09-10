@@ -1,6 +1,4 @@
 #include "Dr16.hpp"
-
-#include <cstring>
 extern UART_HandleTypeDef huart3;
 
 void Dr16::Init()
@@ -108,6 +106,8 @@ Dr16::RC_SWITCH_STATE Dr16::QuerySwStatus(RC_SWITCH_TYPE sw)
         return Left_SwChange;
     case RIGHT_SWITCH_CHANGE:
         return Right_SwChange;
+    default:
+        return Left_SwChange;
     }
 }
 

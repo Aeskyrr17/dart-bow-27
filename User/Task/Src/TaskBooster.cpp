@@ -14,6 +14,12 @@ TX_SEMAPHORE my_semaphore1;
 TX_THREAD my_thread2;
 uint8_t my_thread_stack2[1024];
 
+extern TX_THREAD RemoterThread;
+extern uint8_t RemoterThreadStack[2048];
+extern void RemoterThreadFun(ULONG initial_input);
+
+
+
 [[noreturn]] void my_thread_entry(ULONG thread_input)
 {
     LED_ALL_ON();
@@ -53,7 +59,13 @@ void TaskBooster()
         my_thread_entry, 0x1234, my_thread_stack1, sizeof(my_thread_stack1),
         10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
 
+    tx_thread_create(&RemoterThread, TX_NAME("RemoterThread"),
+        RemoterThreadFun, 0x1234, RemoterThreadStack, sizeof(RemoterThreadStack),
+        4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
+
     tx_thread_create(&my_thread2, TX_NAME("my_thread2"),
         my_thread_entry2, 0x1234, my_thread_stack2, sizeof(my_thread_stack2),
         10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+
 }

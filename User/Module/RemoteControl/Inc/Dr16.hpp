@@ -187,6 +187,15 @@ public:
 
     RC_SWITCH_STATE GetPreviousLeftSwStatus();
 
+    /**
+     * @brief 获取遥控器类的实例。
+     */
+    static Dr16 *Instance() ///< 遥控器类的实例。
+    {
+        static Dr16 instance;
+        return &instance;
+    }
+
 private:
     RC_SWITCH_STATE Left_CurrentSw;  ///< 左侧开关当前状态。
     RC_SWITCH_STATE Left_PreviousSw; ///< 左侧开关上一次状态。

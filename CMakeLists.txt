@@ -69,6 +69,7 @@ include_directories(Core/Inc
         User/Module/IMU/Inc
         User/Module/DJIMotor/Inc
         User/Module/DMMotor/Inc
+        User/Module/Referee
         User/Service/Inc
         User/Task/Inc
 )

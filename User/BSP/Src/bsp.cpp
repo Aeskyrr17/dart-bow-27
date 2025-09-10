@@ -1,3 +1,6 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
+#include "bsp.hpp"
+#include "bsp_usart.hpp"
+
+void bsp_Init() {
+    USART_Init();
+}
