@@ -9,14 +9,8 @@
 #ifdef __cplusplus
 extern  "C" {
 #endif
-#include "bsp_adc.hpp"
-#include "bsp_can.hpp"
-#include "bsp_cache.hpp"
-#include "bsp_dwt.hpp"
-#include "bsp_flash.hpp"
 
     void bsp_Init(void);
-
 
 #ifdef __cplusplus
 }

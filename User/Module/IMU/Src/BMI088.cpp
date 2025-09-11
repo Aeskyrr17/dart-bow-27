@@ -11,11 +11,18 @@
 
 extern BMI088::cBMI088 *bmi088;
 
+float check_start_time = 0;
+
+
 namespace BMI088
 
+
 {
-    void cBMI088::Init() {
-        gNorm = 9.805f;
+
+    void cBMI088::Init()
+    {
+
+	    gNorm = 9.805f;
 
         bmi088_selfTest.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
         bmi088_selfTest.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
@@ -36,7 +43,7 @@ namespace BMI088
         TempPid.kp = 650.0f;
         TempPid.ki = 0.06f;
         TempPid.kd = 0.1f;
-        TempPid.maxOut = 300.0f;//谨记！！：H7板子上的IMU为24V，这里30%占空比设置，避免烧加热电阻！！！
+        TempPid.maxOut = 300.0f;
         TempPid.maxIOut = 300.0f;
         TempPid.ScalarA = 3.5f;
         TempPid.ScalarB = 0.08f;
@@ -44,38 +51,38 @@ namespace BMI088
         TempFdbFilter.SetTau(0.1f);       // 设置滤波时间常数
         TempFdbFilter.SetUpdatePeriod(1); // 设置更新周期
 
-    SetTargetTemp(45.0f);                              //< 设置目标温度，一般为40度以上
-    PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
+        SetTargetTemp(45.0f);                              //< 设置目标温度，一般为40度以上
+        PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
 
-   float startTime; // 开始升温时间,用于确定是否超时
-   startTime = DWT_GetTimeline_s();
-   while (fabs(bmi088_data.acc_data.temperature - TargetTemp) > 0.1f)
-   {
-       if (DWT_GetTimeline_s() - startTime > 1.00) // 超时则直接进入下一步
+       float startTime; // 开始升温时间,用于确定是否超时
+       startTime = DWT_GetTimeline_s();
+       while (fabs(bmi088_data.acc_data.temperature - TargetTemp) > 5.1f)
        {
-           bmi088_selfTest.TEMP_CTRL_ERR = true;
-           startTime = DWT_GetTimeline_s();
-           break;
+           if (DWT_GetTimeline_s() - startTime > 1.00) // 超时则直接进入下一步
+           {
+               bmi088_selfTest.TEMP_CTRL_ERR = true;
+               startTime = DWT_GetTimeline_s();
+               break;
+           }
+           ReadAccTemperature(&bmi088_data.acc_data.temperature);
+           TemperatureControl(TargetTemp);
        }
-       ReadAccTemperature(&bmi088_data.acc_data.temperature);
-       TemperatureControl(TargetTemp);
-   }
-   startTime = DWT_GetTimeline_s();
-   while (DWT_GetTimeline_s() - startTime < 2.01)
-   {
-       ReadAccTemperature(&bmi088_data.acc_data.temperature);
-       TemperatureControl(TargetTemp);
-   }
-    CalibrateIMU(); //< 标定IMU
+       startTime = DWT_GetTimeline_s();
+       while (DWT_GetTimeline_s() - startTime < 2.01)
+       {
+           ReadAccTemperature(&bmi088_data.acc_data.temperature);
+           TemperatureControl(TargetTemp);
+       }
+        CalibrateIMU(); //< 标定IMU
 
-    bmi088_selfTest.INIT_ERR = false; //< 初始化成功,错误标志设置为false
+        bmi088_selfTest.INIT_ERR = false; //< 初始化成功,错误标志设置为false
     }
 
     /* pre calibrate parameter to go here */
-#define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
-#define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
-#define BMI088_PRE_CALI_ACC_Z_OFFSET 0.0f
-#define BMI088_PRE_CALI_G_NORM 9.805f
+    #define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
+    #define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
+    #define BMI088_PRE_CALI_ACC_Z_OFFSET 0.0f
+    #define BMI088_PRE_CALI_G_NORM 9.805f
     /**
      * @brief BMI088 acc gyro 标定
      * @note 标定后的数据存储在bmi088->bias和gNorm中,用于后续数据消噪和单位转换归一化
@@ -123,9 +130,9 @@ namespace BMI088
                 ReadAccTemperature(&bmi088_data.acc_data.temperature);
                 TemperatureControl(TargetTemp);
 
-					    gNormTemp = Math::Sqrt(bmi088_data.acc_data.x * bmi088_data.acc_data.x +
-                                 bmi088_data.acc_data.y * bmi088_data.acc_data.y +
-                                 bmi088_data.acc_data.z * bmi088_data.acc_data.z); // 计算加速度范数
+				gNormTemp = Math::Sqrt(bmi088_data.acc_data.x * bmi088_data.acc_data.x +
+                         bmi088_data.acc_data.y * bmi088_data.acc_data.y +
+                         bmi088_data.acc_data.z * bmi088_data.acc_data.z); // 计算加速度范数
 
                 gNorm += gNormTemp; // 计算范数并累加,最后除以calib times获取单次值
 
@@ -196,6 +203,105 @@ namespace BMI088
         Acc_coef *= 9.805 / gNorm;
     }
 
+    void cBMI088::TemperatureControl(float target_temp)
+    {
+    //    debug_T_ref = target_temp;
+    //    debug_T_fdb = bmi088_data.acc_data.temperature;
+
+        TempFdbFilter.SetInput(bmi088_data.acc_data.temperature);
+        TempFdbFilter.Update();
+
+        TempPid.ref = target_temp;
+        TempPid.fdb = TempFdbFilter.GetResult();
+        TempPid.UpdateResult();
+
+        if (TempPid.result < 0)
+        {
+            PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, 0, TIM_CHANNEL_4);
+        }
+        else
+        {
+            PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, TempPid.result / 999, TIM_CHANNEL_4);
+        }
+    }
+
+    void cBMI088::SetTargetTemp(float temp)
+    {
+        // 限制温度范围，防止过热或者无效，不过目前这些值是随便给的，后续要根据实际情况调整
+        if (temp > 65.0f)
+        {
+            temp = 55.0f;
+        }
+        else if (temp < 40.0f)
+        {
+            temp = 40.0f;
+        }
+        TargetTemp = temp;
+    }
+
+    void cBMI088::VerifyAccChipID()
+    {
+        uint8_t pRxData[2]; //< 读取两个字节,第一个字节是dummy data,第二个字节是chip id
+
+        ReadReg(BMI088_CS_ACC, ACC_CHIP_ID_ADDR, pRxData, 2); //< 读取加速度计chip id
+        tx_thread_sleep(1);
+        //< 如果chip id不等于预设值,则加速度计ID错误,初始化错误
+        if (pRxData[1] != ACC_CHIP_ID_VAL)
+        {
+            bmi088_selfTest.ACC_CHIP_ID_ERR = true;
+            bmi088_selfTest.INIT_ERR = true;
+        }
+        else if (pRxData[1] == ACC_CHIP_ID_VAL)
+        {
+            bmi088_selfTest.ACC_CHIP_ID_ERR = false;
+        }
+    }
+
+    void cBMI088::VerifyGyroChipID()
+    {
+        uint8_t pRxData;                                                 //< 读取一个字节,chip id
+        ReadReg(BMI088_CS_GYRO, GYRO_CHIP_ID_ADDR, &pRxData, 1); //< 读取陀螺仪chip id
+        tx_thread_sleep(1);
+        //< 如果chip id不等于预设值,则陀螺仪ID错误,初始化错误
+        if (pRxData != GYRO_CHIP_ID_VAL)
+        {
+            bmi088_selfTest.GYRO_CHIP_ID_ERR = true;
+            bmi088_selfTest.INIT_ERR = true;
+        }
+        else if (pRxData == GYRO_CHIP_ID_VAL)
+        {
+            bmi088_selfTest.GYRO_CHIP_ID_ERR = false;
+        }
+    }
+
+    void cBMI088::VerifyAccData() {}
+
+    void cBMI088::VerifyGyroData() {}
+
+    void cBMI088::WriteReg(enum BMI088_SENSOR cs, uint8_t addr, uint8_t *data, uint8_t len)
+    {
+        //< 片选，考虑以后进行bsp_gpio封装
+        if (cs == BMI088_CS_ACC)
+            HAL_GPIO_WritePin(BMI088_ACC_GPIOx, BMI088_ACC_GPIOp, GPIO_PIN_RESET);
+        else if (cs == BMI088_CS_GYRO)
+            HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_RESET);
+
+        uint8_t pTxData = (addr & BMI088_SPI_WRITE_CODE); //< 处理地址为写地址
+
+        SPI_Transmit(&BMI088_SPI, &pTxData, 1, SPI_BLOCK_MODE); //< 发送地址
+        SPI_Transmit(&BMI088_SPI, data, len, SPI_BLOCK_MODE);   //< 发送数据
+
+        // 理论上，这里不需要延时，但是如果数据出现问题，请尝试增加延时
+        if (bmi088_selfTest.INIT_ERR == true)
+        {
+            DWT_Delay(0.001);
+        }
+        //< 取消片选
+        if (cs == BMI088_CS_ACC)
+            HAL_GPIO_WritePin(BMI088_ACC_GPIOx, BMI088_ACC_GPIOp, GPIO_PIN_SET);
+        else if (cs == BMI088_CS_GYRO)
+            HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_SET);
+    }
 
     void cBMI088::ReadReg(enum BMI088_SENSOR cs, uint8_t addr, uint8_t *data, uint8_t len)
     {
@@ -217,25 +323,75 @@ namespace BMI088
             HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_SET);
     }
 
-    void cBMI088::WriteReg(enum BMI088_SENSOR cs, uint8_t addr, uint8_t *data, uint8_t len)
+
+    void cBMI088::BMI088Config()
     {
-        //< 片选，考虑以后进行bsp_gpio封装
-        if (cs == BMI088_CS_ACC)
-            HAL_GPIO_WritePin(BMI088_ACC_GPIOx, BMI088_ACC_GPIOp, GPIO_PIN_RESET);
-        else if (cs == BMI088_CS_GYRO)
-            HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_RESET);
+        tx_thread_sleep(10); //< 等待系统稳定
+        //< 加速度计初始化
+        //< 先软重启，清空所有寄存器
+        uint8_t pTxData;
+        pTxData = ACC_SOFTRESET_VAL;
+        WriteReg(BMI088_CS_ACC, ACC_SOFTRESET_ADDR, &pTxData, 1);
+        tx_thread_sleep(100); //< 延时100ms,重启需要时间
 
-        uint8_t pTxData = (addr & BMI088_SPI_WRITE_CODE); //< 处理地址为写地址
+        //< 打开加速度计电源
+        pTxData = ACC_PWR_CTRL_ON;
+        WriteReg(BMI088_CS_ACC, ACC_PWR_CTRL_ADDR, &pTxData, 1);
+        tx_thread_sleep(10); //
 
-        SPI_Transmit(&BMI088_SPI, &pTxData, 1, SPI_BLOCK_MODE); //< 发送地址
-        SPI_Transmit(&BMI088_SPI, data, len, SPI_BLOCK_MODE);   //< 发送数据
+        //< 加速度计变成正常模式
+        pTxData = ACC_PWR_CONF_ACT;
+        WriteReg(BMI088_CS_ACC, ACC_PWR_CONF_ADDR, &pTxData, 1);
+        tx_thread_sleep(10); //
 
-        //< 取消片选
-        if (cs == BMI088_CS_ACC)
-            HAL_GPIO_WritePin(BMI088_ACC_GPIOx, BMI088_ACC_GPIOp, GPIO_PIN_SET);
-        else if (cs == BMI088_CS_GYRO)
-            HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_SET);
+        //< 测量范围
+        pTxData = ACC_RANGE_3G;
+        WriteReg(BMI088_CS_ACC, ACC_RANGE_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0xAC;
+        WriteReg(BMI088_CS_ACC, ACC_CONF_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x08;
+        WriteReg(BMI088_CS_ACC, INT1_IO_CTRL_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x04;
+        WriteReg(BMI088_CS_ACC, INT_MAP_DATA_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        /*-------------------------------------陀螺仪初始化-------------------------------------*/
+        //< 先软重启，清空所有寄存器
+        pTxData = GYRO_SOFTRESET_VAL;
+        WriteReg(BMI088_CS_GYRO, GYRO_SOFTRESET_ADDR, &pTxData, 1);
+        tx_thread_sleep(100); //< 延时100ms,重启需要时间
+
+        pTxData = GYRO_RANGE_1000_DEG_S;
+        WriteReg(BMI088_CS_GYRO, GYRO_RANGE_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x02;//GYRO_ODR_1000Hz_BANDWIDTH_116Hz | GYRO_LPM1_SUS;
+        WriteReg(BMI088_CS_GYRO, GYRO_BANDWIDTH_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = GYRO_LPM1_NOR;
+        WriteReg(BMI088_CS_GYRO, GYRO_LPM1_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x80;
+        WriteReg(BMI088_CS_GYRO, GYRO_INT_CTRL_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x0C;
+        WriteReg(BMI088_CS_GYRO, GYRO_INT3_INT4_IO_CONF_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
+
+        pTxData = 0x01;
+        WriteReg(BMI088_CS_GYRO, GYRO_INT3_INT4_IO_MAP_ADDR, &pTxData, 1);
+        tx_thread_sleep(5); //< 延时5ms
     }
+
 
     void cBMI088::ReadAccData(acc_data_t *data)
     {
@@ -246,9 +402,9 @@ namespace BMI088
         acc[0] = ((int16_t)buf[1 + 1] << 8) + (int16_t)buf[0 + 1];
         acc[1] = ((int16_t)buf[3 + 1] << 8) + (int16_t)buf[2 + 1];
         acc[2] = ((int16_t)buf[5 + 1] << 8) + (int16_t)buf[4 + 1];
-        data->x = SensorFilter[0].calculate((float)acc[0] * Acc_coef);
-        data->y = SensorFilter[1].calculate((float)acc[1] * Acc_coef);
-        data->z = SensorFilter[2].calculate((float)acc[2] * Acc_coef);
+        data->x = (float)acc[0] * Acc_coef;
+        data->y = (float)acc[1] * Acc_coef;
+        data->z = (float)acc[2] * Acc_coef;
     }
 
     void cBMI088::ReadGyroData(gyro_data_t *data)
@@ -262,133 +418,14 @@ namespace BMI088
         gyro[1] = ((int16_t)buf[3] << 8) + (int16_t)buf[2];
         gyro[2] = ((int16_t)buf[5] << 8) + (int16_t)buf[4];
         // 注意这里就不要又除法又乘法的了，直接乘以一个常数，根据配置，单位是16.384，所以直接乘以1/16.384 * DEG2SEC即可
-        // 滤波
-        data->roll = SensorFilter[3].calculate((float)gyro[0] * IMU_GYRO_2000_SEN);
-        data->pitch = SensorFilter[4].calculate((float)gyro[1] * IMU_GYRO_2000_SEN);
-        data->yaw = SensorFilter[5].calculate((float)gyro[2] * IMU_GYRO_2000_SEN);
+        data->roll = (float)gyro[0] * IMU_GYRO_2000_SEN;
+        data->pitch = (float)gyro[1] * IMU_GYRO_2000_SEN;
+        data->yaw = (float)gyro[2] * IMU_GYRO_2000_SEN;
     }
 
-    void cBMI088::VerifyAccChipID() {
-        uint8_t pRxData[2]; //< 读取两个字节,第一个字节是dummy data,第二个字节是chip id
 
-        ReadReg(BMI088_CS_ACC, ACC_CHIP_ID_ADDR, pRxData, 2); //< 读取加速度计chip id
-        tx_thread_sleep(1);
-        //< 如果chip id不等于预设值,则加速度计ID错误,初始化错误
-        if (pRxData[1] != ACC_CHIP_ID_VAL)
-        {
-            bmi088_selfTest.ACC_CHIP_ID_ERR = true;
-            bmi088_selfTest.INIT_ERR = true;
-        }
-        else if (pRxData[1] == ACC_CHIP_ID_VAL)
-        {
-            bmi088_selfTest.ACC_CHIP_ID_ERR = false;
-        }
-    }
-
-    void cBMI088::VerifyGyroChipID() {
-        uint8_t pRxData;                                                 //< 读取一个字节,chip id
-        ReadReg(BMI088_CS_GYRO, GYRO_CHIP_ID_ADDR, &pRxData, 1); //< 读取陀螺仪chip id
-        tx_thread_sleep(1);
-        //< 如果chip id不等于预设值,则陀螺仪ID错误,初始化错误
-        if (pRxData != GYRO_CHIP_ID_VAL)
-        {
-            bmi088_selfTest.GYRO_CHIP_ID_ERR = true;
-            bmi088_selfTest.INIT_ERR = true;
-        }
-        else if (pRxData == GYRO_CHIP_ID_VAL)
-        {
-            bmi088_selfTest.GYRO_CHIP_ID_ERR = false;
-        }
-    }
-
-    void cBMI088::VerifyAccData(){}
-
-    void cBMI088::VerifyGyroData(){}
-
-    void cBMI088::BMI088Config()
+    void cBMI088::ReadAccTemperature(float *temp) // 未完成
     {
-        tx_thread_sleep(10); //< 等待系统稳定
-        //< 加速度计初始化
-        //< 先软重启，清空所有寄存器
-        uint8_t pTxData;
-        pTxData = ACC_SOFTRESET_VAL;
-        bmi088->WriteReg(BMI088_CS_ACC, ACC_SOFTRESET_ADDR, &pTxData, 1);
-        tx_thread_sleep(100); //< 延时100ms,重启需要时间
-
-        //< 打开加速度计电源
-        pTxData = ACC_PWR_CTRL_ON;
-        bmi088->WriteReg(BMI088_CS_ACC, ACC_PWR_CTRL_ADDR, &pTxData, 1);
-        tx_thread_sleep(10); //< 延时10ms
-
-        //< 加速度计变成正常模式
-        pTxData = ACC_PWR_CONF_ACT;
-        bmi088->WriteReg(BMI088_CS_ACC, ACC_PWR_CONF_ADDR, &pTxData, 1);
-        tx_thread_sleep(10); //< 延时10ms
-
-        //< 测量范围
-        pTxData = ACC_RANGE_3G;
-        bmi088->WriteReg(BMI088_CS_ACC, ACC_RANGE_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0xAC;
-        bmi088->WriteReg(BMI088_CS_ACC, ACC_CONF_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x08;
-        bmi088->WriteReg(BMI088_CS_ACC, INT1_IO_CTRL_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x04;
-        bmi088->WriteReg(BMI088_CS_ACC, INT_MAP_DATA_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        /*-------------------------------------陀螺仪初始化-------------------------------------*/
-        //< 先软重启，清空所有寄存器
-        pTxData = GYRO_SOFTRESET_VAL;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_SOFTRESET_ADDR, &pTxData, 1);
-        tx_thread_sleep(100); //< 延时100ms,重启需要时间
-
-        pTxData = GYRO_RANGE_1000_DEG_S;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_RANGE_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x02;//GYRO_ODR_1000Hz_BANDWIDTH_116Hz | GYRO_LPM1_SUS;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_BANDWIDTH_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = GYRO_LPM1_NOR;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_LPM1_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x80;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_INT_CTRL_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x0C;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_INT3_INT4_IO_CONF_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-
-        pTxData = 0x01;
-        bmi088->WriteReg(BMI088_CS_GYRO, GYRO_INT3_INT4_IO_MAP_ADDR, &pTxData, 1);
-        tx_thread_sleep(5); //< 延时5ms
-    }
-
-
-    void cBMI088::SetTargetTemp(float temp)
-    {
-        // 限制温度范围，防止过热或者无效，不过目前这些值是随便给的，后续要根据实际情况调整
-        if (temp > 65.0f)
-        {
-            temp = 55.0f;
-        }
-        else if (temp < 40.0f)
-        {
-            temp = 40.0f;
-        }
-        TargetTemp = temp;
-    }
-
-    void cBMI088::ReadAccTemperature(float *temp) {
         uint8_t buf[TEMP_LEN + 1];
         ReadReg(BMI088_CS_ACC, TEMP_MSB_ADDR, buf, TEMP_LEN + 1);
         uint16_t temp_uint11 = (buf[0 + 1] << 3) + (buf[1 + 1] >> 5);
@@ -415,25 +452,6 @@ namespace BMI088
         }
     }
 
-    void cBMI088::TemperatureControl(float target_temp) {
-        //    debug_T_ref = target_temp;
-        //    debug_T_fdb = bmi088_data.acc_data.temperature;
 
-        TempFdbFilter.SetInput(bmi088_data.acc_data.temperature);
-        TempFdbFilter.Update();
-
-        TempPid.ref = target_temp;
-        TempPid.fdb = TempFdbFilter.GetResult();
-        TempPid.UpdateResult();
-
-        if (TempPid.result < 0)
-        {
-            PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, 0, TIM_CHANNEL_4);
-        }
-        else
-        {
-            PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, TempPid.result / 999, TIM_CHANNEL_4);
-        }
-    }
 }
 

@@ -77,7 +77,7 @@ void USER_USART5_RxHandler(UART_HandleTypeDef *huart,uint16_t Size)
 
             /* Memory 0 data update to remote_ctrl*/
             // tx_semaphore_put(&RemoterThreadSem);
-            memcpy(dr16->Dr16_Data.ReceiveBuffer, SBUS_MultiRx_Buf[0], DR16_DATA_SIZE);//TODO:不知道只写0有没有bug
+            memcpy(dr16->Dr16_Data.ReceiveBuffer, SBUS_MultiRx_Buf[0], DR16_DATA_SIZE);
 
 
         }
@@ -98,7 +98,7 @@ void USER_USART5_RxHandler(UART_HandleTypeDef *huart,uint16_t Size)
         {
             /* Memory 1 to data update to remote_ctrl*/
             // tx_semaphore_put(&RemoterThreadSem);
-            memcpy(dr16->Dr16_Data.ReceiveBuffer, SBUS_MultiRx_Buf[1], DR16_DATA_SIZE);//TODO:不知道只写0有没有bug
+            memcpy(dr16->Dr16_Data.ReceiveBuffer, SBUS_MultiRx_Buf[1], DR16_DATA_SIZE);
 
         }
 

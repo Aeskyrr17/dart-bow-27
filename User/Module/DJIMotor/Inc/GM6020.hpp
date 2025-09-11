@@ -1,11 +1,8 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
+#ifndef GM6020_HPP
+#define GM6020_HPP
 
-#ifndef RM26_GM6020_HPP
-#define RM26_GM6020_HPP
-
-#include "DJIMotor.hpp"
+#include "main.h"
+#include "GMMotor.hpp"
 
 /**
  * @class GM6020
@@ -14,7 +11,7 @@
  * 这个类实现了GM6020电机的控制方法，包括输出设置等。
  * GM6020电机通常用于精确的运动控制和高负载应用。
  */
-class GM6020 final: public DJIMotor
+class GM6020 : public GMMotor
 {
 public:
     /**
@@ -25,10 +22,13 @@ public:
     /**
      * @brief 构造函数，初始化GM6020电机控制类。
      */
-    virtual ~GM6020() = default;
+    ~GM6020();
+
+    // 电机数据转换因子
+    const static float RawPos2Rad;
+    const static float RawRpm2Rps;
 
     float Offset;
-
     /**
      * @brief 实现电机输出设置。
      * 根据当前的控制模式和PID反馈调整电机输出。
@@ -36,9 +36,7 @@ public:
      */
     void setOutput() override;
 
-    void BlockedCheck() override;
-
-    MotorStateTypedef AliveCheck() override;
+    void UpdateSensorData(uint8_t *buffer_ptr) override;
 };
 
-#endif //RM26_GM6020_HPP
+#endif // GM6020_HPP

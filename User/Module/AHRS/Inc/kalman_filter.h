@@ -28,14 +28,23 @@
 #include "math.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include "tx_api.h"
 
-#ifndef user_malloc
-#ifdef _CMSIS_OS_H
-#define user_malloc pvPortMalloc
-#else
-#define user_malloc malloc
-#endif
-#endif
+// #ifndef user_malloc
+// #ifdef _CMSIS_OS_H
+// #define user_malloc pvPortMalloc
+// #else
+// #define user_malloc malloc
+// #endif
+// #endif
+//由于H7的内存特性（DTCM），实现内存池来进行malloc
+extern TX_BYTE_POOL MathPool;
+static void* user_malloc(size_t size)
+{
+    void* tmp;
+    tx_byte_allocate(&MathPool, (VOID **)&tmp, size, TX_NO_WAIT);
+    return tmp;
+}
 
 // 若运算速度不够,可以使用q31代替f32,但是精度会降低
 #define mat arm_matrix_instance_f32

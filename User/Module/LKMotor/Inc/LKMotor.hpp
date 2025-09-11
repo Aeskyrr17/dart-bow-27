@@ -1,10 +1,19 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
+#ifndef LKMOTOR_HPP
+#define LKMOTOR_HPP
 
-#ifndef RM26_LKMOTOR_HPP
-#define RM26_LKMOTOR_HPP
+#include "pid.hpp"
+#include "main.h"
 
+/**
+ * @class LKMotor
+ * @brief 电机控制类，提供电机的基本控制功能。
+ *
+ * 该类实现了电机的各种控制模式，包括速度、位置和基于IMU的控制。
+ * 它还负责处理电机反馈数据和执行PID控制。
+ */
+#ifdef __cplusplus
+
+	
 class LKMotor
 {
 public:
@@ -27,7 +36,7 @@ public:
         int16_t speed_dps;     ///< 电机的转速，单位rpm
         int16_t given_current; ///< 给定的电机电流
         uint8_t temperate;     ///< 电机的温度
-
+        
         uint8_t torqueFdb;     ///< 电机的转矩反馈
 
         uint8_t encoderOffset; ///< 电机零点处的编码器偏移
@@ -88,7 +97,7 @@ public:
     float torqueSet; ///< 设定的目标转矩
 
     float offset;     ///< 电机的初始位置偏移
-
+    
     int16_t currentSet;  ///< 设定的电流输出
     uint16_t maxCurrent; ///< 最大电流限制
 
@@ -139,4 +148,6 @@ public:
     }
 };
 
-#endif //RM26_LKMOTOR_HPP
+
+#endif
+#endif // LKMOTOR_HPP

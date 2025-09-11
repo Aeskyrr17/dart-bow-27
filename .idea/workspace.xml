@@ -31,14 +31,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/debugServers/SEGGER_J_Link.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/debugServers/SEGGER_J_Link.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" beforeDir="false" afterPath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Inc/bsp.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Inc/bsp.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/DJIMotor.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/GM6020.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/GM6020.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/M2006.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/M3508.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/GM6020.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Src/GM6020.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/M2006.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/M3508.cpp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Inc/LK8016.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Inc/LK9025.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK8016.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK9025.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LKMotor.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceBooster.h" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceBooster.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceBooster.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceBooster.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,11 +79,11 @@
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_can.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_dwt.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Inc/bsp_flash.hpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -98,7 +115,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Aprojects/RM/Agithub_projects/RM26_H7/User/Task&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/opt/SEGGER/JLink_V722b/JLinkGDBServerCLExe&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -169,6 +186,8 @@
       <workItem from="1757379825858" duration="672000" />
       <workItem from="1757414792643" duration="1833000" />
       <workItem from="1757510302807" duration="6273000" />
+      <workItem from="1757584802199" duration="11415000" />
+      <workItem from="1757568669738" duration="1788000" />
     </task>
     <servers />
   </component>
@@ -200,6 +219,11 @@
           <url>file://$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c</url>
           <line>26</line>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/User/BSP/Inc/bsp.hpp</url>
+          <line>10</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -1,8 +1,8 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
-
 #include "GM6020.hpp"
+#include "bsp_can.hpp"
+
+const float GM6020::RawPos2Rad = 0.0007669903939f; // （7.6699039394282061485904379474597e-4）位置值转换为弧度的转换因子，编码器为十三位，2^13 = 8192, 2 * PI / 8192 (rad)，这样，当编码器的值增加或减少 1 时，它表示电机轴旋转了 2 * PI / 8192 (rad)
+const float GM6020::RawRpm2Rps = 0.1047197551196f; // 0.1047197551f;  // RPM 到弧度每秒的转换因子, 2 * PI / 60 (s)
 
 /**
  * @brief GM6020类的构造函数。
@@ -17,7 +17,7 @@ GM6020::GM6020()
     speedSet = 0;
     positionSet = 0;
     currentSet = 0;
-    maxCurrent = 15000; // 电机最大电流设定
+    maxCurrent = 25000; // 电机最大电压设定
 
     // 初始化电机反馈数据
     motorFeedback.speedFdb = 0;
@@ -40,8 +40,13 @@ GM6020::GM6020()
     positionPid.kd = 0.0;
     positionPid.maxOut = 25000;
     positionPid.maxIOut = 3;
+}
 
-    Offset = 0.0f;
+/**
+ * @brief GM6020类的析构函数。
+ */
+GM6020::~GM6020()
+{
 }
 
 /**
@@ -77,6 +82,11 @@ void GM6020::setOutput()
 
         this->currentSet = this->speedPid.result; // 根据速度PID结果设置电流
     }
+    // 其他控制模式下的电流设定逻辑同样待确定
+    else if (this->controlMode == POS_FOR_NO_SPD_MODE || this->controlMode == IMU_MODE)
+    {
+        this->currentSet = 0; // 具体控制逻辑未定义
+    }
     else
     {
         this->currentSet = 0; // 其他情况电流设定为0
@@ -89,24 +99,18 @@ void GM6020::setOutput()
         currentSet = -maxCurrent;
 }
 
-/**
- * @brief GM6020电机的存活检测函数。
- */
-GM6020::MotorStateTypedef GM6020::AliveCheck()
+void GM6020::UpdateSensorData(uint8_t *buffer_ptr)
 {
-    if (AliveFlag == Pre_AliveFlag)
-    {
-        MotorState = MOTOR_OFFLINE;
-    }
-    else
-    {
-        Pre_AliveFlag = AliveFlag;
-        MotorState = MOTOR_ONLINE;
-    }
-    return MotorState;
-}
+    motorFeedback.ecd = (uint16_t)(buffer_ptr[0] << 8 | buffer_ptr[1]);
+    motorFeedback.speed_rpm = (uint16_t)(buffer_ptr[2] << 8 | buffer_ptr[3]);
+    motorFeedback.currentFdb = (uint16_t)(buffer_ptr[4] << 8 | buffer_ptr[5]);
+    motorFeedback.temperatureFdb = (float)buffer_ptr[6];
 
-//TODO:堵转检测
-void GM6020::BlockedCheck()
-{
+    /* update last time speed and position -------------------------------------------*/
+    motorFeedback.lastPositionFdb = motorFeedback.positionFdb;
+    motorFeedback.lastSpeedFdb = motorFeedback.speedFdb;
+
+    /* update member variables in MotorFeedback --------------------------------------*/
+    motorFeedback.positionFdb = Math::LoopFloatConstrain((float)((motorFeedback.ecd - Offset) * RawPos2Rad), -Math::Pi, Math::Pi);
+    motorFeedback.speedFdb = motorFeedback.speed_rpm * RawRpm2Rps;
 }

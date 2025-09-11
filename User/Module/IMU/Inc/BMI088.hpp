@@ -211,7 +211,7 @@ class cBMI088: public cIMU
 
         void CalibrateIMU();
 
-        static void BMI088Config();
+        void BMI088Config();
         void SetTargetTemp(float temp);
         void TemperatureControl(float target_temp);
 
