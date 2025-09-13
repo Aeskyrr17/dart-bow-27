@@ -1,16 +1,14 @@
-#include "GM2006.hpp"
-#include "bsp_can.hpp"
-#include "main.h"
+//
+// Created by cosmosmount on 2025/8/30.
+//
 
-const float GM2006::RawPosToRadDiv36 = 0.00002130788978f;
-const float GM2006::RawRpmToRadpsDiv36 = 0.002908882087f;
-const float GM2006::PIDiv36 = 0.0872664826f;
+#include "M2006.hpp"
 
 /**
- * @brief GM3508类的构造函数。
+ * @brief M3508类的构造函数。
  * 初始化电机的控制模式、各种设定值和PID控制器。
  */
-GM2006::GM2006()
+M2006::M2006()
 {
     // 初始化为松开模式
     controlMode = RELAX_MODE;
@@ -45,17 +43,10 @@ GM2006::GM2006()
 }
 
 /**
- * @brief GM6020类的析构函数。
- */
-GM2006::~GM2006()
-{
-}
-
-/**
  * @brief 设置电机输出。
  * 根据当前控制模式，计算并设置电机的当前输出。
  */
-void GM2006::setOutput()
+void M2006::setOutput()
 {
     if (this->controlMode == SPD_MODE)
     {
@@ -80,11 +71,6 @@ void GM2006::setOutput()
 
         this->currentSet = this->speedPid.result; // 根据速度PID结果设置电流
     }
-    // 其他控制模式下的电流设定逻辑同样待确定
-    else if (this->controlMode == POS_FOR_NO_SPD_MODE || this->controlMode == IMU_MODE)
-    {
-        this->currentSet = 0; // 具体控制逻辑未定义
-    }
     else
     {
         this->currentSet = 0; // 其他情况电流设定为0
@@ -103,24 +89,24 @@ void GM2006::setOutput()
 }
 
 /**
- * @brief 更新电机传感器数据。
- * @param buffer_ptr 从CAN总线接收到的数据指针。
- * @todo 更具是否有减速箱，更新电机的位置和速度。
+ * @brief 检查电机是否在线。
  */
-void GM2006::UpdateSensorData(uint8_t *buffer_ptr)
+M2006::MotorStateTypedef M2006::AliveCheck()
 {
-    motorFeedback.ecd = (uint16_t)(buffer_ptr[0] << 8 | buffer_ptr[1]);
-    motorFeedback.speed_rpm = (uint16_t)(buffer_ptr[2] << 8 | buffer_ptr[3]);
-    motorFeedback.currentFdb = (uint16_t)(buffer_ptr[4] << 8 | buffer_ptr[5]);
-    motorFeedback.temperatureFdb = (float)buffer_ptr[6];
-
-    motorFeedback.lastSpeedFdb = motorFeedback.speedFdb;
-
-    LastRotorPosition = RotorPosition;
-    motorFeedback.lastPositionFdb = motorFeedback.positionFdb;
-    RotorPosition = motorFeedback.ecd * RawPosToRadDiv36 - PIDiv36;
-
-    motorFeedback.positionFdb += Math::LoopFloatConstrain((RotorPosition - LastRotorPosition), -PIDiv36, PIDiv36);
-    motorFeedback.speedFdb = motorFeedback.speed_rpm * RawRpmToRadpsDiv36;
+    if (AliveFlag == Pre_AliveFlag)
+    {
+        MotorState = MOTOR_OFFLINE;
+    }
+    else
+    {
+        Pre_AliveFlag = AliveFlag;
+        MotorState = MOTOR_ONLINE;
+    }
+    return MotorState;
 }
 
+//TODO:堵转检测
+void M2006::BlockedCheck()
+{
+
+}

@@ -1,14 +1,33 @@
 
 
-OpenDocument="main.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/main.c", Line=42
+
+Breakpoint=/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceMotor.cpp:153:9, State=BP_STATE_DISABLED
+OpenDocument="BMI088.hpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Module/IMU/Inc/BMI088.hpp", Line=178
+OpenDocument="stm32h7xx_hal_fdcan.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_fdcan.c", Line=2744
+OpenDocument="stm32h7xx_hal.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c", Line=323
+OpenDocument="QuaternionEKF.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Module/AHRS/Src/QuaternionEKF.c", Line=282
+OpenDocument="stm32h7xx_hal_spi.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c", Line=1206
+OpenDocument="ServiceMotor.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceMotor.cpp", Line=0
+OpenDocument="ux_device_cdc_acm.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/USBX/App/ux_device_cdc_acm.c", Line=179
+OpenDocument="ServiceIMU.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceIMU.cpp", Line=0
+OpenDocument="BMI088.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Module/IMU/Src/BMI088.cpp", Line=395
+OpenDocument="main.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/main.c", Line=57
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=0, w=300, h=1009, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
-OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1229, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x360
-OpenWindow="Functions", DockArea=LEFT, x=0, y=0, w=300, h=1009, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1255, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=1, w=300, h=763, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=729, h=439, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=300, h=240, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1228, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x360
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=729, h=458, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=2, w=729, h=100, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1256, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
 SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
-TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Source"], ColWidths=[1554;100;100;100;357]
+TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Class";"Source"], ColWidths=[1554;100;100;100;0;875]
 TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[100;105;105]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[100;105;259]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
 TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;374]
+TableHeader="Source Files", SortCol="Path", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[344;100;100;100;1015]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[187;212;100;100;115]
+WatchedExpression="bmi088", RefreshRate=2, Window=Watched Data 1
+WatchedExpression="DJIMotorhandler", RefreshRate=2, Window=Watched Data 1
+WatchedExpression="test_cur", RefreshRate=2, Window=Watched Data 1

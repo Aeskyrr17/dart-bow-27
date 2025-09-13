@@ -7,24 +7,23 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
-extern GMMotorHandler *GMMotorhandler;
-// extern LKMotorHandler *LKMotorhandler;
-
 TX_SEMAPHORE MotorCANRecvSem;
 
 TX_THREAD MotorThread;
 uint8_t MotorThreadStack[4096] = {0};
+DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
+
+int16_t test_cur = 0;
 
 void ServiceMotors::MotorRegister() {
     // //注册电机
-    LWheel.controlMode = GM3508::RELAX_MODE;
+    LWheel.controlMode = GM6020::RELAX_MODE;
     LWheel.setOutput();
-    GMMotorhandler->registerMotor(&LWheel, &hfdcan1, 0x201);
+    DJIMotorhandler->registerMotor(&LWheel, &hfdcan1, 0x205);
 
-    RWheel.controlMode = GM3508::RELAX_MODE;
+    RWheel.controlMode = M2006::RELAX_MODE;
     RWheel.setOutput();
-    GMMotorhandler->registerMotor(&RWheel, &hfdcan1, 0x202);
-
+    DJIMotorhandler->registerMotor(&RWheel, &hfdcan1, 0x202);
 }
 
 void ServiceMotors::AllMotorSetOutput()
@@ -35,8 +34,8 @@ void ServiceMotors::AllMotorSetOutput()
 
 void ServiceMotors::SetModeAndPidParam()
 {
-    LWheel.controlMode = GM3508::SPD_MODE;
-    RWheel.controlMode = GM3508::SPD_MODE;
+    LWheel.controlMode = GM6020::SPD_MODE;
+    RWheel.controlMode = M2006::SPD_MODE;
 
     // LWheel.speedPid.mode = PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral;
     // LWheel.speedPid.kp = 200.0f;
@@ -64,9 +63,6 @@ void ServiceMotors::SetModeAndPidParam()
 
     UNUSED(initial_input);
     ULONG time;
-
-    //can初始化
-    CAN_Init();
 
     //注册电机
     ServiceMotors serviceMotors;
@@ -116,7 +112,7 @@ void ServiceMotors::SetModeAndPidParam()
         // last_enable = motor_ctr.enable;
 
         //for test
-        serviceMotors.LWheel.speedSet = 0.5;
+        // serviceMotors.LWheel.speedSet = 0.5;
         serviceMotors.RWheel.speedSet = 1.0;
 
         // RxData1.cnt = 0;
@@ -125,11 +121,13 @@ void ServiceMotors::SetModeAndPidParam()
 
         //计算电流值
         serviceMotors.AllMotorSetOutput();
+        serviceMotors.LWheel.currentSet = test_cur;
+        // serviceMotors.RWheel.currentSet = 10;
 
         //TODO: 补全电机掉线处理或输出
-        if (tx_semaphore_get(&MotorCANRecvSem, 1)) {
-
-        }
+        // if (tx_semaphore_get(&MotorCANRecvSem, 1)) {
+        //
+        // }
 
         //TODO: 解析电机数据
             //在can回调中断中执行
@@ -152,7 +150,7 @@ void ServiceMotors::SetModeAndPidParam()
         // om_publish(link_topic, &link_msg, sizeof(link_msg), true, false);
 
         //发送控制指令给电机
-        GMMotorhandler->sendControlData();
+        DJIMotorhandler->sendControlData();
 
         //比较准确的执行时间为1ms，可能不需要
         uint8_t time_to_delay = tx_time_get() - time;
@@ -160,4 +158,49 @@ void ServiceMotors::SetModeAndPidParam()
             tx_thread_sleep(1 - time_to_delay);
         }
     }
+}
+
+/**
+ * @brief CAN接收中断回调函数，所有反馈在can上的数据会在这里根据ID进行分类并处理。
+ * @param hfdcan CAN句柄
+ * @note 该函数用于处理CAN接收中断，根据ID分类处理接收到的数据。但是这中方法可能会在回调里浪费时间，因为这里的处理是阻塞的。考虑是否需要将数据存储到一个缓冲区，然后在主循环中处理。
+ */
+
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+
+   FDCAN_RxHeaderTypeDef rx_header;
+   uint8_t rx_data[8];
+   HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data);
+    /*-------------------------------------------------大疆电机数据-------------------------------------------------*/
+    if (rx_header.Identifier >= 0x201 && rx_header.Identifier <= 0x208)
+    {
+        if (hfdcan == &hfdcan1)
+        {
+            DJIMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
+        }
+        else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+        {
+            DJIMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
+        }
+    }
+   /*--------------------------------------------------LK电机数据--------------------------------------------------*/
+   else if (rx_header.Identifier >= 0x140 && rx_header.Identifier <= 0x160)
+   {
+       if (hfdcan == &hfdcan1)
+       {
+           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+       }
+       else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+       {
+           // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+       }
+       else if (hfdcan == &hfdcan3) // 处理CAN3的数据
+       {
+           // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+       }
+   }
 }

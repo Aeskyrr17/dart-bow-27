@@ -1,18 +1,41 @@
-#ifndef GMMOTOR_HPP
-#define GMMOTOR_HPP
+//
+// Created by cosmosmount on 2025/8/30.
+//
+
+#ifndef RM26_DJIMOTOR_HPP
+#define RM26_DJIMOTOR_HPP
 
 #include "pid.hpp"
-#include "main.h"
+#include "math.hpp"
+#include "fdcan.h"
+
+enum GearBox
+{
+    GearBox_None = 0,  ///< 无减速箱
+    GearBox_M2006 = 1, ///< M2006减速箱
+    GearBox_M3508 = 2, ///< M3508减速箱
+    GearBox_XRoll = 3  ///< XRoll减速箱
+};
 
 /**
- * @class GMMotor
+ * @class DJIMotor
  * @brief 电机控制类，提供电机的基本控制功能。
  *
  * 该类实现了电机的各种控制模式，包括速度、位置和基于IMU的控制。
  * 它还负责处理电机反馈数据和执行PID控制。
  */
-class GMMotor
+class DJIMotor
 {
+private:
+    float P_MIN; ///< 位置最小值
+    float P_MAX; ///< 位置最大值
+
+    float V_MIN; ///< 速度最小值
+    float V_MAX; ///< 速度最大值
+
+    float T_MIN; ///< 扭矩最小值
+    float T_MAX; ///< 扭矩最大值
+
 public:
     /**
      * @brief 定义电机测量数据的结构体。
@@ -37,12 +60,41 @@ public:
      */
     enum MotorControlModeType
     {
-        RELAX_MODE = 0,          ///< 电机松开模式，所有输出均为0。
-        SPD_MODE = 1,            ///< 速度模式，控制电机速度。
-        POS_MODE = 2,            ///< 位置模式，控制电机到特定位置。
-        POS_FOR_NO_SPD_MODE = 3, ///< 无速度反馈下的位置模式。
-        IMU_MODE = 4,            ///< IMU模式，使用IMU反馈进行控制。
-        TOR_MODE = 5             ///< 扭矩模式
+        RELAX_MODE = 0,         ///< 电机松开模式，所有输出均为0。
+        SPD_MODE = 1,           ///< 速度模式，控制电机速度。
+        POS_MODE = 2,           ///< 位置模式，控制电机到特定位置。
+        POS_FOR_NO_SPD_MODE = 3 ///< 无速度反馈下的位置模式。
+    };
+
+    enum MotorStateTypedef
+    {
+        MOTOR_OFFLINE = 0,
+        MOTOR_ONLINE = 1
+    };
+
+    /* 位置值转换为弧度的转换因子，编码器为十三位，2^13-1 = 8191, 2*PI / 8191 (rad)，这样，当编码器的值增加或减少 1 时，它表示电机轴旋转了 2*PI / 8191 (rad) */
+    struct GearRatio_Pos2Rad
+    {
+        static constexpr float None = 0.0007669903939f;   /*!< 2Pi / 8191 */
+        static constexpr float M2006 = 0.00002130788978f; /*!< 2Pi / 8191 / 36 */
+        static constexpr float M3508 = 0.00003994074176f; /*!< 2Pi / 8191 / 3591 * 187 */
+        static constexpr float XRoll = 0.000048658315f;   /*!< 2Pi / 8191 / 268 * 17 */
+    };
+
+    struct GearRatio_Rpm2Rps
+    {
+        static constexpr float None = 0.1047197551196f; /*!< 2Pi / 60 (s) */
+        static constexpr float M2006 = 0.002908882087f; /*!< 2Pi / 60 / 36 */
+        static constexpr float M3508 = 0.005453242609f; /*!< 2Pi / 60 * 187 / 3591 */
+        static constexpr float XRoll = 0.006642670920f; /*!< 2Pi / 60 / 268 * 17 */
+    };
+
+    struct GearRatio_PI
+    {
+        static constexpr float None = Math::Pi;       /*!< PI */
+        static constexpr float M2006 = 0.0872664826f; /*!< PI / 36 */
+        static constexpr float M3508 = 0.1635972783f; /*!< PI / 3591 * 187 */
+        static constexpr float XRoll = 0.1992801276f; /*!< PI / 268 * 17 */
     };
 
     /**
@@ -55,15 +107,15 @@ public:
         int16_t last_ecd;      ///< 上次电机编码器的读数
         uint16_t ecd;          ///< 当前电机编码器的读数
         int16_t speed_rpm;     ///< 电机的转速，单位rpm
-        int16_t currentFdb;    ///< 电机电流反馈
+        float currentFdb;    ///< 电机电流反馈
         float speedFdb;        ///< 电机当前速度反馈, 单位rad/s
         float lastSpeedFdb;    ///< 上次记录的电机速度
         float positionFdb;     ///< 电机当前位置反馈
         float lastPositionFdb; ///< 上次记录的电机位置
         float temperatureFdb;  ///< 电机温度反馈
-        float torqueFdb;       ///< 电机扭矩反馈
     };
 
+    MotorStateTypedef MotorState;
     MotorControlModeType controlMode; ///< 当前电机控制模式
     MotorFeedBack motorFeedback;      ///< 处理后的电机的反馈数据
     uint16_t canId;                   ///< 电机的CAN通信ID
@@ -74,11 +126,19 @@ public:
 
     float speedSet;    ///< 设定的目标速度
     float positionSet; ///< 设定的目标位置，范围[-Π, Π]
-    float torqueSet;   ///< 设定的目标扭矩
 
     int16_t currentSet;  ///< 设定的电流输出
-    uint16_t maxCurrent; ///< 最大电流限制】
+    uint16_t maxCurrent; ///< 最大电流限制
 
+    uint32_t AliveFlag;
+    uint32_t Pre_AliveFlag;
+
+    bool Blocked;
+
+    GearBox gearBox;
+    GearRatio_PI gearRatio_PI;
+    GearRatio_Pos2Rad gearRatio_Pos2Rad;
+    GearRatio_Rpm2Rps gearRatio_Rpm2Rps;
 
     /**
      * @brief 纯虚函数，用于设置电机输出。
@@ -86,16 +146,14 @@ public:
      */
     virtual void setOutput() = 0;
 
-    /**
-     * @brief 更新电机传感器数据
-     * 该虚函数用于更新电机的传感器数据，包括电机的速度、位置、电流等信息，会在handler中通过多态调用。
-     */
-    virtual void UpdateSensorData(uint8_t *buffer_ptr) = 0;
+    virtual void BlockedCheck() = 0;
+
+    virtual MotorStateTypedef AliveCheck() = 0;
 
     /**
      * @brief 构造函数
      */
-    GMMotor()
+    DJIMotor()
     {
         controlMode = RELAX_MODE;
 
@@ -125,7 +183,9 @@ public:
         positionPid.kd = 0.0;
         positionPid.maxOut = 25000;
         positionPid.maxIOut = 3;
+
+        MotorState = MOTOR_OFFLINE;
     }
 };
 
-#endif // MOTOR_HPP
+#endif //RM26_DJIMOTOR_HPP

@@ -22,6 +22,10 @@ extern TX_THREAD IMUThread;
 extern uint8_t IMUThreadStack[4096];
 extern void IMUThreadFun(ULONG initial_input);
 
+extern TX_THREAD MotorThread;
+extern uint8_t MotorThreadStack[4096];
+extern void MotorThreadFun(ULONG initial_input);
+
 /*EKF pool*/
 TX_BYTE_POOL MathPool;
 UCHAR Math_PoolBuf[14336] = {0};
@@ -84,5 +88,7 @@ void ServiceBooster()
         IMUThreadFun, 0x1234, IMUThreadStack, sizeof(IMUThreadStack),
         3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-
+    tx_thread_create(&MotorThread, TX_NAME("MotorThread"),
+        MotorThreadFun, 0x1234, MotorThreadStack, sizeof(MotorThreadStack),
+        2, 2, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

@@ -1,8 +1,8 @@
 #include "bsp_can.hpp"
 
-#include "GMMotorhandler.hpp"
-#include "LKMotorhandler.hpp"
-#include "BoardConnectivity.hpp"
+// #include "GMMotorhandler.hpp"
+// #include "LKMotorhandler.hpp"
+// #include "BoardConnectivity.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -69,78 +69,4 @@ void CAN_Receive()
 {
 }
 
-/**
- * @brief CAN接收中断回调函数，所有反馈在can上的数据会在这里根据ID进行分类并处理。
- * @param hfdcan CAN句柄
- * @note 该函数用于处理CAN接收中断，根据ID分类处理接收到的数据。但是这中方法可能会在回调里浪费时间，因为这里的处理是阻塞的。考虑是否需要将数据存储到一个缓冲区，然后在主循环中处理。
- */
 
-
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-   
-   FDCAN_RxHeaderTypeDef rx_header;
-   uint8_t rx_data[8];
-   HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data);
-   /*-------------------------------------------------大疆电机数据-------------------------------------------------*/
-   if (rx_header.Identifier >= 0x201 && rx_header.Identifier <= 0x208)
-   {
-       if (hfdcan == &hfdcan1)
-       {
-           GMMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
-       }
-       else if (hfdcan == &hfdcan2) // 处理CAN2的数据
-       {
-           GMMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
-       }
-       else if (hfdcan == &hfdcan3) // 处理CAN2的数据
-       {
-           GMMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
-       }
-
-   }
-   /*--------------------------------------------------LK电机数据--------------------------------------------------*/
-   else if (rx_header.Identifier >= 0x140 && rx_header.Identifier <= 0x160)
-   {
-       if (hfdcan == &hfdcan1)
-       {
-           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-       }
-       else if (hfdcan == &hfdcan2) // 处理CAN2的数据
-       {
-           // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-       }
-       else if (hfdcan == &hfdcan3) // 处理CAN3的数据
-       {
-           // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-           LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-       }
-   }
-
-   /*--------------------------------------------------底盘控制板--------------------------------------------------*/
-   else if (rx_header.Identifier >= 0xB1 && rx_header.Identifier <= 0xB8) // 这里是底盘控制板，接受数据的范围是0xBx
-   {
-       BoardMsg msg;
-       msg.id = rx_header.Identifier;
-       msg.len = rx_header.DataLength;
-       memcpy(msg.data, rx_data, msg.len); // 将接收到的数据复制到msg.data中
-       if (hfdcan == &hfdcan1)
-       {
-           msg.type = BOARD_CONNECTIVITY_CAN_1;
-       }
-       else if (hfdcan == &hfdcan2)
-       {
-           msg.type = BOARD_CONNECTIVITY_CAN_2;
-       }
-       else if (hfdcan == &hfdcan3)
-       {
-           msg.type = BOARD_CONNECTIVITY_CAN_3;
-       }
-       BoardConnectivity::Instance()->Add2Memory(msg);
-   }
-   else // 未知的ID，需要进行错误处理
-   {
-       // Monitor::Instance()->Log_Messages(Monitor::ERROR, (uint8_t *)"CAN Unknown ID\r\n", USART_MODE_DMA);
-   }
-}
