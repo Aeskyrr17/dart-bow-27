@@ -22,8 +22,8 @@ void SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *data, uint8_t len, SPI_WORK_
             {
                 pTxData = data[i];
                 HAL_SPI_Transmit(hspi, &pTxData, 1, 1000);
-                while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX) // 等待发送完成，这样的设计可能不需要，也可能锁死，需要测试
-                    ;
+                // while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX) // 等待发送完成，这样的设计可能不需要，也可能锁死，需要测试
+                //     ;
             }
             break;
 
@@ -58,8 +58,8 @@ void SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint8_t len, SPI_WORK_
             for (int i = 0; i < len; i++)
             {
                 HAL_SPI_Receive(hspi, &pRxData, 1, 1000);               // 1000ms超时
-                while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_RX) // 等待接收完成，这样的设计可能不需要，也可能锁死，需要测试
-                    ;
+                // while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_RX) // 等待接收完成，这样的设计可能不需要，也可能锁死，需要测试
+                //     ;
                 pData[i] = pRxData;
             }
             break;

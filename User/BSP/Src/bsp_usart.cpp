@@ -98,24 +98,6 @@ static void USART_RxDMA_MultiBuffer_Init(UART_HandleTypeDef *huart, uint32_t *Ds
   __HAL_DMA_ENABLE(huart->hdmarx);
 }
 
-/**
- * @brief  USER USART5 Reception Event Callback.(SBUS remote_ctrl)
- * @param  huart UART handle
- * @param  Size  Number of data available in application reception buffer (indicates a position in
- *               reception buffer until which, data are available)
- * @retval None
- */
-
-/**
- * @brief  Reception Event Callback (Rx event notification called after use of advanced reception service).
- * @param  huart UART handle
- * @param  Size  Number of data available in application reception buffer (indicates a position in
- *               reception buffer until which, data are available)
- * @retval None
- */
-
-
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart == &huart7)
@@ -134,7 +116,5 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     //
     // Referee::Instance()->Referee_Rx_Queue.Push(USART1RxBuffer[0]);
     // HAL_UART_Receive_DMA(&huart1, USART1RxBuffer, 1);
-
   }
-
 }

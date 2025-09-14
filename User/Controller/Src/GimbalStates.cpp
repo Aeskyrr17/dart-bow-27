@@ -3,7 +3,6 @@
 //
 
 #include "GimbalStates.hpp"
-#include "../Inc/GimbalStates.hpp"
 
 namespace GimbalStates {
     void Relax::init() {

@@ -229,8 +229,8 @@ class cBMI088: public cIMU
 
     private:
         float Gyro_offset[3]; // 陀螺仪零飘
-        float Acc_coef;       // 加速度计灵敏度，标定完后要乘以9.805/gNorm
-        float gNorm;          // 重力加速度模长
+        float Acc_coef = IMU_ACCEL_3G_SEN;       // 加速度计灵敏度，标定完后要乘以9.805/gNorm
+        float gNorm = 9.805f;          // 重力加速度模长
         LowPassFilter_333Hz SensorFilter[6];
 
     };

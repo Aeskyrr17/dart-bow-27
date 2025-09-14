@@ -120,7 +120,7 @@ float Dr16::MapMouse(int16_t m)
 void Dr16::UpdateKeyStatus()
 {
     PreviousKeyState = CurrentKeyState;
-    CurrentKeyState = Dr16_Data._data.key;
+    // CurrentKeyState = Dr16_Data._data.key;
 }
 
 float Dr16::GetMouseX()

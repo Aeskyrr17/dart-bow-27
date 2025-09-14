@@ -79,8 +79,6 @@ include_directories(
         User/Module/SuperCap
         User/Service/Inc
         User/Task/Inc
-        User/Task/Controller/Inc
-        User/Task/Motor/Inc
         User/Utils/Inc
 )
 

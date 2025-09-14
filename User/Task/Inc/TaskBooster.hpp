@@ -1,6 +1,6 @@
 #ifndef TASKBOOSTER
 #define TASKBOOSTER
 
-extern "C" void TaskBooster();
+extern "C" void TaskBooster(void);
 
 #endif

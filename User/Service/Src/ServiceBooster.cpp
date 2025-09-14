@@ -22,6 +22,10 @@ extern TX_THREAD IMUThread;
 extern uint8_t IMUThreadStack[4096];
 extern void IMUThreadFun(ULONG initial_input);
 
+extern TX_THREAD IMUTempThread;
+extern uint8_t IMUTempThreadStack[2048];
+extern void IMUTempThreadFun(ULONG initial_input);
+
 extern TX_THREAD MotorThread;
 extern uint8_t MotorThreadStack[4096];
 extern void MotorThreadFun(ULONG initial_input);
@@ -29,6 +33,10 @@ extern void MotorThreadFun(ULONG initial_input);
 /*EKF pool*/
 TX_BYTE_POOL MathPool;
 UCHAR Math_PoolBuf[14336] = {0};
+
+/*OneMessage pool*/
+TX_BYTE_POOL MsgPool;
+UCHAR Msg_PoolBuf[4096] = {0};
 
 [[noreturn]] void my_thread_entry(ULONG thread_input)
 {
@@ -69,6 +77,12 @@ void ServiceBooster()
             Math_PoolBuf,
             sizeof(Math_PoolBuf));
 
+    tx_byte_pool_create(
+            &MsgPool,
+            (CHAR *) "Msg_Pool",
+            Msg_PoolBuf,
+            sizeof(Msg_PoolBuf));
+
     tx_semaphore_create(&my_semaphore1, TX_NAME("my_semaphore1"), 0);
 
     /* Create my_thread! */
@@ -87,6 +101,10 @@ void ServiceBooster()
     tx_thread_create(&IMUThread, TX_NAME("IMUThread"),
         IMUThreadFun, 0x1234, IMUThreadStack, sizeof(IMUThreadStack),
         3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
+        IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),
+        5, 5, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&MotorThread, TX_NAME("MotorThread"),
         MotorThreadFun, 0x1234, MotorThreadStack, sizeof(MotorThreadStack),

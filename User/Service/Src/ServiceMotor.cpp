@@ -24,6 +24,8 @@ void ServiceMotors::MotorRegister() {
     RWheel.controlMode = M2006::RELAX_MODE;
     RWheel.setOutput();
     DJIMotorhandler->registerMotor(&RWheel, &hfdcan1, 0x202);
+
+
 }
 
 void ServiceMotors::AllMotorSetOutput()

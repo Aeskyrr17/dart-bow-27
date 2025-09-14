@@ -24,7 +24,25 @@ struct dr16_data_t
     int16_t mouse_z : 16;
     uint8_t mouse_left : 8;
     uint8_t mouse_right : 8;
-    uint16_t key : 16;
+    __PACKED_STRUCT
+    {
+        uint16_t W : 1;
+        uint16_t S : 1;
+        uint16_t A : 1;
+        uint16_t D : 1;
+        uint16_t SHIFT : 1;
+        uint16_t CTRL : 1;
+        uint16_t Q : 1;
+        uint16_t E : 1;
+        uint16_t R : 1;
+        uint16_t F : 1;
+        uint16_t G : 1;
+        uint16_t Z : 1;
+        uint16_t X : 1;
+        uint16_t C : 1;
+        uint16_t V : 1;
+        uint16_t B : 1;
+    }key;
     uint16_t reserve : 16;
 } __attribute__((packed));
 
