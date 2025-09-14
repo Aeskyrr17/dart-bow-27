@@ -32,28 +32,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" beforeDir="false" afterPath="$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug.user" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_spi.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_spi.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Controller/Src/GimbalStates.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Controller/Src/GimbalStates.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Dr16.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceBooster.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceBooster.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Inc/TaskBooster.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Inc/TaskBooster.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskMotor.cpp" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

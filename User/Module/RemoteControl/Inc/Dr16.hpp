@@ -55,7 +55,7 @@ union dr16_packet_t
 class Dr16 : public RemoteControl
 {
 public:
-    dr16_packet_t Dr16_Data;
+    // dr16_packet_t Dr16_Data;
 
     void Init() override;
     void Update() override;
@@ -205,14 +205,14 @@ public:
 
     RC_SWITCH_STATE GetPreviousLeftSwStatus();
 
-    /**
-     * @brief 获取遥控器类的实例。
-     */
-    static Dr16 *Instance() ///< 遥控器类的实例。
-    {
-        static Dr16 instance;
-        return &instance;
-    }
+    // /**
+    //  * @brief 获取遥控器类的实例。
+    //  */
+    // static Dr16 *Instance() ///< 遥控器类的实例。
+    // {
+    //     static Dr16 instance;
+    //     return &instance;
+    // }
 
 private:
     RC_SWITCH_STATE Left_CurrentSw;  ///< 左侧开关当前状态。
