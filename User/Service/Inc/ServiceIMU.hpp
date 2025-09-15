@@ -6,6 +6,13 @@
 #define RM26_H7_SERVICEIMU_HPP
 
 #include "tx_api.h"
+#include "om.h"
+
+#include "bsp_dwt.hpp"
+#include "bsp_pwm.hpp"
+#include "AHRS.hpp"
+#include "BMI088.hpp"
+#include "QuaternionEKF.h"
 
 void BMI088ConfigWrap();
 

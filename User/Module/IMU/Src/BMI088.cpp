@@ -9,80 +9,9 @@
 #include "bsp_pwm.hpp"
 #include "bsp_dwt.hpp"
 
-extern BMI088::cBMI088 *bmi088;
-
-float check_start_time = 0;
-
 
 namespace BMI088
-
-
 {
-
-    void cBMI088::Init()
-    {
-
-	    // gNorm = 9.805f;
-     //
-     //    bmi088_selfTest.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
-     //    bmi088_selfTest.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
-     //    bmi088_selfTest.GYRO_CHIP_ID_ERR = true;      // 陀螺仪ID错误则为true
-     //    bmi088_selfTest.GYRO_DATA_ERR = true;         // 陀螺仪数据错误则为true
-     //    bmi088_selfTest.INIT_ERR = true;       // BMI088初始化错误则为true
-     //    bmi088_selfTest.CALIBRATE_ERR = false; // BMI088标定错误则为true
-     //    bmi088_selfTest.TEMP_CTRL_ERR = false; // BMI088温度控制错误则为true
-     //
-     //    Acc_coef = IMU_ACCEL_3G_SEN; // 标定完后要乘以9.805/gNorm，注意这里需要和配置的范围对应
-     //
-     //    BMI088Config(); //< 初始化配置
-     //
-     //    VerifyAccChipID();  //< 验证加速度计ID
-     //    VerifyGyroChipID(); //< 验证陀螺仪ID
-
-       //  TempPid.mode = PID_POSITION | PID_Integral_Limit | PID_Changing_Integral_Rate | PID_Derivative_On_Measurement; // 位置式PID，积分限幅
-       //  TempPid.kp = 650.0f;
-       //  TempPid.ki = 0.06f;
-       //  TempPid.kd = 0.1f;
-       //  TempPid.maxOut = 300.0f;
-       //  TempPid.maxIOut = 300.0f;
-       //  TempPid.ScalarA = 3.5f;
-       //  TempPid.ScalarB = 0.08f;
-       //
-       //  TempFdbFilter.SetTau(0.1f);       // 设置滤波时间常数
-       //  TempFdbFilter.SetUpdatePeriod(1); // 设置更新周期
-       //
-       //  SetTargetTemp(45.0f);                              //< 设置目标温度，一般为40度以上
-       //  PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
-       //
-       // float startTime; // 开始升温时间,用于确定是否超时
-       // startTime = DWT_GetTimeline_s();
-       // while (fabs(bmi088_data.acc_data.temperature - TargetTemp) > 5.1f)
-       // {
-       //     if (DWT_GetTimeline_s() - startTime > 1.00) // 超时则直接进入下一步
-       //     {
-       //         bmi088_selfTest.TEMP_CTRL_ERR = true;
-       //         startTime = DWT_GetTimeline_s();
-       //         break;
-       //     }
-       //     ReadAccTemperature(&bmi088_data.acc_data.temperature);
-       //     TemperatureControl(TargetTemp);
-       // }
-       // startTime = DWT_GetTimeline_s();
-       // while (DWT_GetTimeline_s() - startTime < 2.01)
-       // {
-       //     ReadAccTemperature(&bmi088_data.acc_data.temperature);
-       //     TemperatureControl(TargetTemp);
-       // }
-        // CalibrateIMU(); //< 标定IMU
-        //
-        // bmi088_selfTest.INIT_ERR = false; //< 初始化成功,错误标志设置为false
-    }
-
-    /* pre calibrate parameter to go here */
-    #define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
-    #define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
-    #define BMI088_PRE_CALI_ACC_Z_OFFSET 0.0f
-    #define BMI088_PRE_CALI_G_NORM 9.805f
     /**
      * @brief BMI088 acc gyro 标定
      * @note 标定后的数据存储在bmi088->bias和gNorm中,用于后续数据消噪和单位转换归一化
@@ -94,7 +23,7 @@ namespace BMI088
      *                   3. 如果标定过程运动幅度过大,重新标定
      *                   4.保存标定参数
      */
-    void cBMI088::CalibrateIMU()
+    void cBMI088::Calibrate()
     {
         Acc_coef = IMU_ACCEL_3G_SEN; // 标定完后要乘以9.805/gNorm，注意这里需要和配置的范围对应
 
@@ -112,7 +41,7 @@ namespace BMI088
         {  // 标定超时,直接使用预标定参数(如果有)
             if (DWT_GetTimeline_s() - startTime > 2.01)
             { // 两次都没有成功就切换标定模式,丢给下一个if处理,使用预标定参数
-                bmi088_selfTest.CALIBRATE_ERR = true;
+                self_test.CALIBRATE_ERR = true;
                 break;
             }
 
@@ -124,18 +53,18 @@ namespace BMI088
             // @todo : 这里也有获取bmi088数据的操作,后续与BMI088Acquire合并.注意标定时的工作模式是阻塞,且offset和acc_coef要初始化成0和1,标定完成后再设定为标定值
             for (uint16_t i = 0; i < CaliTimes; ++i) // 提前计算,优化
             {
-                ReadAccData(&bmi088_data.acc_data);
-                ReadGyroData(&bmi088_data.gyro_data);
+                ReadAccData(&acc_data);
+                ReadGyroData(&gyro_data);
 
-				gNormTemp = Math::Sqrt(bmi088_data.acc_data.x * bmi088_data.acc_data.x +
-                         bmi088_data.acc_data.y * bmi088_data.acc_data.y +
-                         bmi088_data.acc_data.z * bmi088_data.acc_data.z); // 计算加速度范数
+				gNormTemp = Math::Sqrt(acc_data.x * acc_data.x +
+                         acc_data.y * acc_data.y +
+                         acc_data.z * acc_data.z); // 计算加速度范数
 
                 gNorm += gNormTemp; // 计算范数并累加,最后除以calib times获取单次值
 
-                Gyro_offset[0] += bmi088_data.gyro_data.roll; // 因为标定时传感器静止,所以采集到的值就是漂移,累加当前值,最后除以calib times获得零飘
-                Gyro_offset[1] += bmi088_data.gyro_data.pitch;
-                Gyro_offset[2] += bmi088_data.gyro_data.yaw;
+                Gyro_offset[0] += gyro_data.roll; // 因为标定时传感器静止,所以采集到的值就是漂移,累加当前值,最后除以calib times获得零飘
+                Gyro_offset[1] += gyro_data.pitch;
+                Gyro_offset[2] += gyro_data.yaw;
 
                 if (i == 0) // 避免未定义的行为(else中)
                 {
@@ -143,27 +72,27 @@ namespace BMI088
                     gNormMax = gNormMin = gNormTemp;
 
                     // 初始化成当前的陀螺仪数据
-                    gyroMax[0] = bmi088_data.gyro_data.roll;
-                    gyroMax[1] = bmi088_data.gyro_data.pitch;
-                    gyroMax[2] = bmi088_data.gyro_data.yaw;
+                    gyroMax[0] = gyro_data.roll;
+                    gyroMax[1] = gyro_data.pitch;
+                    gyroMax[2] = gyro_data.yaw;
 
-                    gyroMin[0] = bmi088_data.gyro_data.roll;
-                    gyroMin[1] = bmi088_data.gyro_data.pitch;
-                    gyroMin[2] = bmi088_data.gyro_data.yaw;
+                    gyroMin[0] = gyro_data.roll;
+                    gyroMin[1] = gyro_data.pitch;
+                    gyroMin[2] = gyro_data.yaw;
                 }
                 else // 更新gNorm的Min Max和gyro的minmax
                 {
                     gNormMax = gNormMax > gNormTemp ? gNormMax : gNormTemp;
                     gNormMin = gNormMin < gNormTemp ? gNormMin : gNormTemp;
 
-                    gyroMax[0] = gyroMax[0] > bmi088_data.gyro_data.roll ? gyroMax[0] : bmi088_data.gyro_data.roll;
-                    gyroMin[0] = gyroMin[0] < bmi088_data.gyro_data.roll ? gyroMin[0] : bmi088_data.gyro_data.roll;
+                    gyroMax[0] = gyroMax[0] > gyro_data.roll ? gyroMax[0] : gyro_data.roll;
+                    gyroMin[0] = gyroMin[0] < gyro_data.roll ? gyroMin[0] : gyro_data.roll;
 
-                    gyroMax[1] = gyroMax[1] > bmi088_data.gyro_data.pitch ? gyroMax[1] : bmi088_data.gyro_data.pitch;
-                    gyroMin[1] = gyroMin[1] < bmi088_data.gyro_data.pitch ? gyroMin[1] : bmi088_data.gyro_data.pitch;
+                    gyroMax[1] = gyroMax[1] > gyro_data.pitch ? gyroMax[1] : gyro_data.pitch;
+                    gyroMin[1] = gyroMin[1] < gyro_data.pitch ? gyroMin[1] : gyro_data.pitch;
 
-                    gyroMax[2] = gyroMax[2] > bmi088_data.gyro_data.yaw ? gyroMax[2] : bmi088_data.gyro_data.yaw;
-                    gyroMin[2] = gyroMin[2] < bmi088_data.gyro_data.yaw ? gyroMin[2] : bmi088_data.gyro_data.yaw;
+                    gyroMax[2] = gyroMax[2] > gyro_data.yaw ? gyroMax[2] : gyro_data.yaw;
+                    gyroMin[2] = gyroMin[2] < gyro_data.yaw ? gyroMin[2] : gyro_data.yaw;
                 }
 
                 gNormDiff = gNormMax - gNormMin; // 最大值和最小值的差
@@ -190,7 +119,7 @@ namespace BMI088
                  fabsf(Gyro_offset[1]) > 0.01f ||
                  fabsf(Gyro_offset[2]) > 0.01f); // 满足条件说明标定环境不好
 
-        if (bmi088_selfTest.CALIBRATE_ERR == true) // 如果标定失败，使用预标定参数
+        if (self_test.CALIBRATE_ERR == true) // 如果标定失败，使用预标定参数
         {
             Gyro_offset[0] = BMI088_PRE_CALI_ACC_X_OFFSET;
             Gyro_offset[1] = BMI088_PRE_CALI_ACC_Y_OFFSET;
@@ -203,9 +132,9 @@ namespace BMI088
     void cBMI088::TemperatureControl(float target_temp)
     {
     //    debug_T_ref = target_temp;
-    //    debug_T_fdb = bmi088_data.acc_data.temperature;
+    //    debug_T_fdb = acc_data.temperature;
 
-        TempFdbFilter.SetInput(bmi088_data.acc_data.temperature);
+        TempFdbFilter.SetInput(acc_data.temperature);
         TempFdbFilter.Update();
 
         TempPid.ref = target_temp;
@@ -222,19 +151,19 @@ namespace BMI088
         }
     }
 
-    void cBMI088::SetTargetTemp(float temp)
-    {
-        // 限制温度范围，防止过热或者无效，不过目前这些值是随便给的，后续要根据实际情况调整
-        if (temp > 65.0f)
-        {
-            temp = 55.0f;
-        }
-        else if (temp < 40.0f)
-        {
-            temp = 40.0f;
-        }
-        TargetTemp = temp;
-    }
+    // void cBMI088::SetTargetTemp(float temp)
+    // {
+    //     // 限制温度范围，防止过热或者无效，不过目前这些值是随便给的，后续要根据实际情况调整
+    //     if (temp > 65.0f)
+    //     {
+    //         temp = 55.0f;
+    //     }
+    //     else if (temp < 40.0f)
+    //     {
+    //         temp = 40.0f;
+    //     }
+    //     TargetTemp = temp;
+    // }
 
     void cBMI088::VerifyAccChipID()
     {
@@ -245,12 +174,12 @@ namespace BMI088
         //< 如果chip id不等于预设值,则加速度计ID错误,初始化错误
         if (pRxData[1] != ACC_CHIP_ID_VAL)
         {
-            bmi088_selfTest.ACC_CHIP_ID_ERR = true;
-            bmi088_selfTest.INIT_ERR = true;
+            self_test.ACC_CHIP_ID_ERR = true;
+            self_test.INIT_ERR = true;
         }
         else if (pRxData[1] == ACC_CHIP_ID_VAL)
         {
-            bmi088_selfTest.ACC_CHIP_ID_ERR = false;
+            self_test.ACC_CHIP_ID_ERR = false;
         }
     }
 
@@ -262,12 +191,12 @@ namespace BMI088
         //< 如果chip id不等于预设值,则陀螺仪ID错误,初始化错误
         if (pRxData != GYRO_CHIP_ID_VAL)
         {
-            bmi088_selfTest.GYRO_CHIP_ID_ERR = true;
-            bmi088_selfTest.INIT_ERR = true;
+            self_test.GYRO_CHIP_ID_ERR = true;
+            self_test.INIT_ERR = true;
         }
         else if (pRxData == GYRO_CHIP_ID_VAL)
         {
-            bmi088_selfTest.GYRO_CHIP_ID_ERR = false;
+            self_test.GYRO_CHIP_ID_ERR = false;
         }
     }
 
@@ -288,7 +217,7 @@ namespace BMI088
         HAL_SPI_Transmit(&BMI088_SPI, data, len, 1000);   //< 发送数据
 
         // 理论上，这里不需要延时，但是如果数据出现问题，请尝试增加延时
-        if (bmi088_selfTest.INIT_ERR == true)
+        if (self_test.INIT_ERR == true)
         {
             DWT_Delay(0.001);
         }
@@ -318,8 +247,7 @@ namespace BMI088
             HAL_GPIO_WritePin(BMI088_GYRO_GPIOx, BMI088_GYRO_GPIOp, GPIO_PIN_SET);
     }
 
-
-    void cBMI088::BMI088Config()
+    void cBMI088::Config()
     {
         tx_thread_sleep(10); //< 等待系统稳定
         //< 加速度计初始化
@@ -435,18 +363,6 @@ namespace BMI088
         }
         *temp = temp_int11 * TEMP_UNIT + TEMP_BIAS;
     }
-
-    void cBMI088::Update()
-    {
-        if (bmi088_selfTest.INIT_ERR == false) // 如果初始化成功则更新数据
-        {
-            ReadAccData(&bmi088_data.acc_data);
-            ReadGyroData(&bmi088_data.gyro_data);
-            ReadAccTemperature(&bmi088_data.acc_data.temperature);
-            TemperatureControl(TargetTemp);
-        }
-    }
-
 
 }
 

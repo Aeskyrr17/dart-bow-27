@@ -31,8 +31,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="fix dr16 bug">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Controller/Inc/ChassisStates.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Controller/Inc/GimbalStates.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Controller/Inc/ShooterStates.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Controller/Inc/state.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Controller/Src/GimbalStates.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceIMU.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,18 +140,18 @@
       <recent name="$PROJECT_DIR$/User/Service/Inc" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.OneMessage">
+  <component name="RunManager" selected="CMake Application.RM26_H7.elf">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="OneMessage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="OneMessage" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="RM26_H7.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="RM26_H7.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RM26_H7" RUN_TARGET_NAME="RM26_H7.elf">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -185,7 +198,7 @@
       <workItem from="1757902710486" duration="120000" />
       <workItem from="1757902964209" duration="9210000" />
       <workItem from="1757914502409" duration="370000" />
-      <workItem from="1757915193143" duration="4093000" />
+      <workItem from="1757925083020" duration="6439000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />
@@ -241,6 +254,10 @@
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp</url>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp</url>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

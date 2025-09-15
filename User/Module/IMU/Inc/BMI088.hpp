@@ -176,11 +176,17 @@ enum BMI088_SENSOR
 #define GYRO_SELF_TEST_ADDR 0x3C
 #define GYRO_SELF_TEST_ON 0x01
 
+/* pre calibrate parameter to go here */
+#define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
+#define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
+#define BMI088_PRE_CALI_ACC_Z_OFFSET 0.0f
+#define BMI088_PRE_CALI_G_NORM 9.805f
+
 class cBMI088: public cIMU
 {
     public:
-        imu_error_t bmi088_selfTest; // BMI088错误结构体
-        bmi088_data_t bmi088_data;   // BMI088数据结构体
+        // imu_error_t bmi088_selfTest; // BMI088错误结构体
+        // bmi088_data_t bmi088_data;   // BMI088数据结构体
         /**
          * @brief 从寄存器读取数据
          * @param cs 片选
@@ -199,31 +205,25 @@ class cBMI088: public cIMU
          */
         void WriteReg(enum BMI088_SENSOR cs, uint8_t addr, uint8_t *data, uint8_t len);
 
+        void Config() override;
+        void Calibrate() override;
+
         void ReadAccData(acc_data_t *data) override;
-        void ReadGyroData(gyro_data_t *data) override;
         void ReadAccTemperature(float *temp) override;
-        void Update() override;
-        void Init() override;
+        void ReadGyroData(gyro_data_t *data) override;
+
         void VerifyAccChipID() override;
         void VerifyGyroChipID() override;
         void VerifyAccData() override;
         void VerifyGyroData() override;
 
-        void CalibrateIMU();
+        void TemperatureControl(float target_temp) override;
 
-        void BMI088Config();
-        void SetTargetTemp(float temp);
-        void TemperatureControl(float target_temp);
-
-        static cBMI088 *Instance()
-        {
-            static cBMI088 instance;
-            return &instance;
-        }
-
-        FirstOrderFilter TempFdbFilter;
-        PID TempPid;
-        float TargetTemp;
+        // static cBMI088 *Instance()
+        // {
+        //     static cBMI088 instance;
+        //     return &instance;
+        // }
 
 
 

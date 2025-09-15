@@ -5,6 +5,11 @@
 #ifndef RM26_H7_IMU_HPP
 #define RM26_H7_IMU_HPP
 
+#include "pid.hpp"
+#include "filter.hpp"
+
+using namespace Filter;
+
 /**
  * @struct acc_data_t
  * @brief 加速度计数据结构体
@@ -67,23 +72,25 @@ typedef struct imu_error_t
 class cIMU
 {
 public:
+    acc_data_t acc_data;
+    gyro_data_t gyro_data;
+    imu_error_t self_test;
+
+    PID TempPid;
+    float TargetTemp;
+    FirstOrderFilter TempFdbFilter;
+
+
     virtual ~cIMU() = default;
 
-    /*Config IMU*/
-    // virtual void Config() = 0;
-    // /*Read raw acceleration data from imu*/
-    // virtual void UpdateAccel() = 0;
+    // virtual void Init() = 0;
     //
-    // /*Read raw gyroscope data from imu*/
-    // virtual void UpdateGyro() = 0;
-    //
-    // /*Read temperature data from imu(optional)*/
-    // virtual void UpdateTem() = 0;
+    // /*Read all data*/
+    // virtual void Update() = 0;
 
-    virtual void Init() = 0;
+    virtual void Config() = 0;
 
-    /*Read all data*/
-    virtual void Update() = 0;
+    virtual void Calibrate() = 0;
 
     /**
      * @brief 读取加速度计数据
@@ -114,6 +121,8 @@ public:
      * 若不正确则设置错误标志
      */
     virtual void VerifyGyroChipID() = 0;
+
+    virtual void TemperatureControl(float target_temp) = 0;
 
     /**
      * @brief 验证加速度计数据
