@@ -31,23 +31,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="fix dr16 bug">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug.user" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/kalman_filter.c" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Src/kalman_filter.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/RemoteControl.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/RemoteControl.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/VT03.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/VT03.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,13 +127,18 @@
       <recent name="$PROJECT_DIR$/User/Service/Inc" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.RM26_H7.elf">
+  <component name="RunManager" selected="CMake Application.OneMessage">
     <configuration name="OneMessage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="OneMessage" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="RM26_H7.elf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="RM26_H7.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RM26_H7" RUN_TARGET_NAME="RM26_H7.elf">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -195,6 +185,7 @@
       <workItem from="1757902710486" duration="120000" />
       <workItem from="1757902964209" duration="9210000" />
       <workItem from="1757914502409" duration="370000" />
+      <workItem from="1757915193143" duration="4093000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />
