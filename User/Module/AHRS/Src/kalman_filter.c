@@ -132,6 +132,15 @@ uint16_t sizeof_float, sizeof_double;
 
 static void H_K_R_Adjustment(KalmanFilter_t *kf);
 
+//由于H7的内存特性（DTCM），实现内存池来进行malloc
+extern TX_BYTE_POOL MathPool;
+static void* user_malloc(size_t size)
+{
+    void* tmp;
+    tx_byte_allocate(&MathPool, (VOID **)&tmp, size, TX_NO_WAIT);
+    return tmp;
+}
+
 /**
  * @brief 初始化矩阵维度信息并为矩阵分配空间
  *

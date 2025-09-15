@@ -30,11 +30,24 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
+    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="fix dr16 bug">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug.user" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/AHRS.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Src/AHRS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/kalman_filter.c" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/AHRS/Src/kalman_filter.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/Dr16.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Src/Dr16.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/RemoteControl.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/RemoteControl.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/VT03.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Inc/VT03.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/RemoteControl/Src/VT03.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceRemoter.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceRemoter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskGimbal.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,14 +153,9 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <list>
-      <item itemvalue="CMake Application.RM26_H7.elf" />
       <item itemvalue="CMake Application.OneMessage" />
+      <item itemvalue="CMake Application.RM26_H7.elf" />
     </list>
   </component>
   <component name="TaskManager">
@@ -184,7 +192,19 @@
       <workItem from="1757762359805" duration="9740000" />
       <workItem from="1757819621129" duration="20195000" />
       <workItem from="1757850957529" duration="7021000" />
+      <workItem from="1757902710486" duration="120000" />
+      <workItem from="1757902964209" duration="9210000" />
+      <workItem from="1757914502409" duration="370000" />
     </task>
+    <task id="LOCAL-00001" summary="fix dr16 bug">
+      <option name="closed" value="true" />
+      <created>1757863141617</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1757863141618</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -194,6 +214,21 @@
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="fix dr16 bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix dr16 bug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

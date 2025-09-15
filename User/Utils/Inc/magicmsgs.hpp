@@ -8,12 +8,30 @@
 #include "Dr16.hpp"
 #include "VT03.hpp"
 
+typedef enum {
+    Relax = 1,
+    Spin,
+    Normal,
+    R2N,
+    N2R,
+    N2S,
+    S2N
+}CTRL_STATE;
+
+typedef enum {
+    Closed = 1,
+    Warm,
+    Fire
+}SHOOT_STATE;
+
 /**
- * @brief Dr16遥控器消息结构
+ * @brief 遥控器消息结构
  */
-struct msg_dr16_t {
-    Dr16::RC_SWITCH_STATE left_sw;   ///< 左侧开关状态
-    Dr16::RC_SWITCH_STATE right_sw;  ///< 右侧开关状态
+struct msg_remoter_t {
+    CTRL_STATE ctrl_sw;             ///< Dr16左侧开关状态，VT03中间档位状态
+    SHOOT_STATE shoot_sw;           ///< Dr16右侧开关状态，VT03拨轮状态
+    CTRL_STATE last_ctrl_sw;             ///< Dr16左侧开关状态，VT03中间档位状态
+    SHOOT_STATE last_shoot_sw;           ///< Dr16右侧开关状态，VT03拨轮状态
     float left_x;                  ///< 左侧摇杆X轴值
     float left_y;                  ///< 左侧摇杆Y轴值
     float right_x;                 ///< 右侧摇杆X轴值
@@ -42,23 +60,6 @@ struct msg_dr16_t {
          uint16_t V : 1;
          uint16_t B : 1;
     }key;
-    bool offline;
-};
-
-/**
- * @brief VT03图传遥控器消息结构
- */
-struct msg_vt03_t {
-    VT03::MODE_SW_STATE mode_sw;
-    float left_x;                  ///< 左侧摇杆X轴值
-    float left_y;                  ///< 左侧摇杆Y轴值
-    float right_x;                 ///< 右侧摇杆X轴值
-    float right_y;                 ///< 右侧摇杆Y轴值
-    float mouse_x;                 ///< 鼠标X轴值
-    float mouse_y;                 ///< 鼠标Y轴值
-    float mouse_z;                 ///< 鼠标滚轮值
-    bool mouse_left;               ///< 鼠标左键状态
-    bool mouse_right;              ///< 鼠标右键状态
     __PACKED_STRUCT
     {
         uint16_t W : 1;
@@ -77,16 +78,22 @@ struct msg_vt03_t {
         uint16_t C : 1;
         uint16_t V : 1;
         uint16_t B : 1;
-    }key;
+    }last_key;
+    bool offline;
 };
 
 /**
  * @brief AHRS消息结构
  */
-struct msg_ahrs_t {
+struct msg_ins_t {
+    float quaternion[4]; ///< 四元数
     float roll;   ///< 横滚角
     float pitch;  ///< 俯仰角
     float yaw;    ///< 偏航角
+    float total_yaw; ///< 偏航总角度
+    float gyro_r; ///< roll角速度
+    float gyro_p; ///< pitch角速度
+    float gyro_y; ///< yaw角速度
 };
 
 /**

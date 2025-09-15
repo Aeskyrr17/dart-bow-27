@@ -9,12 +9,11 @@ float debug_Roll = 0.0f;
 
 using namespace BMI088;
 
-AHRS::attitude_t *AHRS::INS_Init(void)
-{
+void AHRS::INS_Init(void) {
     if (!INS.init)
         INS.init = 1;
     else
-        return (attitude_t *)&INS.Gyro;
+        return;
 
     IMU_Param.scale[X] = 1;
     IMU_Param.scale[Y] = 1;
@@ -30,10 +29,6 @@ AHRS::attitude_t *AHRS::INS_Init(void)
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
     DWT_GetDeltaT(&INS_DWT_Count);
-
-    // Monitor::Instance()->Log_Messages(Monitor::INFO, (uint8_t *)("AHRS Init Success!\r\n"));
-
-    return (attitude_t *)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 
 void AHRS::AHRS_Update()
@@ -44,52 +39,47 @@ void AHRS::AHRS_Update()
     dt = DWT_GetDeltaT(&INS_DWT_Count);
     t += dt;
 
-    // ins update
-    if ((count % 1) == 0 && cBMI088::Instance()->bmi088_selfTest.INIT_ERR == false)
+    INS.Accel[X] = cBMI088::Instance()->bmi088_data.acc_data.x;
+    INS.Accel[Y] = cBMI088::Instance()->bmi088_data.acc_data.y;
+    INS.Accel[Z] = cBMI088::Instance()->bmi088_data.acc_data.z;
+    INS.Gyro[X] = cBMI088::Instance()->bmi088_data.gyro_data.roll;
+    INS.Gyro[Y] = cBMI088::Instance()->bmi088_data.gyro_data.pitch;
+    INS.Gyro[Z] = cBMI088::Instance()->bmi088_data.gyro_data.yaw;
+
+    // 通过零速检测尝试修正陀螺仪零漂
+    if (fabs(INS.Accel[X]) <= 0.1f && fabs(INS.Accel[Y]) <= 0.1f && fabs(INS.Accel[Z] - 9.80f) <= 0.1f &&
+        fabs(INS.Gyro[X]) <= 0.01f && fabs(INS.Gyro[Y]) <= 0.01f && fabs(INS.Gyro[Z]) <= 0.01f)
     {
-
-        INS.Accel[0] = cBMI088::Instance()->bmi088_data.acc_data.x;
-        INS.Accel[Y] = cBMI088::Instance()->bmi088_data.acc_data.y;
-        INS.Accel[Z] = cBMI088::Instance()->bmi088_data.acc_data.z;
-        INS.Gyro[X] = cBMI088::Instance()->bmi088_data.gyro_data.roll;
-        INS.Gyro[Y] = cBMI088::Instance()->bmi088_data.gyro_data.pitch;
-        INS.Gyro[Z] = cBMI088::Instance()->bmi088_data.gyro_data.yaw;
-
-        // 通过零速检测尝试修正陀螺仪零漂
-        if (fabs(INS.Accel[X]) <= 0.1f && fabs(INS.Accel[Y]) <= 0.1f && fabs(INS.Accel[Z] - 9.80f) <= 0.1f &&
-            fabs(INS.Gyro[X]) <= 0.01f && fabs(INS.Gyro[Y]) <= 0.01f && fabs(INS.Gyro[Z]) <= 0.01f)
-        {
-            INS.Gyro[Z] = 0;
-        }
-
-        // 核心函数,EKF更新四元数
-        IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
-
-        memcpy(INS.q, QEKF_INS.q, sizeof(QEKF_INS.q));
-
-        // 机体系基向量转换到导航坐标系，本例选取惯性系为导航系
-        BodyFrameToEarthFrame(xb, INS.xn, INS.q);
-        BodyFrameToEarthFrame(yb, INS.yn, INS.q);
-        BodyFrameToEarthFrame(zb, INS.zn, INS.q);
-
-        // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
-        float gravity_b[3];
-        EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
-        for (uint8_t i = 0; i < 3; ++i) // 同样过一个低通滤波
-        {
-            INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
-        }
-        BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
-
-        INS.Yaw = QEKF_INS.Yaw;
-        INS.Pitch = QEKF_INS.Pitch;
-        INS.Roll = QEKF_INS.Roll;
-        INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
-
-        debug_Yaw = INS.Yaw;
-        debug_Pitch = INS.Pitch;
-        debug_Roll = INS.Roll;
+        INS.Gyro[Z] = 0;
     }
+
+    // 核心函数,EKF更新四元数
+    IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
+
+    memcpy(INS.q, QEKF_INS.q, sizeof(QEKF_INS.q));
+
+    // 机体系基向量转换到导航坐标系，本例选取惯性系为导航系
+    BodyFrameToEarthFrame(xb, INS.xn, INS.q);
+    BodyFrameToEarthFrame(yb, INS.yn, INS.q);
+    BodyFrameToEarthFrame(zb, INS.zn, INS.q);
+
+    // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
+    float gravity_b[3];
+    EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
+    for (uint8_t i = 0; i < 3; ++i) // 同样过一个低通滤波
+    {
+        INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
+    }
+    BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
+
+    INS.Yaw = QEKF_INS.Yaw;
+    INS.Pitch = QEKF_INS.Pitch;
+    INS.Roll = QEKF_INS.Roll;
+    INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
+
+    debug_Yaw = INS.Yaw;
+    debug_Pitch = INS.Pitch;
+    debug_Roll = INS.Roll;
 }
 
 void AHRS::QuaternionUpdate(float *q, float gx, float gy, float gz, float dt)

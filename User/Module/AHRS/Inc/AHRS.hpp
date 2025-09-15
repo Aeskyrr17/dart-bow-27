@@ -13,15 +13,16 @@
 #include "string.h"
 // #include "Monitor.hpp"
 
-#define X 0
-#define Y 1
-#define Z 2
 
 #define INS_TASK_PERIOD 1 // ms
 
 class AHRS
 {
 public:
+    static constexpr int X = 0;
+    static constexpr int Y = 1;
+    static constexpr int Z = 2;
+
     AHRS()
     {
         INS_DWT_Count = 0;
@@ -87,7 +88,7 @@ public:
         float Roll;
     } IMU_Param_t;
 
-    attitude_t *INS_Init(void);
+    void INS_Init(void);
 
     INS_t INS;
 

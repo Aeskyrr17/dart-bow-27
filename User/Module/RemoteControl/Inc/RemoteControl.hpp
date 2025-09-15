@@ -4,35 +4,7 @@
 #include "bsp_usart.hpp"
 #include "bsp_dwt.hpp"
 
-/**
- * @def RC_CH_VALUE_MIN
- * @brief 遥控器通道值的最小值
- */
-#define RC_CH_VALUE_MIN 364
 
-/**
- * @def RC_CH_VALUE_OFFSET
- * @brief 遥控器通道值的中间值
- */
-#define RC_CH_VALUE_OFFSET 1024
-
-/**
- * @def RC_CH_VALUE_MAX
- * @brief 遥控器通道值的最大值
- */
-#define RC_CH_VALUE_MAX 1684
-
-/**
- * @def RC_CH_OFFSET_MAX
- * @brief 遥控器通道最大偏移值
- */
-#define RC_CH_OFFSET_MAX 660
-
-/**
- * @def MOUSE_OFFSET_MAX
- * @brief 鼠标最大偏移值
- */
-#define MOUSE_OFFSET_MAX 32767
 
 class RemoteControl
 {

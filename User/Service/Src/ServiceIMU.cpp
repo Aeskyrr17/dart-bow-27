@@ -6,6 +6,8 @@
 #include "bsp_pwm.hpp"
 #include "ServiceIMU.hpp"
 #include "AHRS.hpp"
+#include "om.h"
+#include "magicmsgs.hpp"
 
 
 using namespace BMI088;
@@ -27,7 +29,8 @@ ULONG IMU_time;
     IMU_time = tx_time_get();
 
     /* INS Topic */
-    // om_topic_t *ins_topic = om_config_topic(nullptr, "CA", "INS", sizeof(Msg_INS_t));
+    om_topic_t *ins_topic = om_config_topic(nullptr, "ca", "ins", sizeof(msg_ins_t));
+    msg_ins_t msg_ins{};
 
     bmi088->bmi088_selfTest.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
     bmi088->bmi088_selfTest.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
@@ -48,7 +51,6 @@ ULONG IMU_time;
     tx_thread_sleep(2000);
 
     bmi088->CalibrateIMU(); //< 标定IMU
-
     bmi088->bmi088_selfTest.INIT_ERR = false;
 
     ahrs->INS_Init();
@@ -58,16 +60,25 @@ ULONG IMU_time;
         if (!bmi088->bmi088_selfTest.INIT_ERR) {
             bmi088->ReadAccData(&bmi088->bmi088_data.acc_data);
             bmi088->ReadGyroData(&bmi088->bmi088_data.gyro_data);
+            ahrs->AHRS_Update();
         }
-        ahrs->AHRS_Update();
 
         tx_semaphore_put(&IMUThreadSem);
+
+        msg_ins.yaw = ahrs->INS.Yaw;
+        msg_ins.pitch = ahrs->INS.Pitch;
+        msg_ins.roll = ahrs->INS.Roll;
+        msg_ins.total_yaw = ahrs->INS.YawTotalAngle;
+        msg_ins.gyro_r = ahrs->INS.Gyro[0];
+        msg_ins.gyro_p = ahrs->INS.Gyro[1];
+        msg_ins.gyro_y = ahrs->INS.Gyro[2];
+
+        om_publish(ins_topic, &msg_ins, sizeof(msg_ins), true, false);
 
         uint8_t time_to_delay = tx_time_get() - IMU_time;
         if (time_to_delay < 1) {
             tx_thread_sleep(1 - time_to_delay);
         }
-        // om_publish(ins_topic, &msg_ins, sizeof(msg_ins), true, false);
     }
 }
 

@@ -7,7 +7,6 @@ TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[2048] = {0};
 TX_SEMAPHORE RemoterThreadSem;
 
-// __attribute__((section(".RAM_D3"))) uint8_t data_rx[32];
 // 数组在 D3 RAM
 __attribute__((section(".RAM_D3"))) uint8_t data_rx[DR16_DATA_SIZE];
 
@@ -20,8 +19,8 @@ inline dr16_data_t& Dr16_Data()
     UNUSED(initial_input);
 
     /* Remoter Topic */
-    om_topic_t *remoter_topic = om_config_topic(nullptr, "ca", "remoter", sizeof(msg_dr16_t));
-    msg_dr16_t msg_remoter{};
+    om_topic_t *remoter_topic = om_config_topic(nullptr, "ca", "remoter", sizeof(msg_remoter_t));
+    msg_remoter_t msg_remoter{};
     HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
     for (;;) {
         msg_remoter.offline = false;
@@ -35,8 +34,21 @@ inline dr16_data_t& Dr16_Data()
             HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
         }
         // 开关
-        msg_remoter.left_sw  = static_cast<Dr16::RC_SWITCH_STATE>(Dr16_Data().s1);
-        msg_remoter.right_sw = static_cast<Dr16::RC_SWITCH_STATE>(Dr16_Data().s2);
+        msg_remoter.ctrl_sw  = static_cast<CTRL_STATE>(Dr16_Data().s1);
+        msg_remoter.shoot_sw = static_cast<SHOOT_STATE>(Dr16_Data().s2);
+
+        if (msg_remoter.last_ctrl_sw == CTRL_STATE::Relax && msg_remoter.ctrl_sw == CTRL_STATE::Normal) {
+            msg_remoter.ctrl_sw = CTRL_STATE::R2N;
+        }
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Relax) {
+            msg_remoter.ctrl_sw = CTRL_STATE::N2R;
+        }
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Spin) {
+            msg_remoter.ctrl_sw = CTRL_STATE::N2S;
+        }
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Spin && msg_remoter.ctrl_sw == CTRL_STATE::Normal) {
+            msg_remoter.ctrl_sw = CTRL_STATE::S2N;
+        }
 
         // 摇杆 11 位 -> float [-1,1]
         msg_remoter.right_x  = (static_cast<float>(Dr16_Data().ch_0) - RC_CH_VALUE_OFFSET) / RC_CH_OFFSET_MAX;
@@ -53,8 +65,9 @@ inline dr16_data_t& Dr16_Data()
 
         // 键盘位域可以直接 memcpy
         memcpy(&msg_remoter.key, &Dr16_Data().key, sizeof(msg_remoter.key));
-        // Update();
         om_publish(remoter_topic, &msg_remoter, sizeof(msg_remoter), true, false);
+        msg_remoter.last_ctrl_sw = msg_remoter.ctrl_sw;
+        memcpy(&msg_remoter.last_key, &msg_remoter.key, sizeof(msg_remoter.key));
         HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
         tx_thread_sleep(1);
     }
