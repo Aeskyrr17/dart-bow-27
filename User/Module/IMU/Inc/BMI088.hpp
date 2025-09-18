@@ -219,12 +219,6 @@ class cBMI088: public cIMU
 
         void TemperatureControl(float target_temp) override;
 
-        // static cBMI088 *Instance()
-        // {
-        //     static cBMI088 instance;
-        //     return &instance;
-        // }
-
 
 
     private:

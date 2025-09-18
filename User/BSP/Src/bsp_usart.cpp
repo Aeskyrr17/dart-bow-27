@@ -1,6 +1,4 @@
 #include "bsp_usart.hpp"
-#include "RemoteControl.hpp"
-#include "Dr16.hpp"
 #include "XRobot.hpp"
 #include "referee.hpp"
 // #include "ServiceRemoter.hpp"
@@ -14,9 +12,6 @@ extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_uart7_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
-
-// extern TX_SEMAPHORE RemoterThreadSem;
-
 
 #define XROBOT_IMUDATA_SIZE 59
 
@@ -35,7 +30,7 @@ static void USART_RxDMA_MultiBuffer_Init(UART_HandleTypeDef *, uint32_t *, uint3
 void USART_Init()
 {
   // uart5 双缓冲区初始化
-  USART_RxDMA_MultiBuffer_Init(&huart5, (uint32_t *)SBUS_MultiRx_Buf[0], (uint32_t *)SBUS_MultiRx_Buf[1], SBUS_RX_BUF_NUM);
+  // USART_RxDMA_MultiBuffer_Init(&huart5, (uint32_t *)SBUS_MultiRx_Buf[0], (uint32_t *)SBUS_MultiRx_Buf[1], SBUS_RX_BUF_NUM);
   // uart7
   __HAL_DMA_DISABLE_IT(&hdma_uart7_rx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_uart7_rx, DMA_IT_TC);

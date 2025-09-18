@@ -151,20 +151,6 @@ namespace BMI088
         }
     }
 
-    // void cBMI088::SetTargetTemp(float temp)
-    // {
-    //     // 限制温度范围，防止过热或者无效，不过目前这些值是随便给的，后续要根据实际情况调整
-    //     if (temp > 65.0f)
-    //     {
-    //         temp = 55.0f;
-    //     }
-    //     else if (temp < 40.0f)
-    //     {
-    //         temp = 40.0f;
-    //     }
-    //     TargetTemp = temp;
-    // }
-
     void cBMI088::VerifyAccChipID()
     {
         uint8_t pRxData[2]; //< 读取两个字节,第一个字节是dummy data,第二个字节是chip id
