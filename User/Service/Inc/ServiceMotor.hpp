@@ -1,6 +1,6 @@
 #pragma once
-#ifndef TASKWHEEL_HPP
-#define TASKWHEEL_HPP
+#ifndef SERVICE_MOTOR_HPP
+#define SERVICE_MOTOR_HPP
 
 #include "cstdint"
 #include "tx_api.h"
@@ -27,8 +27,8 @@ public:
     // LK8016 LD;
     // LK8016 LU;
 
-    GM6020 LWheel;
-    M2006 RWheel;
+    GM6020 YawMotor;
+    GM6020 PitchMotor;
 
     void MotorRegister();
     void AllMotorSetOutput();
