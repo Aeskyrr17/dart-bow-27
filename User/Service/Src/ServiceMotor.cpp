@@ -3,7 +3,7 @@
 #include "main.h"
 #include "om.h"
 #include "magicmsgs.hpp"
-
+#include "filter.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -15,7 +15,10 @@ TX_THREAD MotorThread;
 uint8_t MotorThreadStack[4096] = {0};
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
-motor_debug_t yaw_debug;
+motor_debug_t motor_debug;
+pid_tuning_t motor_pid;
+int debug_cur = 0;
+float vel_ratio = 0;
 
 void ServiceMotors::MotorRegister() {
     // //注册电机
@@ -34,7 +37,7 @@ void ServiceMotors::AllMotorSetOutput()
 
 void ServiceMotors::SetModeAndPidParam()
 {
-    YawMotor.speedPid.kp = 600.0f;
+    YawMotor.speedPid.kp = 300.0f;
     YawMotor.speedPid.ki = 0.01f;
     YawMotor.speedPid.kd = 1.0f;
 
@@ -55,6 +58,14 @@ void ServiceMotors::SetModeAndPidParam()
     msg_gimbal_ctrl_t gimbal_ctrl{};
     serviceMotors.SetModeAndPidParam();
 
+    Filter::KalmanFilter test_spd_filer;
+    test_spd_filer.SetQ(0.543f);
+    test_spd_filer.SetR(0.057f);
+
+    motor_pid.kp = 300.0f;
+    motor_pid.ki = 0.01f;
+    motor_pid.kd = 1.0f;
+
     for (;;) {
         // time = tx_time_get();
         om_suber_export(gimbal_suber, &gimbal_ctrl, false);
@@ -72,7 +83,7 @@ void ServiceMotors::SetModeAndPidParam()
         if (gimbal_ctrl.yaw_mode == SPD)
         {
             serviceMotors.YawMotor.speedPid.ref = gimbal_ctrl.yaw_speed;
-            serviceMotors.YawMotor.speedPid.fdb = serviceMotors.YawMotor.motorFeedback.speedFdb;
+            serviceMotors.YawMotor.speedPid.fdb = test_spd_filer.Update(serviceMotors.YawMotor.motorFeedback.speedFdb);
             serviceMotors.YawMotor.speedPid.UpdateResult();
             serviceMotors.YawMotor.currentSet = static_cast<int16_t>(serviceMotors.YawMotor.speedPid.result);
         }
@@ -80,11 +91,16 @@ void ServiceMotors::SetModeAndPidParam()
         {
             serviceMotors.YawMotor.currentSet = static_cast<int16_t>(gimbal_ctrl.yaw_torque*100);
         }
+        // debug_cur += 1;
+        // if (debug_cur > 2000)
+        //     debug_cur = 2000;
+        // serviceMotors.YawMotor.currentSet = debug_cur;
+        // vel_ratio = debug_cur / serviceMotors.YawMotor.motorFeedback.speedFdb;
 
-        yaw_debug.spd_set = serviceMotors.YawMotor.speedPid.ref;
-        yaw_debug.spd_fdb = serviceMotors.YawMotor.motorFeedback.speedFdb;
-        yaw_debug.cur_set = serviceMotors.YawMotor.currentSet;
-        yaw_debug.cur_fdb = serviceMotors.YawMotor.motorFeedback.currentFdb;
+        motor_debug.spd_set = serviceMotors.YawMotor.speedPid.ref;
+        motor_debug.spd_fdb = serviceMotors.YawMotor.speedPid.fdb;
+        motor_debug.cur_set = serviceMotors.YawMotor.currentSet;
+        motor_debug.cur_fdb = serviceMotors.YawMotor.motorFeedback.currentFdb;
 
         //发送控制指令给电机
         DJIMotorhandler->sendControlData();

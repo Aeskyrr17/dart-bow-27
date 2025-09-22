@@ -1,47 +1,30 @@
 
-
-
-Breakpoint=/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceBooster.cpp:93, State=BP_STATE_ON
-Breakpoint=/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceBooster.cpp:97, State=BP_STATE_ON
-Breakpoint=/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/main.c:125, State=BP_STATE_ON
 OpenDocument="stm32h7xx_hal_spi.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c", Line=1216
-OpenDocument="tx_byte_pool_create.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Middlewares/ST/threadx/common/src/tx_byte_pool_create.c", Line=61
-OpenDocument="app_azure_rtos.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/AZURE_RTOS/App/app_azure_rtos.c", Line=69
-OpenDocument="tx_thread_initialize.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Middlewares/ST/threadx/common/src/tx_thread_initialize.c", Line=361
-OpenDocument="tx_initialize_high_level.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Middlewares/ST/threadx/common/src/tx_initialize_high_level.c", Line=90
-OpenDocument="tx_initialize_low_level.S", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/tx_initialize_low_level.S", Line=564
-OpenDocument="tx_initialize_kernel_enter.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Middlewares/ST/threadx/common/src/tx_initialize_kernel_enter.c", Line=106
-OpenDocument="app_threadx.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/app_threadx.c", Line=35
-OpenDocument="memset.c", FilePath="/build/newlib-pB30de/newlib-3.3.0/newlib/libc/string/memset.c", Line=0
-OpenDocument="tx_timer_initialize.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Middlewares/ST/threadx/common/src/tx_timer_initialize.c", Line=244
-OpenDocument="ServiceIMU.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceIMU.cpp", Line=9
-OpenDocument="TaskGimbal.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Task/Src/TaskGimbal.cpp", Line=0
-OpenDocument="startup_stm32h723vgtx.s", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Startup/startup_stm32h723vgtx.s", Line=44
-OpenDocument="main.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/main.c", Line=78
-OpenDocument="ServiceBooster.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceBooster.cpp", Line=49
-OpenDocument="ServiceRemoter.hpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Inc/ServiceRemoter.hpp", Line=44
-OpenDocument="ServiceMotor.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceMotor.cpp", Line=81
-OpenDocument="stm32h7xx_it.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Core/Src/stm32h7xx_it.c", Line=93
-OpenDocument="magicmsgs.hpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Utils/Inc/magicmsgs.hpp", Line=0
-OpenDocument="stm32h7xx_hal.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c", Line=323
+OpenDocument="QuaternionEKF.c", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Module/AHRS/Src/QuaternionEKF.c", Line=182
+OpenDocument="ServiceMotor.cpp", FilePath="/home/cosmosmount/Desktop/robomaster/RM26_H7/User/Service/Src/ServiceMotor.cpp", Line=0
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=2, w=434, h=566, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
-OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=863, h=510, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=1, w=434, h=225, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1228, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x2880
-OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=863, h=333, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Functions", DockArea=LEFT, x=0, y=2, w=863, h=154, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Find Results", DockArea=RIGHT, x=0, y=0, w=434, h=206, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1116, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Memory 2", DockArea=BOTTOM, x=2, y=0, w=134, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x0
-SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=3, w=859, h=335, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=821, h=481, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=2, w=859, h=157, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Memory 1", DockArea=BOTTOM, x=2, y=0, w=1026, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x2880
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=821, h=333, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=2, w=821, h=183, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=BOTTOM, x=0, y=0, w=747, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=RIGHT, x=0, y=0, w=859, h=351, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=0, CodePaneShown=0, PinCursor="Cursor Movable", TimePerDiv="1 s / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="620;0", PowerGraphDrawAsPoints=0, PowerGraphLegendShown=0, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="674;0", CodeGraphLegendShown=0, CodeGraphLegendPosition="690;0"
+OpenWindow="Find Results", DockArea=RIGHT, x=0, y=1, w=859, h=148, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Console", DockArea=BOTTOM, x=1, y=0, w=508, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Memory 2", DockArea=BOTTOM, x=3, y=0, w=191, h=318, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x0
 TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Class";"Source"], ColWidths=[1554;100;100;100;27;875]
 TableHeader="Source Files", SortCol="Path", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[344;100;100;100;1015]
-TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[100;105;259]
-TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[187;212;100;364;100]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time"], ColWidths=[100;647]
+TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[147;100;100;100;100;100;100;100;100]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[100;105;639]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[187;212;100;322;100]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
 TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;374]
 WatchedExpression="debug_ins", RefreshRate=5, Window=Watched Data 1
 WatchedExpression="debug_dr16", RefreshRate=5, Window=Watched Data 1
 WatchedExpression="imu_handler", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="motor_debug", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="motor_pid", RefreshRate=5, Window=Watched Data 1

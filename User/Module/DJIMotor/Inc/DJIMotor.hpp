@@ -121,7 +121,7 @@ public:
     uint16_t canId;                   ///< 电机的CAN通信ID
     FDCAN_HandleTypeDef *hcan;          ///< 指向电机使用的CAN接口的指针
 
-    PID speedPid = PID(0.1f, 0.0f, 0.0f, 25000.0f, 3.0f, PID_POSITION);    ///< 速度环PID控制器
+    PID speedPid = PID(0.1f, 0.0f, 0.0f, 16384.0f, 3.0f, PID_POSITION);    ///< 速度环PID控制器
     PID positionPid = PID(0.1f, 0.0f, 0.0f, 25000.0f, 3.0f, PID_POSITION); ///< 位置环PID控制器
 
     float speedSet;    ///< 设定的目标速度
