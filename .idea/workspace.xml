@@ -30,13 +30,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="update structure &amp; fix">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="new gimbal for test">
       <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug.user" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/DJIMotor.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/DJIMotor.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
     </list>
@@ -50,6 +48,11 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="Infantry" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -58,12 +61,12 @@
     &quot;assignee&quot;: &quot;CosmosMount&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:HKUSTGZ-ROBOMASTER-PNX/RM26_H7.git",
-    "accountId": "8b536122-ae1f-4cc0-be74-165bbe6e17f8"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/HKUSTGZ-ROBOMASTER-PNX/RM26_H7.git&quot;,
+    &quot;accountId&quot;: &quot;7827d648-77ca-4411-a9a6-21cd94f2d0e5&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/AZURE_RTOS/App/app_azure_rtos.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Middlewares/ST/usbx/common/core/src/ux_system_initialize.c" root0="FORCE_HIGHLIGHTING" />
@@ -194,6 +197,8 @@
       <workItem from="1758424958084" duration="653000" />
       <workItem from="1758427409346" duration="7542000" />
       <workItem from="1758539456655" duration="1547000" />
+      <workItem from="1758596500053" duration="2708000" />
+      <workItem from="1758704778559" duration="651000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />
@@ -262,6 +267,11 @@
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp</url>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp</url>
+          <line>21</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

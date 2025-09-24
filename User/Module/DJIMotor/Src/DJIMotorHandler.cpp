@@ -126,7 +126,7 @@ void DJIMotorHandler::sendControlData()
     if (CAN1_0x200_Exist)
         CAN_Transmit(&hfdcan1, 0x200, can1_send_data_0, 8); // 向CAN1发送数据，电机控制报文0x200
     if (CAN1_0x1FF_Exist)
-        CAN_Transmit(&hfdcan1, 0x1FE, can1_send_data_1, 8); // 向CAN1发送数据，电机控制报文0x1FF
+        CAN_Transmit(&hfdcan1, 0x1FF, can1_send_data_1, 8); // 向CAN1发送数据，电机控制报文0x1FF
     if (CAN2_0x200_Exist)
         CAN_Transmit(&hfdcan2, 0x200, can2_send_data_0, 8); // 向CAN2发送数据，电机控制报文0x200
     if (CAN2_0x1FF_Exist)
