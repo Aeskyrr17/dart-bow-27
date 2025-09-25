@@ -30,13 +30,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="new gimbal for test">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RM26_H7.jdebug.user" beforeDir="false" afterPath="$PROJECT_DIR$/RM26_H7.jdebug.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -199,6 +196,7 @@
       <workItem from="1758539456655" duration="1547000" />
       <workItem from="1758596500053" duration="2708000" />
       <workItem from="1758704778559" duration="651000" />
+      <workItem from="1758779664139" duration="11000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />
@@ -241,7 +239,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="fix dr16 bug" />
     <MESSAGE value="new IMU structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="new IMU structure" />
+    <MESSAGE value="tuning" />
+    <option name="LAST_COMMIT_MESSAGE" value="tuning" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

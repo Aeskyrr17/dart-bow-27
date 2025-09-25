@@ -77,12 +77,18 @@ static void InitQuaternion(float *init_q4)
     DWT_GetDeltaT(&INS_Count);
 
     for (;;) {
+        IMU_time = tx_time_get();
 
         if (!imu_handler->self_test.INIT_ERR) {
             imu_handler->ReadAccData(&imu_handler->acc_data);
             imu_handler->ReadGyroData(&imu_handler->gyro_data);
-            IMU_QuaternionEKF_Update(imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
-                imu_handler->gyro_data.roll, imu_handler->gyro_data.pitch, imu_handler->gyro_data.yaw,
+            if (fabs(imu_handler->acc_data.x) <= 0.1f && fabs(imu_handler->acc_data.y) <= 0.1f && fabs(imu_handler->acc_data.z) <= 0.1f &&
+                fabs(imu_handler->gyro_data.roll) <= 0.01f && fabs(imu_handler->gyro_data.pitch) <= 0.01f && fabs(imu_handler->gyro_data.yaw) <= 0.01f)
+            {
+                imu_handler->gyro_data.yaw = 0;
+            }
+            IMU_QuaternionEKF_Update(imu_handler->gyro_data.roll, imu_handler->gyro_data.pitch, imu_handler->gyro_data.yaw,
+                imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
                 DWT_GetDeltaT(&INS_Count));
         }
 
