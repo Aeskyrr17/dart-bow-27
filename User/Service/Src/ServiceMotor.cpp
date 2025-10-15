@@ -7,7 +7,7 @@
 #include "math.hpp"
 #include "bsp_dwt.hpp"
 
-using namespace Math;
+using namespace Numeric;
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -75,7 +75,7 @@ double signal(double t)
         double progress = rise_t / rise_time; // 0 ~ 1
 
         // 平滑函数：cosine ease-in
-        double smooth = (1 - std::cos(Math::Pi * progress)) / 2.0;
+        double smooth = (1 - std::cos(Pi * progress)) / 2.0;
 
         return step_value * smooth;
     }

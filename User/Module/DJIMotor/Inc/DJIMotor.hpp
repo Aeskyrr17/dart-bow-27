@@ -9,6 +9,8 @@
 #include "math.hpp"
 #include "fdcan.h"
 
+using namespace Numeric;
+
 enum GearBox
 {
     GearBox_None = 0,  ///< 无减速箱
@@ -91,7 +93,7 @@ public:
 
     struct GearRatio_PI
     {
-        static constexpr float None = Math::Pi;       /*!< PI */
+        static constexpr float None = Pi;       /*!< PI */
         static constexpr float M2006 = 0.0872664826f; /*!< PI / 36 */
         static constexpr float M3508 = 0.1635972783f; /*!< PI / 3591 * 187 */
         static constexpr float XRoll = 0.1992801276f; /*!< PI / 268 * 17 */

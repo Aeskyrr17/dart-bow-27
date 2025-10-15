@@ -1,6 +1,9 @@
 #include "LK9025.hpp"
 #include "bsp_can.hpp"
 #include "filter.hpp"
+#include "math.hpp"
+
+using namespace Numeric;
 /**
  * @brief GM6020类的构造函数。
  * 初始化电机的控制模式、各种设定值和PID控制器。
@@ -64,7 +67,7 @@ void LK9025::setOutput()
     {
         // currentSet = torqueSet * 2000 / (0.32f * 32.0f); 0.32：扭矩常数，32.0：电流常数，2000.0：电流输入最大值
         this->currentSet = this->torqueSet * 195.3125f;
-				this->currentSet = Math::FloatConstrain(currentSet, -2000, 2000);
+				this->currentSet = FloatConstrain(currentSet, -2000, 2000);
 				return;
 				
     } 
@@ -86,13 +89,13 @@ void LK9025::setOutput()
       this->positionPid.ref = this->positionSet;
       this->positionPid.fdb = this->motorFeedback.positionFdb;
       // 检查并调整positionSet值在有效范围内
-      if (this->positionSet < -Math::Pi)
+      if (this->positionSet < -Pi)
       {
-          this->positionSet += 2 * Math::Pi; // 调整使其在-π到π范围内
+          this->positionSet += 2 * Pi; // 调整使其在-π到π范围内
       }
-      else if (this->positionSet > Math::Pi)
+      else if (this->positionSet > Pi)
       {
-          this->positionSet -= 2 * Math::Pi; // 调整使其在-π到π范围内
+          this->positionSet -= 2 * Pi; // 调整使其在-π到π范围内
       }
       this->positionPid.UpdateResult();
 
@@ -112,7 +115,7 @@ void LK9025::setOutput()
     }
 
     // 限制电流输出不超过最大值
-    this->currentSet = Math::FloatConstrain(this->currentSet, -maxCurrent, maxCurrent);
+    this->currentSet = FloatConstrain(this->currentSet, -maxCurrent, maxCurrent);
 }
 
 
@@ -128,7 +131,7 @@ void LK9025::UpdateSensorData(uint8_t *buffer_ptr)
     motorFeedback.lastPositionFdb = motorFeedback.positionFdb;
     motorFeedback.lastSpeedFdb = motorFeedback.speedFdb;
 
-    motorFeedback.positionFdb = Math::LoopFloatConstrain((float)(motorFeedback.ecd - offset) * LKMotor::RawPos2Rad, -Math::Pi, Math::Pi);
+    motorFeedback.positionFdb = LoopFloatConstrain((float)(motorFeedback.ecd - offset) * LKMotor::RawPos2Rad, -Pi, Pi);
     motorFeedback.speedFdb = motorFeedback.speed_dps * LKMotor::RawDps2Rpsps;
 
     motorFeedback.torqueFdb = motorFeedback.currentFdb * 0.00512f;

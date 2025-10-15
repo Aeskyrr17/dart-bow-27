@@ -3,6 +3,9 @@
 //
 
 #include "pid.hpp"
+#include "math.hpp"
+
+using namespace Numeric;
 
 static void f_Trapezoid_Intergral(PID *pid)
 {
@@ -68,7 +71,7 @@ static void f_Integral_Limit(PID *pid)
         pid->iResult = -pid->maxIOut;
     }
 
-    // pid->iTerm = Math::FloatConstrain(pid->iTerm, -pid->maxIOut, pid->maxIOut);
+    // pid->iTerm = FloatConstrain(pid->iTerm, -pid->maxIOut, pid->maxIOut);
 }
 
 PID::PID(float kp, float ki, float kd, float maxOut, float maxIOut, int mode)
@@ -116,7 +119,7 @@ void PID::UpdateResult(void)
     //     pResult = kp * (err[0] - err[1]);
 
     //     iResult = ki * err[0];
-    //     iResult = Math::LimitABS(iResult, maxIOut);
+    //     iResult = LimitABS(iResult, maxIOut);
 
     //     dResult = kd * (err[0] - 2.0f * err[1] + err[2]);
     // }
@@ -137,13 +140,13 @@ void PID::UpdateResult(void)
         f_Integral_Limit(this); // 积分限幅
 
     iResult += iTerm;
-    iResult = Math::LimitABS(iResult, maxIOut);
+    iResult = LimitABS(iResult, maxIOut);
 
     // 更新反馈值缓存
     last_fbd = fdb;
     // 计算输出
     result = pResult + iResult + dResult;
-    result = Math::LimitABS(result, maxOut);
+    result = LimitABS(result, maxOut);
 
     // // 更新微分输出缓存
     // last_dResult = dResult;

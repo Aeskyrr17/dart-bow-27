@@ -5,10 +5,12 @@
 #include "BMI088.hpp"
 #include "bsp_spi.hpp"
 
-#include "ServiceIMU.hpp"
+#include "tx_api.h"
 #include "bsp_pwm.hpp"
 #include "bsp_dwt.hpp"
 
+using namespace Numeric;
+using namespace Matrix;
 
 namespace BMI088
 {
@@ -56,7 +58,7 @@ namespace BMI088
                 ReadAccData(&acc_data);
                 ReadGyroData(&gyro_data);
 
-				gNormTemp = Math::Sqrt(acc_data.x * acc_data.x +
+				gNormTemp = Sqrt(acc_data.x * acc_data.x +
                          acc_data.y * acc_data.y +
                          acc_data.z * acc_data.z); // 计算加速度范数
 

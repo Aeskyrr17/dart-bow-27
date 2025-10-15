@@ -4,6 +4,8 @@
 
 #include "filter.hpp"
 
+using namespace Numeric;
+
 namespace Filter
 {
     KalmanFilter::KalmanFilter()
@@ -169,7 +171,7 @@ namespace Filter
 
         // 输入限幅, 全0为不限制
         if (constrain_low != 0.0f || constrain_high != 0.0f)
-            now_value = Math::FloatConstrain(_now, constrain_low, constrain_high);
+            now_value = FloatConstrain(_now, constrain_low, constrain_high);
         else
             now_value = _now;
 
