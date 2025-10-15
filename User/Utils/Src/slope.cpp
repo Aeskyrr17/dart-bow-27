@@ -6,17 +6,15 @@
  * @version 0.1
  * @date 2023-08-29 0.1 23赛季定稿
  * @date 2024-06-03 1.1 规划引入优先级方式
- * @date 2025-03-01 PnX更改与部署
+ * @note modified
  * @copyright USTC-RoboWalker (c) 2023-2024
  *
  */
 #include "slope.hpp"
 
-void SLOPE::Init(float __Increase_Value, float __Decrease_Value, PriorType __Slope_Prior)
+SLOPE::SLOPE(float __Increase_Value, float __Decrease_Value, float _default, PriorType __Slope_Prior)
+    : Increase_Value(__Increase_Value), Decrease_Value(__Decrease_Value), Now_Real(_default), Slope_Prior(__Slope_Prior)
 {
-    Increase_Value = __Increase_Value;
-    Decrease_Value = __Decrease_Value;
-    Slope_Prior = __Slope_Prior;
 }
 
 void SLOPE::Update()

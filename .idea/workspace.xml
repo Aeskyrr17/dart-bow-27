@@ -30,24 +30,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="add slope">
+    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="add slope &amp; revise math">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Inc/bsp_usb.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_usb.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/DJIMotor.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Inc/DJIMotor.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DJIMotor/Src/DJIMotorHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/DMMotor/Src/DM4310.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/DMMotor/Src/DM4310.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/ICM42688.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/ICM42688.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK8016.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK8016.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK9025.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK9025.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Inc/kalman_filter.h" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/kalman_filter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/AHRS/Src/kalman_filter.c" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/kalman_filter.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/math.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/math.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/filter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Src/math.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/math.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Utils/Src/pid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/pid.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/slope.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/slope.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Src/slope.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Src/slope.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,19 +133,14 @@
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\RM26\RM26_H7\User\Utils\Src" />
+      <recent name="D:\RM26\RM26_H7\User\Utils\Inc" />
       <recent name="$PROJECT_DIR$/User/Utils/Inc" />
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Inc" />
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Src" />
-      <recent name="$PROJECT_DIR$/User/Module/RemoteControl/Inc" />
-      <recent name="$PROJECT_DIR$/User/Service/Inc" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.RM26_H7.elf">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="OneMessage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RM26_H7" TARGET_NAME="OneMessage" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -218,6 +204,8 @@
       <workItem from="1758596500053" duration="2708000" />
       <workItem from="1758704778559" duration="651000" />
       <workItem from="1758779664139" duration="11000" />
+      <workItem from="1760516151812" duration="34000" />
+      <workItem from="1760516222715" duration="11000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />
@@ -251,7 +239,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760510146970</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="add slope &amp; revise math">
+      <option name="closed" value="true" />
+      <created>1760511184001</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1760511184001</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -279,7 +275,8 @@
     <MESSAGE value="tuning" />
     <MESSAGE value="revise filter" />
     <MESSAGE value="add slope" />
-    <option name="LAST_COMMIT_MESSAGE" value="add slope" />
+    <MESSAGE value="add slope &amp; revise math" />
+    <option name="LAST_COMMIT_MESSAGE" value="add slope &amp; revise math" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -1,8 +1,10 @@
 #include "bsp_can.hpp"
 
-// #include "GMMotorhandler.hpp"
-// #include "LKMotorhandler.hpp"
-// #include "BoardConnectivity.hpp"
+#include "DJIMotorhandler.hpp"
+#include "LKMotorhandler.hpp"
+
+#include "om.h"
+#include "magicmsgs.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -38,6 +40,8 @@ void CAN_Init(void)
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan3, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
     HAL_FDCAN_ActivateNotification(&hfdcan3, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_Start(&hfdcan3);
+
+    om_topic_t *upctrl_topic = om_config_topic(nullptr, "ca", "upctrl", sizeof(msg_gimbal_ctrl_t));
 }
 
 void CAN_Transmit(FDCAN_HandleTypeDef *hfdcan, uint32_t Id, uint8_t *msg, uint16_t len)
@@ -56,4 +60,49 @@ void CAN_Transmit(FDCAN_HandleTypeDef *hfdcan, uint32_t Id, uint8_t *msg, uint16
     tx_header.DataLength = len;
 
     HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &tx_header, msg); ///< 发送数据
+}
+
+/**
+ * @brief CAN接收中断回调函数，所有反馈在can上的数据会在这里根据ID进行分类并处理。
+ * @param hfdcan CAN句柄
+ * @note 该函数用于处理CAN接收中断，根据ID分类处理接收到的数据。但是这中方法可能会在回调里浪费时间，因为这里的处理是阻塞的。考虑是否需要将数据存储到一个缓冲区，然后在主循环中处理。
+ */
+
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+
+    FDCAN_RxHeaderTypeDef rx_header;
+    uint8_t rx_data[8];
+    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data);
+    /*-------------------------------------------------大疆电机数据-------------------------------------------------*/
+    if (rx_header.Identifier >= 0x201 && rx_header.Identifier <= 0x208)
+    {
+        if (hfdcan == &hfdcan1)
+        {
+            DJIMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
+        }
+        else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+        {
+            DJIMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x201));
+        }
+    }
+    /*--------------------------------------------------LK电机数据--------------------------------------------------*/
+    else if (rx_header.Identifier >= 0x140 && rx_header.Identifier <= 0x160)
+    {
+        if (hfdcan == &hfdcan1)
+        {
+            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+        }
+        else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+        {
+            // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+        }
+        else if (hfdcan == &hfdcan3) // 处理CAN3的数据
+        {
+            // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+        }
+    }
 }

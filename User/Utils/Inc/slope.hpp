@@ -24,7 +24,7 @@ enum PriorType
 class SLOPE
 {
 public:
-    void Init(float __Increase_Value, float __Decrease_Value, PriorType __Slope_Prior = REAL_Prior);
+    SLOPE (float __Increase_Value, float __Decrease_Value, float _default, PriorType __Slope_Prior = REAL_Prior);
 
     void Reset(float __Increase_Value, float __Decrease_Value, PriorType __Slope_Prior = REAL_Prior);
 
