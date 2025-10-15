@@ -131,14 +131,8 @@ namespace BMI088
 
     void cBMI088::TemperatureControl(float target_temp)
     {
-    //    debug_T_ref = target_temp;
-    //    debug_T_fdb = acc_data.temperature;
-
-        TempFdbFilter.SetInput(acc_data.temperature);
-        TempFdbFilter.Update();
-
         TempPid.ref = target_temp;
-        TempPid.fdb = TempFdbFilter.GetResult();
+        TempPid.fdb = TempFdbFilter.Update(acc_data.temperature);
         TempPid.UpdateResult();
 
         if (TempPid.result < 0)
@@ -326,14 +320,15 @@ namespace BMI088
         gyro[0] = ((int16_t)buf[1] << 8) + (int16_t)buf[0];
         gyro[1] = ((int16_t)buf[3] << 8) + (int16_t)buf[2];
         gyro[2] = ((int16_t)buf[5] << 8) + (int16_t)buf[4];
-        // 注意这里就不要又除法又乘法的了，直接乘以一个常数，根据配置，单位是16.384，所以直接乘以1/16.384 * DEG2SEC即可
-        data->roll = (float)gyro[0] * IMU_GYRO_2000_SEN;
-        data->pitch = (float)gyro[1] * IMU_GYRO_2000_SEN;
-        data->yaw = (float)gyro[2] * IMU_GYRO_2000_SEN;
+
+        //< 为了减少摩擦轮抖动带来的影响，加入333Hz滤波滤除
+        data->roll = gyrop_filter.Update((float)gyro[0] * IMU_GYRO_2000_SEN);
+        data->pitch = gyrop_filter.Update((float)gyro[1] * IMU_GYRO_2000_SEN);
+        data->yaw = gyrop_filter.Update((float)gyro[2] * IMU_GYRO_2000_SEN);
     }
 
 
-    void cBMI088::ReadAccTemperature(float *temp) // 未完成
+    void cBMI088::ReadAccTemperature(float *temp)
     {
         uint8_t buf[TEMP_LEN + 1];
         ReadReg(BMI088_CS_ACC, TEMP_MSB_ADDR, buf, TEMP_LEN + 1);

@@ -128,9 +128,6 @@ uint8_t IMUTempThreadStack[2048] = {0};
     imu_handler->TempPid.ScalarA = 3.5f;
     imu_handler->TempPid.ScalarB = 0.08f;
 
-    imu_handler->TempFdbFilter.SetTau(0.1f);       // 设置滤波时间常数
-    imu_handler->TempFdbFilter.SetUpdatePeriod(1); // 设置更新周期
-
     imu_handler->TargetTemp = 45.0f;                              //< 设置目标温度，一般为40度以上
     PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
 

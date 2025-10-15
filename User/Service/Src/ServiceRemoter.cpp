@@ -29,7 +29,6 @@ inline dr16_data_t& Dr16_Data()
             // 比如可以清零，或者标记掉线
             msg_remoter.offline = true;
             HAL_UART_Abort(&huart5);
-            // 可以加上状态标记，比如 rc_raw.online = false;
             tx_thread_sleep(3);
             HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
         }

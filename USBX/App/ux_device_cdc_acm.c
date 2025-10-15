@@ -199,14 +199,6 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
       ux_device_class_cdc_acm_read(cdc_acm,
                                            (UCHAR *)UserRxBufferFS,
                                            64, &actual_length);
-        // if (actual_length != 0)
-        // {
-        //   UserRxBufPtrIn += actual_length;
-        //   if (UserRxBufPtrIn >= APP_RX_DATA_SIZE)
-        //     UserRxBufPtrIn = 0;
-        //   else
-        //     USB_RX_SUCCESS = 1;
-        // }
       new_data_ = actual_length;
       tx_thread_sleep(1);
     }

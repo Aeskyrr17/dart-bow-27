@@ -182,8 +182,8 @@ enum BMI088_SENSOR
 #define BMI088_PRE_CALI_ACC_Z_OFFSET 0.0f
 #define BMI088_PRE_CALI_G_NORM 9.805f
 
-class cBMI088: public cIMU
-{
+    class cBMI088: public cIMU
+    {
     public:
         // imu_error_t bmi088_selfTest; // BMI088错误结构体
         // bmi088_data_t bmi088_data;   // BMI088数据结构体
@@ -225,7 +225,9 @@ class cBMI088: public cIMU
         float Gyro_offset[3]; // 陀螺仪零飘
         float Acc_coef = IMU_ACCEL_3G_SEN;       // 加速度计灵敏度，标定完后要乘以9.805/gNorm
         float gNorm = 9.805f;          // 重力加速度模长
-        LowPassFilter_333Hz SensorFilter[6];
+        IIRFilter gyror_filter = IIRFilter(2,LOWPASS,333);
+        IIRFilter gyrop_filter = IIRFilter(2,LOWPASS,333);
+        IIRFilter gyroy_filter = IIRFilter(2,LOWPASS,333);
 
     };
 

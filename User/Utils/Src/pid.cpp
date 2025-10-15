@@ -71,25 +71,6 @@ static void f_Integral_Limit(PID *pid)
     // pid->iTerm = Math::FloatConstrain(pid->iTerm, -pid->maxIOut, pid->maxIOut);
 }
 
-// 微分滤波(采集微分时,滤除高频噪声)
-//TODO：待实现，需要测量程序运行时间
-// static void f_Derivative_Filter(PID *pid)
-// {
-//     pid->dResult = pid->dResult * pid->dt / (pid->Derivative_LPF_RC + pid->dt) +
-//                 pid->Last_Dout * pid->Derivative_LPF_RC / (pid->Derivative_LPF_RC + pid->dt);
-// }
-
-// PID::PID() : mode(PID_POSITION),
-//              kp(0.0f),
-//              ki(0.0f),
-//              kd(0.0f),
-//              maxOut(0.0f),
-//              maxIOut(0.0f)
-// {
-//     fdb = last_fbd = 0.0f;
-//     err[0] = err[1] = err[2] = 0.0f;
-// }
-
 PID::PID(float kp, float ki, float kd, float maxOut, float maxIOut, int mode)
     : mode(mode), kp(kp), ki(ki), kd(kd), maxOut(maxOut), maxIOut(maxIOut)
 {
@@ -154,8 +135,6 @@ void PID::UpdateResult(void)
         f_Changing_Integral_Rate(this); // 变速积分
     if (mode & PID_Integral_Limit)
         f_Integral_Limit(this); // 积分限幅
-    // if (mode & PID_DerivativeFilter)
-    //     f_Derivative_Filter(this);
 
     iResult += iTerm;
     iResult = Math::LimitABS(iResult, maxIOut);

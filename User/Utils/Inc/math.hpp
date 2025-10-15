@@ -24,7 +24,7 @@ namespace Math
     typedef arm_matrix_instance_f32 mat;
 
 #define msin(x) (arm_sin_f32(x)) // 定义正弦函数
-#define mcos(x) (arm_cos_f32(x)) // 定 义余弦函数
+#define mcos(x) (arm_cos_f32(x)) // 定义余弦函数
 
     constexpr float Pi = 3.14159265358979f;    ///< 圆周率
     constexpr float PiX2 = 6.283185307f;       ///< 2倍圆周率
