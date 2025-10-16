@@ -1,7 +1,7 @@
 #include "bsp_can.hpp"
 
-#include "DJIMotorhandler.hpp"
-#include "LKMotorhandler.hpp"
+#include "DJIMotorHandler.hpp"
+#include "LKMotorHandler.hpp"
 
 #include "om.h"
 #include "magicmsgs.hpp"

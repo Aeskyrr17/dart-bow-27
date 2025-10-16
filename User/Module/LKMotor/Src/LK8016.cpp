@@ -68,8 +68,8 @@ void LK8016::setOutput()
     {
         // currentSet = (torqueSet * 2000) / (0.24f * 32.0f * 6.0f); 0.24：扭矩常数，6：减速比，32.0：电流范围，2000.0：电流数值范围
         this->currentSet = this->torqueSet * 43.4028f;
-				this->currentSet = FloatConstrain(currentSet, -2000, 2000);
-				return;
+		this->currentSet = FloatConstrain(currentSet, -2000, 2000);
+		return;
     } 
     else if (this->controlMode == POS_MODE)
     {

@@ -56,8 +56,6 @@ LK9025::~LK9025()
  */
 void LK9025::setOutput()
 {
-
-		
     if (this->controlMode == RELAX_MODE)
     {
         this->currentSet = 0.0; // 松开模式下电流设定为0
@@ -66,12 +64,10 @@ void LK9025::setOutput()
     else if (this->controlMode == TOR_MODE)
     {
         // currentSet = torqueSet * 2000 / (0.32f * 32.0f); 0.32：扭矩常数，32.0：电流常数，2000.0：电流输入最大值
-        this->currentSet = this->torqueSet * 195.3125f;
-				this->currentSet = FloatConstrain(currentSet, -2000, 2000);
-				return;
-				
-    } 
-    
+        this->currentSet = static_cast<int16_t>(this->torqueSet * 195.3125f);
+		this->currentSet = Int16Constrain(currentSet, -2000, 2000);
+		return;
+    }
     else if (this->controlMode == SPD_MODE)
     {
         // 内环控制，速度环控制
@@ -107,15 +103,11 @@ void LK9025::setOutput()
       this->currentSet = this->speedPid.result; // 根据速度PID结果设置电流
       return;
     }
-
     else
     {
         this->currentSet = 0.0; // 其他情况电流设定为0
-				return;
+        return;
     }
-
-    // 限制电流输出不超过最大值
-    this->currentSet = FloatConstrain(this->currentSet, -maxCurrent, maxCurrent);
 }
 
 
@@ -133,7 +125,6 @@ void LK9025::UpdateSensorData(uint8_t *buffer_ptr)
 
     motorFeedback.positionFdb = LoopFloatConstrain((float)(motorFeedback.ecd - offset) * LKMotor::RawPos2Rad, -Pi, Pi);
     motorFeedback.speedFdb = motorFeedback.speed_dps * LKMotor::RawDps2Rpsps;
-
     motorFeedback.torqueFdb = motorFeedback.currentFdb * 0.00512f;
 }
 

@@ -52,6 +52,8 @@ endif ()
 include_directories(
         Core/Inc
         AZURE_RTOS/App
+        DSP/Include
+        DSP/Include/dsp
         Drivers/STM32H7xx_HAL_Driver/Inc
         Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
         Drivers/CMSIS/Device/ST/STM32H7xx/Include
