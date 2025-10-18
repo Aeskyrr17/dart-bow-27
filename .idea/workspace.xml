@@ -30,66 +30,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="">
+    <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="need dsp complied on linux">
       <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_common_tables.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_common_tables.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_common_tables_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_common_tables_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_const_structs.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_const_structs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_const_structs_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_const_structs_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_helium_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_helium_utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_math.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_math.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_math_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_math_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_math_memory.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_math_memory.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_math_types.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_math_types.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_math_types_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_math_types_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_mve_tables.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_mve_tables.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_mve_tables_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_mve_tables_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_vec_math.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_vec_math.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/arm_vec_math_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/arm_vec_math_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/basic_math_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/basic_math_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/basic_math_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/basic_math_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/bayes_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/bayes_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/bayes_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/bayes_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/complex_math_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/complex_math_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/complex_math_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/complex_math_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/controller_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/controller_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/controller_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/controller_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/debug.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/debug.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/distance_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/distance_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/distance_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/distance_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/fast_math_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/fast_math_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/fast_math_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/fast_math_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/filtering_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/filtering_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/filtering_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/filtering_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/interpolation_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/interpolation_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/interpolation_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/interpolation_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/matrix_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/matrix_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/matrix_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/matrix_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/matrix_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/matrix_utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/none.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/none.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/quaternion_math_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/quaternion_math_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/statistics_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/statistics_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/statistics_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/statistics_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/support_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/support_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/support_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/support_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/svm_defines.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/svm_defines.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/svm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/svm_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/svm_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/svm_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/transform_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/transform_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/transform_functions_f16.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/transform_functions_f16.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/Include/dsp/window_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/Include/dsp/window_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSP/libCMSISDSP.a" beforeDir="false" afterPath="$PROJECT_DIR$/DSP/libCMSISDSP.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK8016.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK8016.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK9025.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/LKMotor/Src/LK9025.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/Odometry/odometry.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/Odometry/odometry.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceMotor.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Inc/ServiceMotor.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Inc/TaskChassis.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Inc/TaskChassis.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,8 +64,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:HKUSTGZ-ROBOMASTER-PNX/RM26_H7.git&quot;,
-    &quot;accountId&quot;: &quot;8b536122-ae1f-4cc0-be74-165bbe6e17f8&quot;
+    &quot;url&quot;: &quot;https://github.com/HKUSTGZ-ROBOMASTER-PNX/RM26_H7.git&quot;,
+    &quot;accountId&quot;: &quot;7827d648-77ca-4411-a9a6-21cd94f2d0e5&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -133,6 +81,7 @@
     <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/BSP/Src/bsp_usart.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/RM26/RM26_H7/User/Service/Src/ServiceMotor.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Task/Src/TaskBooster.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -255,6 +204,9 @@
       <workItem from="1758779664139" duration="11000" />
       <workItem from="1760517705405" duration="3886000" />
       <workItem from="1760622771821" duration="11000" />
+      <workItem from="1760642475536" duration="11000" />
+      <workItem from="1760642579888" duration="1308000" />
+      <workItem from="1760769701174" duration="627000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />

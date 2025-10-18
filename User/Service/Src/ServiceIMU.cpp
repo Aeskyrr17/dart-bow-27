@@ -85,11 +85,11 @@ static void InitQuaternion(float *init_q4)
             imu_handler->ReadAccData(&imu_handler->acc_data);
             imu_handler->ReadGyroData(&imu_handler->gyro_data);
             if (fabs(imu_handler->acc_data.x) <= 0.1f && fabs(imu_handler->acc_data.y) <= 0.1f && fabs(imu_handler->acc_data.z) <= 0.1f &&
-                fabs(imu_handler->gyro_data.roll) <= 0.01f && fabs(imu_handler->gyro_data.pitch) <= 0.01f && fabs(imu_handler->gyro_data.yaw) <= 0.01f)
+                fabs(imu_handler->gyro_data.x) <= 0.01f && fabs(imu_handler->gyro_data.y) <= 0.01f && fabs(imu_handler->gyro_data.z) <= 0.01f)
             {
-                imu_handler->gyro_data.yaw = 0;
+                imu_handler->gyro_data.z = 0;
             }
-            IMU_QuaternionEKF_Update(imu_handler->gyro_data.roll, imu_handler->gyro_data.pitch, imu_handler->gyro_data.yaw,
+            IMU_QuaternionEKF_Update(imu_handler->gyro_data.x, imu_handler->gyro_data.y, imu_handler->gyro_data.z,
                 imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
                 DWT_GetDeltaT(&INS_Count));
         }
@@ -101,9 +101,9 @@ static void InitQuaternion(float *init_q4)
         msg_ins.pitch = QEKF_INS.Pitch;
         msg_ins.roll = QEKF_INS.Roll;
         msg_ins.total_yaw = QEKF_INS.YawTotalAngle;
-        msg_ins.gyro_r = imu_handler->gyro_data.roll;
-        msg_ins.gyro_p = imu_handler->gyro_data.pitch;
-        msg_ins.gyro_y = imu_handler->gyro_data.yaw;
+        msg_ins.gyro_r = imu_handler->gyro_data.x;
+        msg_ins.gyro_p = imu_handler->gyro_data.y;
+        msg_ins.gyro_y = imu_handler->gyro_data.z;
 
         om_publish(ins_topic, &msg_ins, sizeof(msg_ins), true, false);
 
