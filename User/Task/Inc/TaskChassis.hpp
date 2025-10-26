@@ -11,40 +11,51 @@
 #include "om.h"
 #include "pid.hpp"
 #include "slope.hpp"
+#include "config.hpp"
 #include "filter.hpp"
 #include "bsp_can.hpp"
 #include "magicmsgs.hpp"
 #include "kalman_filter.h"
 
-#define WHEEL_RADIUS 0.077f
-#define MWHEEL 1.136f //两个轮子
-#define GACCEL 9.78f
+typedef enum{
+    ON_GROUND = 0,
+    OFF_GROUND = 1,
+} fly_flag_e;
 
-#define M_BODY_HALF 6.25f
+/*底盘运动模式*/
+typedef enum{
+    NONE = 0,
+    NORMAL_MOVING_MODE,
+    ESCAPE_MODE,
+    ABNORMAL_MOVING_MODE
+} chassis_mode_e;
 
-//腿长、LQR限幅
-#define LEG_MAX_LEN 0.350f
-#define LEG_MIN_LEN 0.130f
-#define LEG_START_LEN 0.140f
+typedef enum{
+    NORMAL_ROTATE = 0,
+    SPIN_ROTATE
+} rotate_ctrl_e;
 
-#define LQR_K_NUM 46 //23*2
-#define LQR_MAX_LEN_CTRL 0.350f
-#define LQR_MIN_LEN_CTRL 0.130f
-#define LQR_LEN_RESOLUTION 0.01f
+typedef enum{
+    DO_NOT_JUMP = 0,
+    JUMP_READY,
+    JUMP_START
+} jump_ctrl_e;
 
-#define LEG_NORMAL_STEP 0.001f//0.0005f
-#define LEG_JUMP_EXTEND_STEP 0.007f
-#define LEG_JUMP_RECOVER_STEP 0.007f
+typedef enum{
+    NOT_FLY_MODE = 0,
+    FLY_MODE
+} fly_ctrl_e;
 
-#define JUMP_START_LEN 0.26f
-#define JUMP_TOP_LEN 0.360f
-#define JUMP_REC_LEN 0.150f
-#define JUMP_LAND_LEN 0.22f
-//控制限幅
-#define V_ACCEL_MAX 1.2f
-#define V_ACCEL_MIN (-1.2f)
-#define V_MAX 1.2f
-#define V_LIMIT_LEN 0.18f
+#pragma pack(push,1)
+
+typedef struct{
+    chassis_mode_e chassis_mode : 2;
+    rotate_ctrl_e rotate_type : 1;
+    jump_ctrl_e jump_ctrl : 2;
+    fly_ctrl_e fly_ctrl : 1;
+} chassis_mode_t;
+
+#pragma pack(pop)
 
 class LQR
 {

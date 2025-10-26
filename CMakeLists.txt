@@ -79,6 +79,8 @@ include_directories(
         User/Module/Referee
         User/Module/RemoteControl/Inc
         User/Module/SuperCap
+        User/Module/Odometry
+        User/Module/VMC
         User/Service/Inc
         User/Task/Inc
         User/Utils/Inc

@@ -31,13 +31,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3badd30-b332-44d5-b8b1-834463d491b1" name="Changes" comment="need dsp complied on linux">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/User/Task/Src/TaskMotors.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/BMI088.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Inc/IMU.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/IMU/Src/BMI088.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists_template.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists_template.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/BSP/Src/bsp_can.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/Odometry/odometry.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/Odometry/odometry.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/Odometry/odometry.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/Odometry/odometry.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/VMC/vmcsolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/VMC/vmcsolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Module/VMC/vmcsolver.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Module/VMC/vmcsolver.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Inc/ServiceMotor.hpp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceIMU.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Service/Src/ServiceMotor.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Task/Inc/TaskChassis.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Inc/TaskChassis.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Task/Src/TaskChassis.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/User/Utils/Inc/magicmsgs.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,7 +59,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Infantry" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -131,11 +139,11 @@
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\RM26\RM26_H7\User\Task\Src" />
       <recent name="$PROJECT_DIR$/User/Utils/Inc" />
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Inc" />
       <recent name="D:\Aprojects\RM\Agithub_projects\RM26_H7\User\Task\Src" />
       <recent name="$PROJECT_DIR$/User/Module/RemoteControl/Inc" />
-      <recent name="$PROJECT_DIR$/User/Service/Inc" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.RM26_H7.elf">
@@ -207,6 +215,16 @@
       <workItem from="1760642475536" duration="11000" />
       <workItem from="1760642579888" duration="1308000" />
       <workItem from="1760769701174" duration="627000" />
+      <workItem from="1760790489265" duration="4000" />
+      <workItem from="1761121682390" duration="5528000" />
+      <workItem from="1761135561357" duration="5003000" />
+      <workItem from="1761143447898" duration="498000" />
+      <workItem from="1761185999547" duration="28757000" />
+      <workItem from="1761276544104" duration="189000" />
+      <workItem from="1761282999033" duration="984000" />
+      <workItem from="1761387469195" duration="19000" />
+      <workItem from="1761391924725" duration="633000" />
+      <workItem from="1761400625462" duration="705000" />
     </task>
     <task id="LOCAL-00001" summary="fix dr16 bug">
       <option name="closed" value="true" />

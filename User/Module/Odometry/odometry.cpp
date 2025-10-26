@@ -3,6 +3,8 @@
 //
 
 #include "odometry.hpp"
+
+#include "math.hpp"
 #include "quaternion_math_functions.h"
 
 static cVelFusionKF vel_kf;
@@ -18,7 +20,7 @@ static cVelFusionKF vel_kf;
  */
 odometry_info_t Odometry_Update(float *_quaternion, float *_acc, float _vel, float _yaw)
 {
-    odometry_info_t odometry_info;
+    odometry_info_t odometry_info{};
     odometry_info.x = 0.0f;
     odometry_info.v = 0.0f;
     odometry_info.a_z = 0.0f;
@@ -30,7 +32,7 @@ odometry_info_t Odometry_Update(float *_quaternion, float *_acc, float _vel, flo
     arm_quaternion_product_f32(temp,_quaternion, a_world, 1);
 
     float a_x = sqrtf(a_world[1] * a_world[1] + a_world[2] * a_world[2]) *
-    arm_cos_f32(atan2f(a_world[2], a_world[1]) - _yaw*0.017453293f);
+    arm_cos_f32(atan2f(a_world[2], a_world[1]) - _yaw * Numeric::DegreeToRad);
 
     vel_kf.UpdateKalman(_vel, a_x);
 

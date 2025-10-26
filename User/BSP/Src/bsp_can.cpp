@@ -10,6 +10,9 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
+extern uint8_t xyAndRefAngleMsg[8];
+extern uint8_t chassisStateMsg[8];
+
 /**
  * @brief 初始化CAN滤波器配置。
  * 设置CAN硬件的滤波器，用于优化接收数据的处理。
@@ -40,8 +43,6 @@ void CAN_Init(void)
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan3, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
     HAL_FDCAN_ActivateNotification(&hfdcan3, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_Start(&hfdcan3);
-
-    om_topic_t *upctrl_topic = om_config_topic(nullptr, "ca", "upctrl", sizeof(msg_gimbal_ctrl_t));
 }
 
 void CAN_Transmit(FDCAN_HandleTypeDef *hfdcan, uint32_t Id, uint8_t *msg, uint16_t len)
@@ -103,6 +104,18 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
         {
             // LKMotorHandler::instance()->processZeroPointData(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
             LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+        }
+    }
+    /*--------------------------------------------------云台消息--------------------------------------------------*/
+    else if (rx_header.Identifier >= 0xB1 && rx_header.Identifier <= 0xB8)
+    {
+        if (rx_header.Identifier == 0xB1)
+        {
+            memcpy(xyAndRefAngleMsg, rx_data, 8);
+        }
+        else if (rx_header.Identifier == 0xB2)
+        {
+            memcpy(chassisStateMsg, rx_data, 8);
         }
     }
 }

@@ -97,18 +97,19 @@ struct msg_ins_t {
     float gyro_r; ///< roll角速度
     float gyro_p; ///< pitch角速度
     float gyro_y; ///< yaw角速度
+    float accel[3];
 };
 
 /**
  * @brief 电机控制消息结构
  */
-struct msg_gimbal_ctrl_t {
-    float yaw_speed;
-    float pitch_speed;
-    float yaw_torque;
-    float pitch_torque;
-    CTRL_MODE yaw_mode;
-    CTRL_MODE pitch_mode;
+struct msg_chassis_ctrl_t {
+    float Rhip1_torque;
+    float Rhip2_torque;
+    float Rwheel_torque;
+    float Lhip1_torque;
+    float Lhip2_torque;
+    float Lwheel_torque;
 };
 
 /**
@@ -128,6 +129,35 @@ struct motor_debug_t
     float pos_fdb;
     float cur_set;
     float cur_fdb;
+};
+
+struct msg_comm_t
+{
+    float vw;
+};
+
+struct msg_referee_t
+{
+
+};
+
+struct msg_rod_t
+{
+    float leg_len;
+    float leg_len_dot;
+    float leg_len_dot_last;
+
+    float leg_theta;
+    float leg_theta_dot;
+    float leg_theta_dot_last;
+};
+
+struct msg_torque_t
+{
+    float Tp;
+    float F;
+    float Tlwheel;
+    float Trwheel;
 };
 
 #endif //RM26_H7_MAGICMSG_HPP

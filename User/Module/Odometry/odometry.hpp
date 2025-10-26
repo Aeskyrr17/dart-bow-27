@@ -13,6 +13,7 @@
 #define t4 0.000000000001f
 #define t5 0.000000000000001f
 
+
 struct odometry_info_t
 {
     float x;
@@ -75,6 +76,7 @@ public:
 
 };
 
-odometry_info_t Odometry_Update(float *_quaternion, float _vel, float *_acc);
+odometry_info_t Odometry_Update(float *_quaternion, float *_acc, float _vel, float _yaw);
+
 
 #endif //ODOMETRY_HPP

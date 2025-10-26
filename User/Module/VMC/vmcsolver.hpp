@@ -12,10 +12,10 @@ class cVMCSolver
 protected:
 
     /*雅可比矩阵*/
-    float MTRTJ_mat[4]={0};
-    float JTRM_mat[4]={0};
-    float JTRMRev_mat[4]={0};
-    float JTRMInv_mat_c[4]={0};
+    // float MTRTJ_mat[4]={0};
+    float J_mat[4]={0};
+    float JT_mat[4]={0};
+    // float JTRMInv_mat_c[4]={0};
 
     /*腿长，单位m*/
     float L1 = 0.150f;

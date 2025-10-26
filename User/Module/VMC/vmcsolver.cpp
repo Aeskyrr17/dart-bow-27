@@ -12,8 +12,8 @@ void cVMCSolver::Resolve(float phi4_radian, float phi1_radian, int leg_type)
     }
     else if (leg_type == 1)
     {
-    this->phi4 = phi4_radian;
-    this->phi1 = PI + phi1_radian;
+        this->phi4 = phi4_radian;
+        this->phi1 = PI + phi1_radian;
     }
 
     float SIN1 = arm_sin_f32(this->phi1);
@@ -64,36 +64,44 @@ void cVMCSolver::Resolve(float phi4_radian, float phi1_radian, int leg_type)
     float sin03 = arm_sin_f32(this->PendulumRadian - this->U3);
     float sin02 = arm_sin_f32(this->PendulumRadian - this->U2);
 
-    JTRM_mat[0] = L1 * sin03 * sin12 / sin32;
-    JTRM_mat[1] = L1 * cos03 * sin12 / (sin32 * PendulumLength);
-    JTRM_mat[2] = L1 * sin02 * sin34 / sin32;
-    JTRM_mat[3] = L1 * cos02 * sin34 / (sin32 * PendulumLength);
+    J_mat[0] = L1 * sin03 * sin12 / sin32;
+    J_mat[1] = L1 * sin02 * sin34 / sin32;
+    J_mat[2] = L1 * cos03 * sin12 / (sin32 * PendulumLength);
+    J_mat[3] = L1 * cos02 * sin34 / (sin32 * PendulumLength);
+
+    JT_mat[0] = L1 * sin03 * sin12 / sin32;
+    JT_mat[1] = L1 * cos03 * sin12 / (sin32 * PendulumLength);
+    JT_mat[2] = L1 * sin02 * sin34 / sin32;
+    JT_mat[3] = L1 * cos02 * sin34 / (sin32 * PendulumLength);
 
     // JTRMRev_mat[0] = -cos02 / (sin12 * L1);
     // JTRMRev_mat[1] = cos03 / (sin34 * L1);
     // JTRMRev_mat[2] = PendulumLength * sin02 / (sin12 * L1);
     // JTRMRev_mat[3] = -PendulumLength * sin03 / (sin34 * L1);
 
-    JTRMInv_mat_c[0] = -cos02 / (sin12 * L1);
-    JTRMInv_mat_c[1] = cos03 / (sin34 * L1);
-    JTRMInv_mat_c[2] = sin02 / (sin12 * L1);
-    JTRMInv_mat_c[3] = -sin03 / (sin34 * L1);
+    // JTRMInv_mat_c[0] = -cos02 / (sin12 * L1);
+    // JTRMInv_mat_c[1] = cos03 / (sin34 * L1);
+    // JTRMInv_mat_c[2] = sin02 / (sin12 * L1);
+    // JTRMInv_mat_c[3] = -sin03 / (sin34 * L1);
 }
 
 /*正向VMC 由Force Torque->T1 T2*/
-void cVMCSolver::VMCCal(float *FT, float *Tmotor) {
-    Tmotor[0] = this->JTRM_mat[0] * FT[0] + this->JTRM_mat[1] * FT[1];
-    Tmotor[1] = this->JTRM_mat[2] * FT[0] + this->JTRM_mat[3] * FT[1];
+void cVMCSolver::VMCCal(float *FT, float *Tmotor)
+{
+    Tmotor[0] = this->JT_mat[0] * FT[0] + this->JT_mat[1] * FT[1];
+    Tmotor[1] = this->JT_mat[2] * FT[0] + this->JT_mat[3] * FT[1];
 }
 
 /*逆向VMC 由MOTOR_FORWARD MOTOR_BACKWORD -> Force Torque*/
-void cVMCSolver::VMCRevCal(float *FT, float *Tmotor) {
-    FT[0] = this->JTRMInv_mat_c[0] * Tmotor[0] + this->JTRMInv_mat_c[1] * Tmotor[1];
-    FT[1] = (this->JTRMInv_mat_c[2] * Tmotor[0] + this->JTRMInv_mat_c[3] * Tmotor[1])*PendulumLength;
+void cVMCSolver::VMCRevCal(float *FT, float *Tmotor)
+{
+    FT[0] = this->J_mat[0] * Tmotor[0] + this->J_mat[1] * Tmotor[1];
+    FT[1] = this->J_mat[2] * Tmotor[0] + this->J_mat[3] * Tmotor[1];
 }
 
-/*逆向VMC 由电机角速度->沿着摆方向和垂直摆方向角速度*/
-void cVMCSolver::VMCVelCal(float *phi_dot, float *v_dot) {
-    v_dot[0] = this->JTRMInv_mat_c[0] * phi_dot[0] + this->JTRMInv_mat_c[1] * phi_dot[1];
-    v_dot[1] = (this->JTRMInv_mat_c[2] * phi_dot[0] + this->JTRMInv_mat_c[3] * phi_dot[1])/PendulumLength;
+/*逆向VMC 由电机角速度->沿着摆方向和垂直摆方向角速度，离散化需要*0.001f*/
+void cVMCSolver::VMCVelCal(float *phi_dot, float *v_dot)
+{
+    v_dot[0] = this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1] * 0.001f;
+    v_dot[1] = this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1] * 0.001f;
 }

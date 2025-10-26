@@ -104,6 +104,9 @@ static void InitQuaternion(float *init_q4)
         msg_ins.gyro_r = imu_handler->gyro_data.x;
         msg_ins.gyro_p = imu_handler->gyro_data.y;
         msg_ins.gyro_y = imu_handler->gyro_data.z;
+        msg_ins.accel[0] = imu_handler->acc_data.x;
+        msg_ins.accel[1] = imu_handler->acc_data.y;
+        msg_ins.accel[2] = imu_handler->acc_data.z;
 
         om_publish(ins_topic, &msg_ins, sizeof(msg_ins), true, false);
 
