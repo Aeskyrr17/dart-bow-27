@@ -1,11 +1,8 @@
-//
-// Created by ASUS on 2025/10/15.
-//
+# pragma once
 
-#ifndef ODOMETRY_HPP
-#define ODOMETRY_HPP
-
+#include "math.hpp"
 #include "kalman_filter.h"
+#include "magicmsgs.hpp"
 
 #define t  0.001f
 #define t2 0.000001f
@@ -13,15 +10,7 @@
 #define t4 0.000000000001f
 #define t5 0.000000000000001f
 
-
-struct odometry_info_t
-{
-    float x;
-    float v;
-    float a_z;
-};
-
-class cVelFusionKF
+class VelFusionKF
 {
 protected:
     const float qq = 5.0f;//10
@@ -38,7 +27,7 @@ protected:
 public:
     KalmanFilter_t KF;
 
-    cVelFusionKF()
+    VelFusionKF()
     {
         Kalman_Filter_Init(&this->KF, 3, 0, 2);//Inertia odome 3 State 2 observation
         memcpy(this->KF.P_data, P_Init, sizeof(P_Init));
@@ -52,7 +41,6 @@ public:
     {
         memset(kf->xhat.pData, 0, sizeof(float) * kf->xhat.numRows);
         memset(kf->xhatminus.pData, 0, sizeof(float) * kf->xhatminus.numRows);
-        //	memcpy(F->P.pData,Pminus_data,sizeof(Pminus_data));
         memset(kf->P.pData, 0, sizeof(float) * kf->P.numRows*kf->P.numRows);
     }
 
@@ -61,7 +49,6 @@ public:
         this->KF.MeasuredVector[0] = Velocity;
         this->KF.MeasuredVector[1] = AccelerationX;
         Kalman_Filter_Update(&this->KF);
-        //VelFusionKF_Update(&this->KF);
     }
 
     float GetXhat()
@@ -76,7 +63,49 @@ public:
 
 };
 
-odometry_info_t Odometry_Update(float *_quaternion, float *_acc, float _vel, float _yaw);
+class Odometry
+{
+private:
+    msg_odometry_t odom_data_;
+    VelFusionKF vel_kf;
+public:
 
+    /**
+     * @brief odometry update function
+     * @note all the params must be homography
+     * @param _quaternion [w, x, y, z] format
+     * @param _acc [0, ax, ay, az] quaternion format for acceleration
+     * @param _vel velocity measurement
+     * @param _yaw in degree
+     * @return odometry_info
+     */
+    msg_odometry_t Update(float *_quaternion, float *_acc, float _vel, float _yaw)
+    {
+        odom_data_.x = 0.0f;
+        odom_data_.v = 0.0f;
+        odom_data_.a_z = 0.0f;
 
-#endif //ODOMETRY_HPP
+        float temp[4] = {0};
+        float a_world[4] = {0};
+
+        arm_quaternion_product_f32(_quaternion, _acc, temp, 1);
+        arm_quaternion_product_f32(temp, _quaternion, a_world, 1);
+
+        float a_x = sqrtf(a_world[1] * a_world[1] + a_world[2] * a_world[2]) *
+                    arm_cos_f32(atan2f(a_world[2], a_world[1]) - _yaw * Numeric::DegreeToRad);
+
+        vel_kf.UpdateKalman(_vel, a_x);
+
+        odom_data_.v = vel_kf.GetVhat();
+        odom_data_.x = vel_kf.GetXhat();
+        odom_data_.a_z = a_world[3];
+
+        return odom_data_;
+    }
+
+    void Reset()
+    {
+        vel_kf.ResetKF(&vel_kf.KF);
+        odom_data_ = {0.0f, 0.0f, 0.0f};
+    }
+};

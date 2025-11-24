@@ -88,7 +88,7 @@ public:
 
     void Receive(LKMotor *motor, uint8_t *can_receive_data);
 
-    static LKMotorHandler *instance()
+    static LKMotorHandler *Instance()
     {
         static LKMotorHandler instance;
         return &instance;

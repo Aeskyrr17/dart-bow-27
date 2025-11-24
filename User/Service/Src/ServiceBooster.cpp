@@ -5,7 +5,6 @@
 #include "main.h"
 #include "tx_api.h"
 #include "led.hpp"
-#include "ServiceBooster.hpp"
 
 TX_THREAD my_thread1;
 uint8_t my_thread_stack1[1024];
@@ -25,10 +24,6 @@ extern void IMUThreadFun(ULONG initial_input);
 extern TX_THREAD IMUTempThread;
 extern uint8_t IMUTempThreadStack[2048];
 extern void IMUTempThreadFun(ULONG initial_input);
-
-extern TX_THREAD MotorThread;
-extern uint8_t MotorThreadStack[4096];
-extern void MotorThreadFun(ULONG initial_input);
 
 /*EKF pool*/
 TX_BYTE_POOL MathPool;
@@ -68,7 +63,7 @@ UCHAR Msg_PoolBuf[4096] = {0};
 
 #define TX_NAME(s) const_cast<CHAR*>(s)
 
-void ServiceBooster()
+extern "C" void ServiceBooster()
 {
     /*Math pool in ccram*/
     tx_byte_pool_create(
@@ -105,8 +100,4 @@ void ServiceBooster()
     tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
         IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),
         5, 5, TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    tx_thread_create(&MotorThread, TX_NAME("MotorThread"),
-        MotorThreadFun, 0x1234, MotorThreadStack, sizeof(MotorThreadStack),
-        2, 2, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

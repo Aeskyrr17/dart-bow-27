@@ -1,10 +1,6 @@
-//
-// Created by cosmosmount on 2025/9/14.
-//
+#pragma once
 
-#ifndef RM26_H7_MAGICMSG_HPP
-#define RM26_H7_MAGICMSG_HPP
-
+#include <cstdint>
 typedef enum {
     Relax = 2,
     Spin = 1,
@@ -30,41 +26,24 @@ typedef enum {
 /**
  * @brief 遥控器消息结构
  */
-struct msg_remoter_t {
-    CTRL_STATE ctrl_sw;             ///< Dr16左侧开关状态，VT03中间档位状态
-    SHOOT_STATE shoot_sw;           ///< Dr16右侧开关状态，VT03拨轮状态
-    CTRL_STATE last_ctrl_sw;             ///< Dr16左侧开关状态，VT03中间档位状态
-    SHOOT_STATE last_shoot_sw;           ///< Dr16右侧开关状态，VT03拨轮状态
-    float left_x;                  ///< 左侧摇杆X轴值
-    float left_y;                  ///< 左侧摇杆Y轴值
-    float right_x;                 ///< 右侧摇杆X轴值
-    float right_y;                 ///< 右侧摇杆Y轴值
-    float mouse_x;                 ///< 鼠标X轴值
-    float mouse_y;                 ///< 鼠标Y轴值
-    float mouse_z;                 ///< 鼠标滚轮值
-    bool mouse_left;               ///< 鼠标左键状态
-    bool mouse_right;              ///< 鼠标右键状态
-    __PACKED_STRUCT
-    {
-         uint16_t W : 1;
-         uint16_t S : 1;
-         uint16_t A : 1;
-         uint16_t D : 1;
-         uint16_t SHIFT : 1;
-         uint16_t CTRL : 1;
-         uint16_t Q : 1;
-         uint16_t E : 1;
-         uint16_t R : 1;
-         uint16_t F : 1;
-         uint16_t G : 1;
-         uint16_t Z : 1;
-         uint16_t X : 1;
-         uint16_t C : 1;
-         uint16_t V : 1;
-         uint16_t B : 1;
-    }key;
-    __PACKED_STRUCT
-    {
+struct msg_remoter_t 
+{
+    CTRL_STATE ctrl_sw;
+    SHOOT_STATE shoot_sw;
+    CTRL_STATE last_ctrl_sw;
+    SHOOT_STATE last_shoot_sw;
+    float left_x;
+    float left_y;
+    float right_x;
+    float right_y;
+    float mouse_x;
+    float mouse_y;
+    float mouse_z;
+    bool mouse_left;
+    bool mouse_right;
+
+    // 使用可移植性更好的位域基类型，并显式加 packed（GCC/Clang 风格）
+    struct __attribute__((packed)) {
         uint16_t W : 1;
         uint16_t S : 1;
         uint16_t A : 1;
@@ -81,7 +60,27 @@ struct msg_remoter_t {
         uint16_t C : 1;
         uint16_t V : 1;
         uint16_t B : 1;
-    }last_key;
+    } key;
+
+    struct __attribute__((packed)) {
+       uint16_t W : 1;
+       uint16_t S : 1;
+       uint16_t A : 1;
+       uint16_t D : 1;
+       uint16_t SHIFT : 1;
+       uint16_t CTRL : 1;
+       uint16_t Q : 1;
+       uint16_t E : 1;
+       uint16_t R : 1;
+       uint16_t F : 1;
+       uint16_t G : 1;
+       uint16_t Z : 1;
+       uint16_t X : 1;
+       uint16_t C : 1;
+       uint16_t V : 1;
+       uint16_t B : 1;
+    } last_key;
+
     bool offline;
 };
 
@@ -98,18 +97,6 @@ struct msg_ins_t {
     float gyro_p; ///< pitch角速度
     float gyro_y; ///< yaw角速度
     float accel[3];
-};
-
-/**
- * @brief 电机控制消息结构
- */
-struct msg_chassis_ctrl_t {
-    float Rhip1_torque;
-    float Rhip2_torque;
-    float Rwheel_torque;
-    float Lhip1_torque;
-    float Lhip2_torque;
-    float Lwheel_torque;
 };
 
 /**
@@ -136,28 +123,30 @@ struct msg_comm_t
     float vw;
 };
 
-struct msg_referee_t
+struct msg_solver_t
 {
+    float llen;
+    float llen_dot;
+    float rlen;
+    float rlen_dot;
 
+    float lphi;
+    float lphi_dot;
+    float rphi;
+    float rphi_dot;
 };
 
-struct msg_rod_t
+struct msg_ctrl_t
 {
-    float leg_len;
-    float leg_len_dot;
-    float leg_len_dot_last;
-
-    float leg_theta;
-    float leg_theta_dot;
-    float leg_theta_dot_last;
+    float Tl[2];
+    float Tr[2];
+    float Twl;
+    float Twr;
 };
 
-struct msg_torque_t
+struct msg_odometry_t
 {
-    float Tp;
-    float F;
-    float Tlwheel;
-    float Trwheel;
+    float x;
+    float v;
+    float a_z;
 };
-
-#endif //RM26_H7_MAGICMSG_HPP

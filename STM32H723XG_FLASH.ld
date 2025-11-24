@@ -224,6 +224,15 @@ SECTIONS
     __bss_end__ = _ebss;
       PROVIDE( __bss_end = .);
   } >DTCMRAM
+
+  .RAM_D3_Section :
+  {
+    . = ALIGN(4);
+    *(.RAM_D3)
+    *(.RAM_D3*)
+    . = ALIGN(4);
+  } >RAM_D3
+  
   PROVIDE( __non_tls_bss_start = ADDR(.bss) );
 
   PROVIDE( __bss_start = __tbss_start );
@@ -239,7 +248,6 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >DTCMRAM
-
 
 
   /* Remove information from the standard libraries */

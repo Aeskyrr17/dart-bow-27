@@ -1,0 +1,59 @@
+#pragma once
+
+#define LQR_K_NUM               46
+#define LQR_MIN_LEN_CTRL       0.15f
+#define LQR_MAX_LEN_CTRL       0.35f
+#define LQR_LEN_RESOLUTION     0.01f
+
+/*腿长，单位m*/
+#define VMC_L1 0.150f
+#define VMC_L2 0.270f
+#define VMC_MotorDistance 0.150f
+#define VMC_HalfMotorDistance (VMC_MotorDistance / 2.0f)
+
+#define LHIP1_OFFSET
+#define LHIP2_OFFSET
+#define RHIP1_OFFSET
+#define RHIP2_OFFSET
+
+#define DEBUG
+
+typedef enum{
+    ON_GROUND = 0,
+    OFF_GROUND = 1,
+} fly_flag_e;
+
+/*底盘运动模式*/
+typedef enum{
+    NONE = 0,
+    NORMAL_MOVING_MODE,
+    ESCAPE_MODE,
+    ABNORMAL_MOVING_MODE
+} chassis_mode_e;
+
+typedef enum{
+    NORMAL_ROTATE = 0,
+    SPIN_ROTATE
+} rotate_ctrl_e;
+
+typedef enum{
+    DO_NOT_JUMP = 0,
+    JUMP_READY,
+    JUMP_START
+} jump_ctrl_e;
+
+typedef enum{
+    NOT_FLY_MODE = 0,
+    FLY_MODE
+} fly_ctrl_e;
+
+#pragma pack(push,1)
+
+typedef struct{
+    chassis_mode_e chassis_mode : 2;
+    rotate_ctrl_e rotate_type : 1;
+    jump_ctrl_e jump_ctrl : 2;
+    fly_ctrl_e fly_ctrl : 1;
+} chassis_mode_t;
+
+#pragma pack(pop)

@@ -29,34 +29,21 @@ void PID::Tuning(float tuning_kp, float tuning_ki, float tuning_kd) {
 }
 
 
-void PID::UpdateResult(void)
+void PID::UpdateResult(float vel)
 {
     // 更新误差缓存
     err[2] = err[1];
     err[1] = err[0];
     err[0] = ref - fdb;
 
-    // if (mode == PID_POSITION)
-    // {
-    //     // 计算比例输出
-    //     pResult = kp * err[0];
-
-    //     // 计算微分输出
-    //     dResult = kd * (err[0] - err[1]);
-    // }
-    // else if (mode == PID_DELTA)
-    // {
-    //     pResult = kp * (err[0] - err[1]);
-
-    //     iResult = ki * err[0];
-    //     iResult = LimitABS(iResult, maxIOut);
-
-    //     dResult = kd * (err[0] - 2.0f * err[1] + err[2]);
-    // }
-
     pResult = kp * err[0];
     dResult = kd * (err[0] - err[1]);
     iTerm = ki * err[0];
+
+    if (mode == PID_POSITION)
+        dResult = kd * (err[0] - err[1]);
+    else if (mode == PID_DVEL)
+        dResult = kd * vel;
 
     if (mode & PID_Trapezoid_Intergral)
         f_Trapezoid_Intergral(this); // 梯形积分

@@ -1,9 +1,5 @@
-//
-// Created by cosmosmount on 2025/8/29.
-//
-
-#ifndef RM26_PID_HPP
-#define RM26_PID_HPP
+#ifndef PID_HPP
+#define PID_HPP
 
 #include "math.hpp"
 using namespace Numeric;
@@ -13,13 +9,13 @@ using namespace Numeric;
  */
 enum PidModeType
 {
-    PID_POSITION = 0x01,                  // 位置式PID，0000 0000
-    PID_DELTA = 0x02,                     // 增量式PID，0000 0001
-    PID_Trapezoid_Intergral = 0x04,       // 梯形积分，0000 0010
-    PID_Changing_Integral_Rate = 0x08,    // 变速积分，0000 0100
-    PID_Integral_Separation = 0x10,       // 积分分离，0000 1000
-    PID_Derivative_On_Measurement = 0x20, // 微分先行，0001 0000
-    PID_Integral_Limit = 0x40,             // 积分限幅，0010 0000
+    PID_POSITION = 0x01,                    // 位置式PID，0000 0000
+    PID_DVEL = 0x02,                       // 增量式PID，0000 0001
+    PID_Trapezoid_Intergral = 0x04,         // 梯形积分，0000 0010
+    PID_Changing_Integral_Rate = 0x08,      // 变速积分，0000 0100
+    PID_Integral_Separation = 0x10,         // 积分分离，0000 1000
+    PID_Derivative_On_Measurement = 0x20,   // 微分先行，0001 0000
+    PID_Integral_Limit = 0x40,              // 积分限幅，0010 0000
     PID_Derivative_Incomplete = 0x80,       // 不完全微分，0100 0000
 };
 
@@ -68,7 +64,7 @@ public:
 
     PID(float kp, float ki, float kd, float maxOut, float maxIOut, int mode = PID_POSITION);
     void Tuning(float tuning_kp, float tuning_ki, float tuning_kd);
-    void UpdateResult();
+    void UpdateResult(float vel = 0.0f);
     void Clear();
 };
 
@@ -139,4 +135,4 @@ static void f_Integral_Limit(PID *pid)
     // pid->iTerm = FloatConstrain(pid->iTerm, -pid->maxIOut, pid->maxIOut);
 }
 
-#endif //RM26_PID_HPP
+#endif //PID_HPP

@@ -1,7 +1,7 @@
 #include "usart.h"
 #include "om.h"
 #include "magicmsgs.hpp"
-#include "ServiceRemoter.hpp"
+#include "config_remoter.hpp"
 
 TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[2048] = {0};

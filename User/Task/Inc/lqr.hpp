@@ -1,60 +1,8 @@
-#ifndef TASKCHASSIS_HPP
-#define TASKCHASSIS_HPP
+# pragma once
+#include "math.hpp"
+#include "config_chassis.hpp"
 
-#include "main.h"
-#include "tx_api.h"
-#include "om.h"
-#include "pid.hpp"
-#include "slope.hpp"
-#include "filter.hpp"
-#include "bsp_can.hpp"
-#include "magicmsgs.hpp"
-#include "kalman_filter.h"
-
-#define LQR_K_NUM               46
-#define LQR_MIN_LEN_CTRL       0.15f
-#define LQR_MAX_LEN_CTRL       0.35f
-#define LQR_LEN_RESOLUTION     0.01f
-
-typedef enum{
-    ON_GROUND = 0,
-    OFF_GROUND = 1,
-} fly_flag_e;
-
-/*底盘运动模式*/
-typedef enum{
-    NONE = 0,
-    NORMAL_MOVING_MODE,
-    ESCAPE_MODE,
-    ABNORMAL_MOVING_MODE
-} chassis_mode_e;
-
-typedef enum{
-    NORMAL_ROTATE = 0,
-    SPIN_ROTATE
-} rotate_ctrl_e;
-
-typedef enum{
-    DO_NOT_JUMP = 0,
-    JUMP_READY,
-    JUMP_START
-} jump_ctrl_e;
-
-typedef enum{
-    NOT_FLY_MODE = 0,
-    FLY_MODE
-} fly_ctrl_e;
-
-#pragma pack(push,1)
-
-typedef struct{
-    chassis_mode_e chassis_mode : 2;
-    rotate_ctrl_e rotate_type : 1;
-    jump_ctrl_e jump_ctrl : 2;
-    fly_ctrl_e fly_ctrl : 1;
-} chassis_mode_t;
-
-#pragma pack(pop)
+using namespace Numeric;
 
 class LQR
 {
@@ -185,11 +133,10 @@ public:
 
     }
 
-    void InitMatX(arm_matrix_instance_f32 *pMatXRef, arm_matrix_instance_f32 *pMatXObs) {
+    void InitMatX(arm_matrix_instance_f32 *pMatXRef, arm_matrix_instance_f32 *pMatXObs) 
+    {
         this->LQRXRefX = pMatXRef;
         this->LQRXObsX = pMatXObs;
     }
 
 };
-
-#endif //TASKCHASSIS_HPP

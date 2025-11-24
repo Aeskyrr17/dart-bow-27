@@ -1,18 +1,23 @@
-#include "TaskBooster.hpp"
-
 #include "main.h"
 #include "tx_api.h"
 
-extern TX_THREAD ChassisThread;
-extern uint8_t ChassisThreadStack[4096];
-extern void ChassisThreadFun(ULONG initial_input);
+extern TX_THREAD PendulumThread;
+extern uint8_t PendulumThreadStack[4096];
+extern void PendulumThreadFun(ULONG initial_input);
+
+extern TX_THREAD SolverThread;
+extern uint8_t SolverThreadStack[4096];
+extern void SolverThreadFun(ULONG initial_input);
 
 #define TX_NAME(s) const_cast<CHAR*>(s)
-void TaskBooster(void)
+extern "C" void TaskBooster(void)
 {
-    /* Create the main thread.  */
-    tx_thread_create(&ChassisThread, TX_NAME("ChassisThread"), ChassisThreadFun, 0x1234,
-                     ChassisThreadStack, sizeof(ChassisThreadStack),
+
+    tx_thread_create(&PendulumThread, TX_NAME("PendulumThread"), PendulumThreadFun, 0x1234,
+                     PendulumThreadStack, sizeof(PendulumThreadStack),
                      6, 6, TX_NO_TIME_SLICE, TX_AUTO_START);
-    // tx_semaphore_create(&GimbalThreadSem, "Gimbal Semaphore", 0);
+    
+    tx_thread_create(&SolverThread, TX_NAME("SolverThread"), SolverThreadFun, 0x1234,
+                     SolverThreadStack, sizeof(SolverThreadStack),
+                     5, 5, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

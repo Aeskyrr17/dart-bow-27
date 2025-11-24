@@ -51,52 +51,6 @@ void LKMotorHandler::registerMotor(LKMotor *LKmotor, FDCAN_HandleTypeDef *hcan, 
     }
 }
 
-// void LKMotorHandler::processRawData(FDCAN_HandleTypeDef *hcan, uint8_t *rx_data, int index)
-// {
-//     if (hcan == &hfdcan1)
-//     {
-//         for (int i = 0; i < 4; i++)
-//         {
-//             can1_receive_data[index].last_ecd = can1_receive_data[index].ecd;                 ///< 上一次的编码器值
-//             can1_receive_data[index].ecd = (uint16_t)(rx_data[7] << 8 | rx_data[6]);          ///< 编码器值
-//             can1_receive_data[index].speed_dps = (int16_t)(rx_data[5] << 8 | rx_data[4]);     ///< 速度值，单位dps, degree per second
-//             can1_receive_data[index].given_current = (int16_t)(rx_data[3] << 8 | rx_data[2]); ///< 电流值，或者说是转矩值
-//             can1_receive_data[index].temperate = rx_data[1];                                  ///< 温度值
-//             // motor_loss_count_1[index]++;
-//         }
-//     }
-//     else if (hcan == &hfdcan2)
-//     {
-//         for (int i = 0; i < 4; i++)
-//         {
-//             can2_receive_data[index].last_ecd = can2_receive_data[index].ecd;                 ///< 上一次的编码器值
-//             can2_receive_data[index].ecd = (uint16_t)(rx_data[7] << 8 | rx_data[6]);          ///< 编码器值
-//             can2_receive_data[index].speed_dps = (int16_t)(rx_data[5] << 8 | rx_data[4]);     ///< 速度值，单位dps, degree per second
-//             can2_receive_data[index].given_current = (int16_t)(rx_data[3] << 8 | rx_data[2]); ///< 电流值，或者说是转矩值
-//             can2_receive_data[index].temperate = rx_data[1];                                  ///< 温度值
-//             // motor_loss_count_2[index]++;
-//         }
-//     }
-//     else if (hcan == &hfdcan3)
-//     {
-//         for (int i = 0; i < 4; i++)
-//         {
-//             can3_receive_data[index].last_ecd = can3_receive_data[index].ecd;                 ///< 上一次的编码器值
-//             can3_receive_data[index].ecd = (uint16_t)(rx_data[7] << 8 | rx_data[6]);          ///< 编码器值
-//             can3_receive_data[index].speed_dps = (int16_t)(rx_data[5] << 8 | rx_data[4]);     ///< 速度值，单位dps, degree per second
-//             can3_receive_data[index].given_current = (int16_t)(rx_data[3] << 8 | rx_data[2]); ///< 电流值，或者说是转矩值
-//             can3_receive_data[index].temperate = rx_data[1];                                  ///< 温度值
-//             // motor_loss_count_2[index]++;
-//         }
-//     }
-
-//     updateFeedback();
-// }
-
-
-
-
-
 /**
  * @brief 发送控制数据
  * @param hcan1 CAN1句柄
@@ -147,9 +101,7 @@ void LKMotorHandler::sendControlData()
     }
     // 使用bsp_can中的函数发送数据
     CAN_Transmit(&hfdcan1, 0x280, can1_send_data_0, 8);
-
     CAN_Transmit(&hfdcan2, 0x280, can2_send_data_0, 8);
-
     CAN_Transmit(&hfdcan3, 0x280, can3_send_data_0, 8);
 }
 
@@ -159,8 +111,6 @@ void LKMotorHandler::sendControlData()
  * @param hcan1 CAN1句柄
  * @param hcan2 CAN2句柄
  */
-
-
 void LKMotorHandler::updateFeedback(FDCAN_HandleTypeDef *hcan, uint8_t *rx_data, int index)
 {
     if (hcan == &hfdcan1)

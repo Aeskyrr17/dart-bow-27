@@ -1,6 +1,5 @@
 #pragma once
-#ifndef SERVICE_REMOTER_H
-#define SERVICE_REMOTER_H
+
 #include "tx_api.h"
 #include "main.h"
 
@@ -127,5 +126,3 @@ struct vt03_data_t
     }key;
     uint16_t crc16;
 } __attribute__((packed));
-
-#endif
