@@ -1,21 +1,20 @@
-//
-// Created by ASUS on 2025/10/15.
-//
-
 #ifndef TASKCHASSIS_HPP
 #define TASKCHASSIS_HPP
 
 #include "main.h"
 #include "tx_api.h"
-
 #include "om.h"
 #include "pid.hpp"
 #include "slope.hpp"
-#include "config.hpp"
 #include "filter.hpp"
 #include "bsp_can.hpp"
 #include "magicmsgs.hpp"
 #include "kalman_filter.h"
+
+#define LQR_K_NUM               46
+#define LQR_MIN_LEN_CTRL       0.15f
+#define LQR_MAX_LEN_CTRL       0.35f
+#define LQR_LEN_RESOLUTION     0.01f
 
 typedef enum{
     ON_GROUND = 0,
