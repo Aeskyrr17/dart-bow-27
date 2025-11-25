@@ -91,15 +91,15 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     {
         if (hfdcan == &hfdcan1)
         {
-            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
         }
         else if (hfdcan == &hfdcan2) // 处理CAN2的数据
         {
-            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
         }
         else if (hfdcan == &hfdcan3) // 处理CAN3的数据
         {
-            LKMotorHandler::instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
         }
     }
     /*--------------------------------------------------云台消息--------------------------------------------------*/

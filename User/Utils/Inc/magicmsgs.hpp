@@ -108,16 +108,6 @@ struct pid_tuning_t {
     float kd;
 };
 
-struct motor_debug_t
-{
-    float spd_set;
-    float spd_fdb;
-    float pos_set;
-    float pos_fdb;
-    float cur_set;
-    float cur_fdb;
-};
-
 struct msg_comm_t
 {
     float vw;

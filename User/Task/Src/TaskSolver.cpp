@@ -32,18 +32,30 @@ uint8_t SolverThreadStack[4096] = {0};
 LKMotorHandler *LKmotorhandler = LKMotorHandler::Instance();
 
 #ifdef DEBUG
-__attribute__((section(".RAM_D3"))) float llength;
-__attribute__((section(".RAM_D3"))) float rlength;
-__attribute__((section(".RAM_D3"))) float lphi;
-__attribute__((section(".RAM_D3"))) float rphi;
-__attribute__((section(".RAM_D3"))) float llength_dot;
-__attribute__((section(".RAM_D3"))) float rlength_dot;
-__attribute__((section(".RAM_D3"))) float lphi_dot;
-__attribute__((section(".RAM_D3"))) float rphi_dot;
-__attribute__((section(".RAM_D3"))) float rhip1_pos;
-__attribute__((section(".RAM_D3"))) float rhip2_pos;
-__attribute__((section(".RAM_D3"))) float lhip1_pos;
-__attribute__((section(".RAM_D3"))) float lhip2_pos;
+struct solver_debug_t
+{
+    float llength;
+    float rlength;
+    float lphi;
+    float rphi;
+    float llength_dot;
+    float rlength_dot;
+    float lphi_dot;
+    float rphi_dot;
+    float lphi1;
+    float lphi4;
+    float rphi1;
+    float rphi4;
+    float lhip1_tor;
+    float lhip2_tor;
+    float rhip1_tor;
+    float rhip2_tor;
+    float rwheel_tor_ref;
+    float lwheel_tor_ref;
+    float rwheel_tor_fdb;
+    float lwheel_tor_fdb;
+};
+__attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 #endif
 
 [[noreturn]] void SolverThreadFun(ULONG initial_input)
@@ -61,12 +73,16 @@ __attribute__((section(".RAM_D3"))) float lhip2_pos;
 
     LKMotorHandler::Instance()->registerMotor(&LHip1, &hfdcan1, 0x141);
     LHip1.currentSet = 0;
+    LHip1.offset = LHIP1_OFFSET;
     LKMotorHandler::Instance()->registerMotor(&LHip2, &hfdcan1, 0x142);
     LHip2.currentSet = 0;
+    LHip2.offset = LHIP2_OFFSET;
     LKMotorHandler::Instance()->registerMotor(&RHip1, &hfdcan1, 0x143);
     RHip1.currentSet = 0;
+    RHip1.offset = RHIP1_OFFSET;
     LKMotorHandler::Instance()->registerMotor(&RHip2, &hfdcan1, 0x144);
     RHip2.currentSet = 0;
+    RHip2.offset = RHIP2_OFFSET;
     LKMotorHandler::Instance()->registerMotor(&LWheel, &hfdcan3, 0x141);
     LWheel.currentSet = 0;
     LKMotorHandler::Instance()->registerMotor(&RWheel, &hfdcan3, 0x142);
@@ -136,35 +152,47 @@ __attribute__((section(".RAM_D3"))) float lhip2_pos;
 
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
-        // LHip1.currentSet = LTp[0]*Tk_LK8016;
-        // LHip2.currentSet = LTp[1]*Tk_LK8016;
-        // RHip1.currentSet = -RTp[0]*Tk_LK8016;
-        // RHip2.currentSet = -RTp[1]*Tk_LK8016;
-
-        // LWheel.currentSet = pendulumctrl.Twl * Tk_LK9025;
-        // RWheel.currentSet = -pendulumctrl.Twr * Tk_LK9025;
 
         LHip1.currentSet = 0;
         LHip2.currentSet = 0;
         RHip1.currentSet = 0;
         RHip2.currentSet = 0;
 
-        LWheel.currentSet = 10;
+        LWheel.currentSet = 0;
         RWheel.currentSet = 0;
 
+        LHip1.currentSet = LTp[0]*Tk_LK8016;
+        LHip2.currentSet = LTp[1]*Tk_LK8016;
+        RHip1.currentSet = -RTp[0]*Tk_LK8016;
+        RHip2.currentSet = -RTp[1]*Tk_LK8016;
+
+        LWheel.currentSet = pendulumctrl.Twl * Tk_LK9025;
+        RWheel.currentSet = -pendulumctrl.Twr * Tk_LK9025;
+
+
     #ifdef DEBUG
-        llength = solverfdb.llen;
-        rlength = solverfdb.rlen;
-        lphi = solverfdb.lphi;
-        rphi = solverfdb.rphi;
-        llength_dot = solverfdb.llen_dot;
-        rlength_dot = solverfdb.rlen_dot;
-        lphi_dot = solverfdb.lphi_dot;
-        rphi_dot = solverfdb.rphi_dot;
-        rhip1_pos = RHip1.motorFeedback.positionFdb;
-        rhip2_pos = RHip2.motorFeedback.positionFdb;
-        lhip1_pos = LHip1.motorFeedback.positionFdb;
-        lhip2_pos = LHip2.motorFeedback.positionFdb;
+        solver_debug.llength = solverfdb.llen;
+        solver_debug.rlength = solverfdb.rlen;
+        solver_debug.lphi = solverfdb.lphi;
+        solver_debug.rphi = solverfdb.rphi;
+        solver_debug.llength_dot = solverfdb.llen_dot;
+        solver_debug.rlength_dot = solverfdb.rlen_dot;
+        solver_debug.lphi_dot = solverfdb.lphi_dot;
+        solver_debug.rphi_dot = solverfdb.rphi_dot;
+        
+        solver_debug.lphi1 = Lsolver.GetPhi1();
+        solver_debug.lphi4 = Lsolver.GetPhi4();
+        solver_debug.rphi1 = Rsolver.GetPhi1();
+        solver_debug.rphi4 = Rsolver.GetPhi4();
+
+        solver_debug.lhip1_tor = LTp[0];
+        solver_debug.lhip2_tor = LTp[1];
+        solver_debug.rhip1_tor = RTp[0];
+        solver_debug.rhip2_tor = RTp[1];
+        solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
+        solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
+        solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
+        solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
     #endif
         
         LKMotorHandler::Instance()->sendControlData();

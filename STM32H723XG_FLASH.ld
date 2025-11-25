@@ -225,6 +225,22 @@ SECTIONS
       PROVIDE( __bss_end = .);
   } >DTCMRAM
 
+  .RAM_D1_Section :
+  {
+    . = ALIGN(4);
+    *(.RAM_D1)
+    *(.RAM_D1*)
+    . = ALIGN(4);
+  } >RAM_D1
+
+  .RAM_D2_Section :
+  {
+    . = ALIGN(4);
+    *(.RAM_D2)
+    *(.RAM_D2*)
+    . = ALIGN(4);
+  } >RAM_D2
+
   .RAM_D3_Section :
   {
     . = ALIGN(4);

@@ -11,10 +11,10 @@
 #define VMC_MotorDistance 0.150f
 #define VMC_HalfMotorDistance (VMC_MotorDistance / 2.0f)
 
-#define LHIP1_OFFSET
-#define LHIP2_OFFSET
-#define RHIP1_OFFSET
-#define RHIP2_OFFSET
+#define LHIP1_OFFSET 0x11FF
+#define LHIP2_OFFSET 0x25FF
+#define RHIP1_OFFSET 0xC6C3
+#define RHIP2_OFFSET 0x8419
 
 #define DEBUG
 

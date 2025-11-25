@@ -37,7 +37,6 @@ void PID::UpdateResult(float vel)
     err[0] = ref - fdb;
 
     pResult = kp * err[0];
-    dResult = kd * (err[0] - err[1]);
     iTerm = ki * err[0];
 
     if (mode == PID_POSITION)

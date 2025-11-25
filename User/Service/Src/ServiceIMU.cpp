@@ -50,7 +50,8 @@ static void InitQuaternion(float *init_q4)
         init_q4[i + 1] = axis_rot[i] * sinf(angle / 2.0f); // 轴角公式,第三轴为0(没有z轴分量)
 }
 
-[[noreturn]] void IMUThreadFun(ULONG initial_input) {
+[[noreturn]] void IMUThreadFun(ULONG initial_input) 
+{
     UNUSED(initial_input);
     IMU_time = tx_time_get();
 
@@ -71,7 +72,8 @@ static void InitQuaternion(float *init_q4)
     imu_handler->VerifyAccChipID();  //< 验证加速度计ID
     imu_handler->VerifyGyroChipID(); //< 验证陀螺仪ID
 
-    while (imu_handler->acc_data.temperature < 45.0f) {
+    while (imu_handler->acc_data.temperature < 45.0f) 
+    {
         tx_thread_sleep(100);
     }
     tx_thread_sleep(2000);
@@ -126,7 +128,6 @@ static void InitQuaternion(float *init_q4)
 
 TX_THREAD IMUTempThread;
 uint8_t IMUTempThreadStack[2048] = {0};
-// TX_SEMAPHORE IMUTempThreadSem;
 
 [[noreturn]] void IMUTempThreadFun(ULONG initial_input) {
     UNUSED(initial_input);
@@ -146,18 +147,20 @@ uint8_t IMUTempThreadStack[2048] = {0};
     float tmp_last = imu_handler->acc_data.temperature;
     tx_thread_sleep(1000);
     imu_handler->ReadAccTemperature(&imu_handler->acc_data.temperature);
-    if (tmp_last == imu_handler->acc_data.temperature) {
+    if (tmp_last == imu_handler->acc_data.temperature) 
+    {
         //error in temp
         tx_thread_suspend(&IMUTempThread);
     }
 
-    for (;;) {
-        // tx_semaphore_get(&IMUTempThreadSem, TX_WAIT_FOREVER);
+    for (;;) 
+    {
         imu_handler->ReadAccTemperature(&imu_handler->acc_data.temperature);
         imu_handler->TemperatureControl(imu_handler->TargetTemp);
 
         uint8_t time_to_delay = tx_time_get() - IMU_time;
-        if (time_to_delay < 1) {
+        if (time_to_delay < 1) 
+        {
             tx_thread_sleep(1 - time_to_delay);
         }
     }

@@ -122,8 +122,8 @@ public:
 
     void VMCVelCal(float *phi_dot, float *v_dot)
     {
-        v_dot[0] = this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1] * 0.001f;
-        v_dot[1] = this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1] * 0.001f;
+        v_dot[0] = (this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1]) * 0.001f;
+        v_dot[1] = (this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1]) * 0.001f;
     }
 
     inline float GetPendulumLen() {

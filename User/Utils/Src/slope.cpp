@@ -3,9 +3,6 @@
  * @author yssickjgd (1345578933@qq.com)
  * @modified
  * @brief 斜坡函数, 用于速度规划等
- * @version 0.1
- * @date 2023-08-29 0.1 23赛季定稿
- * @date 2024-06-03 1.1 规划引入优先级方式
  * @note modified
  * @copyright USTC-RoboWalker (c) 2023-2024
  *

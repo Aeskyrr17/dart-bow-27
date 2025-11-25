@@ -7,45 +7,54 @@ TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[2048] = {0};
 TX_SEMAPHORE RemoterThreadSem;
 
-// 数组在 D3 RAM
-__attribute__((section(".RAM_D3"))) uint8_t data_rx[DR16_DATA_SIZE];
+// 数组在 D1 RAM
+__attribute__((section(".RAM_D1"))) uint8_t data_rx[DR16_DATA_SIZE];
 
 inline dr16_data_t& Dr16_Data()
 {
     return *reinterpret_cast<dr16_data_t*>(data_rx);
 }
 
-[[noreturn]] void RemoterThreadFun(ULONG initial_input) {
+[[noreturn]] void RemoterThreadFun(ULONG initial_input) 
+{
     UNUSED(initial_input);
 
     /* Remoter Topic */
     om_topic_t *remoter_topic = om_config_topic(nullptr, "ca", "remoter", sizeof(msg_remoter_t));
     msg_remoter_t msg_remoter{};
+    msg_remoter.offline = true;
     HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
-    for (;;) {
-        msg_remoter.offline = false;
-        while (tx_semaphore_get(&RemoterThreadSem, 100) != TX_SUCCESS) {
-            // 超时/掉线逻辑
-            // 比如可以清零，或者标记掉线
+
+    for (;;) 
+    {
+        while (tx_semaphore_get(&RemoterThreadSem, 100) != TX_SUCCESS) 
+        {
             msg_remoter.offline = true;
             HAL_UART_Abort(&huart5);
+            om_publish(remoter_topic, &msg_remoter, sizeof(msg_remoter), true, false);
             tx_thread_sleep(3);
             HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
         }
+
+        msg_remoter.offline = false;
         // 开关
         msg_remoter.ctrl_sw  = static_cast<CTRL_STATE>(Dr16_Data().s2);
         msg_remoter.shoot_sw = static_cast<SHOOT_STATE>(Dr16_Data().s1);
 
-        if (msg_remoter.last_ctrl_sw == CTRL_STATE::Relax && msg_remoter.ctrl_sw == CTRL_STATE::Normal) {
+        if (msg_remoter.last_ctrl_sw == CTRL_STATE::Relax && msg_remoter.ctrl_sw == CTRL_STATE::Normal) 
+        {
             msg_remoter.ctrl_sw = CTRL_STATE::R2N;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Relax) {
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Relax) 
+        {
             msg_remoter.ctrl_sw = CTRL_STATE::N2R;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Spin) {
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Spin) 
+        {
             msg_remoter.ctrl_sw = CTRL_STATE::N2S;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Spin && msg_remoter.ctrl_sw == CTRL_STATE::Normal) {
+        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Spin && msg_remoter.ctrl_sw == CTRL_STATE::Normal) 
+        {
             msg_remoter.ctrl_sw = CTRL_STATE::S2N;
         }
 
