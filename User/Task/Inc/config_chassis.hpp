@@ -16,6 +16,8 @@
 #define RHIP1_OFFSET 0xC6C3
 #define RHIP2_OFFSET 0x8419
 
+#define WHEEL_RADIUS 0.077f
+
 #define DEBUG
 
 typedef enum{

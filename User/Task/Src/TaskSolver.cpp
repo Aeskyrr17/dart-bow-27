@@ -144,7 +144,7 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solverfdb.lphi_dot = Lxdot[1];
         solverfdb.rphi_dot = Rxdot[1];
 
-        float vel = 0.5f * (LWheel.motorFeedback.speedFdb + RWheel.motorFeedback.speedFdb);
+        float vel = 0.5f * (LWheel.motorFeedback.speedFdb - RWheel.motorFeedback.speedFdb) * WHEEL_RADIUS;
         odom_data = odom.Update(ins.quaternion, ins.accel, vel, ins.yaw);
 
         om_publish(solverfdb_topic, &solverfdb, sizeof(msg_solver_t), true, false);

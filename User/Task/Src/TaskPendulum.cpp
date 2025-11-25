@@ -45,8 +45,8 @@ __attribute__((section(".RAM_D3"))) pendulum_debug_t pendulum_debug;
     UNUSED(initial_input);
 
     /* Legs Params Initialization */
-    PID rleg_len_pd(2000.0f, 0.0f, -1500.0f, 100.0f, 0.0f, PID_DVEL);
-    PID lleg_len_pd(2000.0f, 0.0f, -1500.0f, 100.0f, 0.0f, PID_DVEL);
+    PID rleg_len_pd(4000.0f, 0.0f, -3000.0f, 200.0f, 0.0f, PID_DVEL);
+    PID lleg_len_pd(4000.0f, 0.0f, -3000.0f, 200.0f, 0.0f, PID_DVEL);
     
     IIRFilter leg_len_filter(2,LOWPASS,1);
     SLOPE leg_len_updater(0.001f,0.001f,0.18f);
@@ -155,14 +155,14 @@ __attribute__((section(".RAM_D3"))) pendulum_debug_t pendulum_debug;
 
                 observedX[0] = 0.5f*(solver_fdb.lphi + solver_fdb.rphi - Pi) + ins.pitch*DegreeToRad;
                 observedX[1] = 0.5f*(solver_fdb.lphi_dot + solver_fdb.rphi_dot) + ins.gyro_p;
-                observedX[2] = 0.0f;//odom.x;
-                observedX[3] = 0.0f;//odom.v;
+                observedX[2] = odom.x;//0.0f;//
+                observedX[3] = odom.v;//0.0f;//
                 observedX[4] = ins.pitch*DegreeToRad;
                 observedX[5] = ins.gyro_p;
 
                 refX[0] = 0.0f;
                 refX[1] = 0.0f;
-                refX[2] = 0.0f;//odom.x;
+                refX[2] = 0.0f;//odom.x;//
                 refX[3] = 0.0f;
                 refX[4] = 0.0f;
                 refX[5] = 0.0f;
