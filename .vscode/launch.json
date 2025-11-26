@@ -57,7 +57,8 @@
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceFolder}/build/Debug/RM26_H7.elf",
             "configFiles": [
-                "${workspaceFolder}/daplink.cfg"
+                "interface/cmsis-dap.cfg",
+                "target/stm32h7x.cfg"
             ],
             "runToEntryPoint": "main",
             "device": "STM32H723VGTx",

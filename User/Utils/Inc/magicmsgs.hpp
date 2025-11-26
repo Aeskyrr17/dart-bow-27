@@ -41,8 +41,7 @@ struct msg_remoter_t
     float mouse_z;
     bool mouse_left;
     bool mouse_right;
-
-    // 使用可移植性更好的位域基类型，并显式加 packed（GCC/Clang 风格）
+    
     struct __attribute__((packed)) {
         uint16_t W : 1;
         uint16_t S : 1;
@@ -97,20 +96,6 @@ struct msg_ins_t {
     float gyro_p; ///< pitch角速度
     float gyro_y; ///< yaw角速度
     float accel[3];
-};
-
-/**
- * @brief 云台反馈消息结构
- */
-struct pid_tuning_t {
-    float kp;
-    float ki;
-    float kd;
-};
-
-struct msg_comm_t
-{
-    float vw;
 };
 
 struct msg_solver_t

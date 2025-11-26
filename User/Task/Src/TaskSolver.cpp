@@ -13,6 +13,8 @@
 #include "math.hpp"
 #include "filter.hpp"
 #include "odometry.hpp"
+#include "om_core.h"
+#include "om_msg.h"
 #include "tx_api.h"
 #include "utils.h"
 #include "vmc.hpp"
@@ -95,6 +97,8 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
     msg_ins_t ins{};
     om_suber_t *pendulumctrl_suber = om_subscribe(om_find_topic("pendulumctrl", UINT32_MAX));
     msg_ctrl_t pendulumctrl{};
+    om_suber_t  *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
+    msg_remoter_t remoter{};
 
     om_topic_t *solverfdb_topic = om_config_topic(nullptr, "ca", "solverfdb", sizeof(msg_solver_t));
     msg_solver_t solverfdb{};
@@ -121,6 +125,7 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
     {
         thread_start_time = tx_time_get();
         om_suber_export(ins_suber, &ins, false);
+        om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(pendulumctrl_suber, &pendulumctrl, false);
 
         Lsolver.Resolve(LHip1.motorFeedback.positionFdb, LHip2.motorFeedback.positionFdb, 0);
@@ -152,14 +157,6 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
-
-        LHip1.currentSet = 0;
-        LHip2.currentSet = 0;
-        RHip1.currentSet = 0;
-        RHip2.currentSet = 0;
-
-        LWheel.currentSet = 0;
-        RWheel.currentSet = 0;
 
         LHip1.currentSet = LTp[0]*Tk_LK8016;
         LHip2.currentSet = LTp[1]*Tk_LK8016;
@@ -194,6 +191,17 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
         solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
     #endif
+
+        if (remoter.ctrl_sw == Relax || remoter.offline)
+        {
+            LHip1.currentSet = 0;
+            LHip2.currentSet = 0;
+            RHip1.currentSet = 0;
+            RHip2.currentSet = 0;
+
+            LWheel.currentSet = 0;
+            RWheel.currentSet = 0;
+        }
         
         LKMotorHandler::Instance()->sendControlData();
         tx_thread_sleep(MIN(1, 1-(tx_time_get()-thread_start_time)));

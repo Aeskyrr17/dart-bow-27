@@ -1,73 +1,62 @@
-/**
-* @file Slope.hpp
- * @author yssickjgd (1345578933@qq.com)
- * @modified
- * @brief 斜坡函数, 用于速度规划等
- * @copyright USTC-RoboWalker (c) 2023-2024
- *
- */
 #ifndef SLOPE_HPP
 #define SLOPE_HPP
 
 #include "math.hpp"
 
-enum PriorType
-{
-    REAL_Prior = 0,
-    TARGET_Prior = 1,
-};
-
 class SLOPE
 {
-public:
-    SLOPE (float __Increase_Value, float __Decrease_Value, float _default, PriorType __Slope_Prior = REAL_Prior);
-
-    void Reset(float __Increase_Value, float __Decrease_Value, PriorType __Slope_Prior = REAL_Prior);
-
-    void Update();
-
-    inline float Get_Out();
-
-    inline void Set_Now_Real(float __Now_Real);
-
-    inline void Set_Increase_Value(float __Increase_Value);
-
-    inline void Set_Decrease_Value(float __Decrease_Value);
-
-    inline void Set_Target(float __Target);
 protected:
-    float Out = 0.0f;
-    float Now_Real = 0.0f;
-    float Now_Planning = 0.0f;
-    float Increase_Value = 0.0f;
-    float Decrease_Value = 0.0f;
-    float Target = 0.0f;
-    PriorType Slope_Prior = REAL_Prior;
+    float _val;
+    float _path;
+    bool _reached;
+public:
+    SLOPE(float default_val, float path) : _val(default_val), _path(path), _reached(false) {}
+    SLOPE() = default;
+    inline void SetDefault(float val) 
+    {
+        _val = val;
+    }
+
+    inline void SetPath(float path) 
+    {
+        _path = path;
+    }
+
+    inline float GetVal() 
+    {
+        return _val;
+    }
+    inline float GetPath() 
+    {
+        return _path;
+    }
+
+    float UpdateVal(float new_val) 
+    {
+        if (fabsf(new_val - _val) < 1.0f * _path) 
+        {
+            _val = new_val;
+            _reached = true;
+        } 
+        else 
+        {
+            _reached = false;
+            if (new_val < _val) 
+            {
+                _val -= _path;
+            } 
+            else 
+            {
+                _val += _path;
+            }
+        }
+        return _val;
+    }
+
+    bool CheckReached() 
+    {
+        return _reached;
+    }
 };
-
-inline float SLOPE::Get_Out()
-{
-    return Out;
-}
-
-inline void SLOPE::Set_Now_Real(float __Now_Real)
-{
-    Now_Real = __Now_Real;
-}
-
-inline void SLOPE::Set_Increase_Value(float __Increase_Value)
-{
-    Increase_Value = __Increase_Value;
-}
-
-inline void SLOPE::Set_Decrease_Value(float __Decrease_Value)
-{
-    Decrease_Value = __Decrease_Value;
-}
-
-inline void SLOPE::Set_Target(float __Target)
-{
-    Target = __Target;
-}
 
 #endif
