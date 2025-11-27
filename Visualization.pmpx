@@ -2006,10 +2006,10 @@
 		</object>
 		<object name="ObjId0040" type="CPrjDoc_Hi509FileType"/>
 		<object name="ObjId0041" type="CObList">
-			<member name="item0" type="CObject_ptr">ObjId0042</member>
+			<member name="item0" type="CObject_ptr">ObjId0124</member>
 		</object>
-		<object name="ObjId0042" type="CPrjDoc_MapFileInfo">
-			<member name="file_name" type="string">D:\Workspace\robomaster\RM26_H7\build\Debug\RM26_H7.elf</member>
+		<object name="ObjId0124" type="CPrjDoc_MapFileInfo">
+			<member name="file_name" type="string">.\build\Debug\RM26_H7.elf</member>
 			<member name="file_type" type="CObject_ptr">ObjId0039</member>
 		</object>
 		<object name="ObjId0043" type="CStringList"/>
@@ -2135,7 +2135,7 @@
 			<member name="variable" type="CObject_ptr">ObjId0013</member>
 			<member name="visible" type="sint32">1</member>
 			<member name="y_block" type="sint32">2</member>
-			<member name="color" type="uint32">0x9338B3</member>
+			<member name="color" type="uint32">0x2068FF</member>
 		</object>
 		<object name="ObjId0088" type="CPrjItemRS_VarInfo">
 			<member name="variable" type="CObject_ptr">ObjId0006</member>
@@ -2575,7 +2575,7 @@
 		</object>
 		<object name="ObjId0110" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
-			<member name="column_width" type="sint32">154</member>
+			<member name="column_width" type="sint32">103</member>
 			<member name="column_ix" type="sint32">1</member>
 		</object>
 		<object name="ObjId0111" type="CPrjItemBlock_ColInfo">

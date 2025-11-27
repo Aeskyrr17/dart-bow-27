@@ -18,7 +18,9 @@
 
 #define WHEEL_RADIUS 0.077f
 
+#ifndef DEBUG
 #define DEBUG
+#endif
 
 typedef enum{
     ON_GROUND = 0,
