@@ -105,13 +105,13 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     /*--------------------------------------------------云台消息--------------------------------------------------*/
     else if (rx_header.Identifier >= 0xB1 && rx_header.Identifier <= 0xB8)
     {
-        if (rx_header.Identifier == 0xB1)
-        {
-            memcpy(xyAndRefAngleMsg, rx_data, 8);
-        }
-        else if (rx_header.Identifier == 0xB2)
-        {
-            memcpy(chassisStateMsg, rx_data, 8);
-        }
+        // if (rx_header.Identifier == 0xB1)
+        // {
+        //     memcpy(xyAndRefAngleMsg, rx_data, 8);
+        // }
+        // else if (rx_header.Identifier == 0xB2)
+        // {
+        //     memcpy(chassisStateMsg, rx_data, 8);
+        // }
     }
 }
