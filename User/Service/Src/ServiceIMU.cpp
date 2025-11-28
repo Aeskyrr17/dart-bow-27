@@ -1,7 +1,3 @@
-//
-// Created by cosmosmount on 2025/9/2.
-//
-
 #include "tx_api.h"
 #include "om.h"
 
@@ -21,7 +17,7 @@ cBMI088 bmi088;
 cIMU *imu_handler = &bmi088;
 
 TX_THREAD IMUThread;
-uint8_t IMUThreadStack[4096] = {0};
+uint8_t IMUThreadStack[1024] = {0};
 TX_SEMAPHORE IMUThreadSem;
 ULONG IMU_time;
 
@@ -127,7 +123,7 @@ static void InitQuaternion(float *init_q4)
 }
 
 TX_THREAD IMUTempThread;
-uint8_t IMUTempThreadStack[2048] = {0};
+uint8_t IMUTempThreadStack[1024] = {0};
 
 [[noreturn]] void IMUTempThreadFun(ULONG initial_input) {
     UNUSED(initial_input);

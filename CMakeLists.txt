@@ -69,6 +69,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     User/Module/SuperCap
     User/Module/Odometry
     User/Module/VMC
+    User/Module/UI
     User/Service/Inc
     User/Task/Inc
     User/Utils/Inc

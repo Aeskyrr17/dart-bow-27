@@ -1,0 +1,452 @@
+#include "ui.hpp"
+#include "crc.hpp"
+#include "usart.h"
+#include "dma.h"
+#include <array>
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <functional>
+#include <string_view>
+
+extern UART_HandleTypeDef huart1;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
+
+/* ==================================== 绘图接口 ==================================== */
+
+/* Object creation functions */
+int8_t UI::CreateLine(int width, UIObjectColor color, int layer, int x1, int y1, int x2, int y2) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Line);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x1;
+    obj.detailDword2.y = y1;
+    obj.detailDword3.line.x2 = x2;
+    obj.detailDword3.line.y2 = y2;
+    return newId;
+}
+
+int8_t UI::CreateRect(int width, UIObjectColor color, int layer, int x1, int y1, int x2, int y2) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Rect);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x1;
+    obj.detailDword2.y = y1;
+    obj.detailDword3.line.x2 = x2;
+    obj.detailDword3.line.y2 = y2;
+    return newId;
+}
+
+int8_t UI::CreateCircle(int width, UIObjectColor color, int layer, int x, int y, int radius) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Circle);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.circle.radius = radius;
+    return newId;
+}
+
+int8_t UI::CreateEllipse(int width, UIObjectColor color, int layer, int x, int y, int xSemiaxis, int ySemiaxis) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Ellipse);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.ellipse.xSemiaxis = xSemiaxis;
+    obj.detailDword3.ellipse.ySemiaxis = ySemiaxis;
+    return newId;
+}
+
+int8_t UI::CreateArc(int width, UIObjectColor color, int layer, int x, int y, int xSemiaxis, int ySemiaxis, int startAngle, int endAngle) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Arc);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.ellipse.xSemiaxis = xSemiaxis;
+    obj.detailDword3.ellipse.ySemiaxis = ySemiaxis;
+    obj.detailDword1.detailA = startAngle;
+    obj.detailDword1.detailB = endAngle;
+
+    return newId;
+}
+
+int8_t UI::CreateFloat(int width, UIObjectColor color, int layer, int x, int y, int fontSize, float value) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Float);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.floatVal = static_cast<uint32_t>(value*1000);
+    obj.detailDword1.detailA = fontSize;
+    return newId;
+}
+
+int8_t UI::CreateInt(int width, UIObjectColor color, int layer, int x, int y, int fontSize, int value) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Int);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.intVal = value;
+    obj.detailDword1.detailA = fontSize;
+    return newId;
+}
+
+int8_t UI::CreateString(int width, UIObjectColor color, int layer, int x, int y, int fontSize, const char* str) 
+{
+    int8_t newId = CreateAndInitObject();
+    if (newId < 0) 
+        return static_cast<int8_t>(UIIDErrorCode::NoMoreSpace);
+    auto& obj = UIObjectList[newId];
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.detailDword1.layer = layer;
+    obj.detailDword1.type = static_cast<uint32_t>(UIObjectType::Str);
+    obj.detailDword2.width = width;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.detailDword3.strVal = str;
+    obj.detailDword1.detailA = fontSize;
+    obj.detailDword1.detailB = static_cast<uint32_t>(std::min(30u, strlen(str)));
+    return newId;
+}
+
+/* Modifying object properties */
+
+void UI::MoveTo(int id, int x, int y) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword2.x == x && obj.detailDword2.y == y) 
+        return;
+    obj.detailDword2.x = x;
+    obj.detailDword2.y = y;
+    obj.metadata.dirty = true;
+}
+
+void UI::MoveP2To(int id, int x, int y) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword3.line.x2 == x && obj.detailDword3.line.y2 == y) 
+        return;
+    obj.detailDword3.line.x2 = x;
+    obj.detailDword3.line.y2 = y;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetColor(int id, UIObjectColor color) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword1.color == static_cast<uint32_t>(color)) 
+        return;
+    obj.detailDword1.color = static_cast<uint32_t>(color);
+    obj.metadata.dirty = true;
+}
+
+void UI::SetVisible(int id, bool visible) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.metadata.visible == visible) 
+        return;
+    obj.metadata.visible = visible;
+    obj.metadata.dirtyVisibility = true;
+}
+
+void UI::SetWidth(int id, int width) 
+{
+    auto& obj = UIObjectList[id];
+    obj.detailDword2.width = width;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetFontSize(int id, int fontSize) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword1.detailA == static_cast<uint32_t>(fontSize)) 
+        return;
+    obj.detailDword1.detailA = fontSize;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetStringChanged(int id) 
+{
+    auto& obj = UIObjectList[id];
+    obj.detailDword1.detailB = std::min(strlen(obj.detailDword3.strVal), 30u);
+    obj.metadata.dirty = true;
+}
+
+void UI::SetRadius(int id, int radius) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword3.circle.radius == radius) 
+        return;
+    obj.detailDword3.circle.radius = radius;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetSemiaxis(int id, int xSemiaxis, int ySemiaxis) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword3.ellipse.xSemiaxis == xSemiaxis && obj.detailDword3.ellipse.ySemiaxis == ySemiaxis) 
+        return;
+    obj.detailDword3.ellipse.xSemiaxis = xSemiaxis;
+    obj.detailDword3.ellipse.ySemiaxis = ySemiaxis;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetStartAngle(int id, int startAngle) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword1.detailA == static_cast<uint32_t>(startAngle)) 
+        return;
+    obj.detailDword1.detailA = startAngle;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetEndAngle(int id, int endAngle) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword1.detailB == static_cast<uint32_t>(endAngle)) 
+        return;
+    obj.detailDword1.detailB = endAngle;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetFloat(int id, float value) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword3.floatVal == static_cast<uint32_t>(value*1000)) 
+        return;
+    obj.detailDword3.floatVal = static_cast<uint32_t>(value*1000);
+    obj.metadata.dirty = true;
+}
+
+void UI::SetInt(int id, int value) 
+{
+    auto& obj = UIObjectList[id];
+    if (obj.detailDword3.intVal == value) 
+        return;
+    obj.detailDword3.intVal = value;
+    obj.metadata.dirty = true;
+}
+
+void UI::SetString(int id, const char *str) 
+{
+    auto& obj = UIObjectList[id];
+    if (strcmp(obj.detailDword3.strVal, str) == 0) 
+        return;
+    obj.detailDword3.strVal = str;
+    obj.detailDword1.detailB = static_cast<uint32_t>(std::min(30u, strlen(str)));
+    obj.metadata.dirty = true;
+}
+
+/* Deletion functions */
+void UI::Delete(int id) 
+{
+    auto& obj = UIObjectList[id];
+    obj.metadata.deleted = true;
+    UIObjectNum--;
+}
+
+void UI::DeleteAll() 
+{
+    UIDeleteOp.Type = 2;
+    UIDeleteOp.Layer = 0xFF;
+    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
+}
+
+void UI::DeleteLayer(int layer) 
+{
+    UIDeleteOp.Type = 2;
+    UIDeleteOp.Layer = layer;
+    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
+}
+
+
+/* ==================================== 绘图数据发送 ==================================== */
+
+void UI::TransmitStringObject(uint8_t index, UIOperation op) 
+{
+    auto& obj = UIObjectList[index];
+    auto header = getFrameHeader();
+    header->DataLength = 51;
+    Append_CRC8_Check_Sum(reinterpret_cast<unsigned char*>(header), 5);
+    header->ContentId = 0x0110;
+
+    auto meta = getBufferNthUiObject(0);
+    meta->Dword1.detailDword1 = obj.detailDword1.dw;
+    meta->detailDword2 = obj.detailDword2.dw;
+    meta->detailDword3 = obj.detailDword3.dw;
+    memcpy(&meta->name, obj.refereeHandle, 3);
+    meta->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(op);
+
+    char* strBuf = getBufferStringBuffer();
+    std::fill(strBuf, strBuf + STRING_MAX_LENGTH, 0);
+    strncpy(strBuf, obj.detailDword3.strVal, std::min(uint8_t(obj.detailDword1.detailB), STRING_MAX_LENGTH));
+    Append_CRC16_Check_Sum(UITxBuffer, 60);
+    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(UITxBuffer), 60);
+}
+
+void UI::TransmitOtherObjects(uint8_t count) 
+{
+    uint8_t elementCount = elementCountInPacketTable[count];
+    auto header = getFrameHeader();
+    header->DataLength = 6 + elementCount * 15;
+    Append_CRC8_Check_Sum(reinterpret_cast<unsigned char*>(header), 5);
+    header->ContentId = contentIdTable[count];
+
+    for (size_t i = count; i < elementCount; ++i) 
+    {
+        getBufferNthUiObject(i)->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(UIOperation::Noop);
+    }
+
+    Append_CRC16_Check_Sum(UITxBuffer, 13 + elementCount * 15 + 2);
+    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(UITxBuffer), 60);
+}
+
+/* ==================================== 更新函数 ==================================== */
+
+void UI::Update()
+{
+    uint8_t stringProcessed = 0;
+    uint8_t otherProcessed  = 0;
+
+    // 优先处理字符串对象
+    while (UIPendingUpdateIsString && stringProcessed < MAX_STRING_PER_FRAME)
+    {
+        auto& obj = UIObjectList[UIPendingStringIndex];
+        obj.metadata.dirty = false;
+
+        if (obj.metadata.dirtyVisibility && obj.metadata.visible)
+        {
+            obj.metadata.dirtyVisibility = false;
+            TransmitStringObject(UIPendingStringIndex, UIOperation::Add);
+        }
+        else
+        {
+            TransmitStringObject(UIPendingStringIndex, UIOperation::Modify);
+        }
+
+        loopIncrement(UIPendingStringIndex);
+        UIPendingUpdateIsString = false;
+
+        // 查找下一个字符串对象
+        auto checkStr = [&](size_t i, UIObject& o) -> bool
+        {
+            if (o.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str))
+            {
+                UIPendingStringIndex = i;
+                UIPendingUpdateIsString = true;
+                return false; // 停止扫描
+            }
+            return true;
+        };
+        loopScanObjectList(UIPendingStringIndex, UIScanOffset, checkStr);
+        ++stringProcessed;
+    }
+
+    // 处理非字符串对象
+    auto processObj = [&](size_t i, UIObject& obj) -> bool
+    {
+        loopIncrement(UIScanOffset);
+        if (!obj.metadata.valid) return true;
+        if (!obj.metadata.dirty && !obj.metadata.dirtyVisibility && !obj.metadata.deleted) return true;
+
+        auto writeBufferObj = [&](UIOperation op)
+        {
+            auto bufferObj = getBufferNthUiObject(otherProcessed);
+            bufferObj->Dword1.detailDword1 = obj.detailDword1.dw;
+            bufferObj->detailDword2 = obj.detailDword2.dw;
+            bufferObj->detailDword3 = obj.detailDword3.dw;
+            memcpy(&bufferObj->name, obj.refereeHandle, 3);
+            bufferObj->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(op);
+            otherProcessed++;
+        };
+
+        if (obj.metadata.deleted)
+        {
+            obj.metadata.valid = false;
+            writeBufferObj(UIOperation::Delete);
+        }
+        else if (obj.metadata.dirtyVisibility)
+        {
+            obj.metadata.dirtyVisibility = false;
+            if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str))
+            {
+                if (!UIPendingUpdateIsString)
+                {
+                    UIPendingUpdateIsString = true;
+                    UIPendingStringIndex = i;
+                }
+            }
+            else
+            {
+                writeBufferObj(UIOperation::Add);
+            }
+        }
+        else if (obj.metadata.dirty)
+        {
+            if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str) && !UIPendingUpdateIsString)
+            {
+                UIPendingUpdateIsString = true;
+                UIPendingStringIndex = i;
+            }
+            else
+            {
+                obj.metadata.dirty = false;
+                writeBufferObj(UIOperation::Modify);
+            }
+        }
+
+        return otherProcessed < MAX_OTHER_PER_FRAME;
+    };
+
+    loopScanObjectList(UIScanOffset, UIScanOffset, processObj);
+
+    if (otherProcessed > 0)
+        TransmitOtherObjects(otherProcessed);
+}
+

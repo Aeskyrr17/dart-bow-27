@@ -4,7 +4,7 @@
 #include "config_remoter.hpp"
 
 TX_THREAD RemoterThread;
-uint8_t RemoterThreadStack[2048] = {0};
+uint8_t RemoterThreadStack[1024] = {0};
 TX_SEMAPHORE RemoterThreadSem;
 
 // 数组在 D1 RAM
