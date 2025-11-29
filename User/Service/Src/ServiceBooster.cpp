@@ -7,24 +7,24 @@
 #include "led.hpp"
 
 TX_THREAD my_thread1;
-uint8_t my_thread_stack1[1024];
+uint8_t my_thread_stack1[512];
 TX_SEMAPHORE my_semaphore1;
 
 TX_THREAD my_thread2;
-uint8_t my_thread_stack2[1024];
+uint8_t my_thread_stack2[512];
 
 extern TX_THREAD RemoterThread;
 extern TX_SEMAPHORE RemoterThreadSem;
-extern uint8_t RemoterThreadStack[2048];
+extern uint8_t RemoterThreadStack[1024];
 extern void RemoterThreadFun(ULONG initial_input);
 
 extern TX_THREAD IMUThread;
 extern TX_SEMAPHORE IMUThreadSem;
-extern uint8_t IMUThreadStack[4096];
+extern uint8_t IMUThreadStack[1024];
 extern void IMUThreadFun(ULONG initial_input);
 
 extern TX_THREAD IMUTempThread;
-extern uint8_t IMUTempThreadStack[2048];
+extern uint8_t IMUTempThreadStack[1024];
 extern void IMUTempThreadFun(ULONG initial_input);
 
 /*EKF pool*/
