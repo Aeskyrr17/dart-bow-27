@@ -4,6 +4,14 @@
 #include <string>
 #include "stdint.h"
 #include "string.h"
+#include "crc.hpp"
+#include "usart.h"
+#include "dma.h"
+#include "adc.h"
+
+extern UART_HandleTypeDef huart1;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 
 enum class UIObjectType : uint8_t
 {
@@ -47,11 +55,8 @@ enum class UIIDErrorCode : int32_t
 class UI
 {
 public:
-    // Serial communication function
-    static void SendData(uint8_t* data, uint16_t len);
-
     // Set up sender/receiver IDs
-    static void SetSenderReceiverId(uint16_t senderId, uint16_t receiverId);
+    void SetSenderReceiverId(uint16_t senderId, uint16_t receiverId);
 
     // Object creation functions
     int8_t CreateLine(int width, UIObjectColor color, int layer, int x1, int y1, int x2, int y2);
@@ -192,9 +197,9 @@ private:
     static constexpr uint8_t MAX_STRING_PER_FRAME = 2;
     static constexpr uint8_t MAX_OTHER_PER_FRAME = 7;
 
-    static UIObject UIObjectList[UI_TOTAL_COUNT] __attribute__((section(".RAM_D1")));
-    static uint8_t UITxBuffer[TX_BUFFER_SIZE] __attribute__((section(".RAM_D1")));
-    static UIDelete UIDeleteOp __attribute__((section(".RAM_D1")));
+    static UIObject UIObjectList[UI_TOTAL_COUNT];
+    static uint8_t UITxBuffer[TX_BUFFER_SIZE];
+    static UIDelete UIDeleteOp;
 
     uint8_t UIObjectNum = 0;
     bool UIPendingUpdateIsString = false;
@@ -253,6 +258,12 @@ private:
             }
         }
         return -1;
+    }
+
+    inline void SendData(uint8_t* data, uint16_t len)
+    {
+        SCB_CleanDCache_by_Addr((uint32_t *)data, len);
+        HAL_UART_Transmit_DMA(&huart1, data, len);
     }
 
     void TransmitStringObject(uint8_t index, UIOperation op);

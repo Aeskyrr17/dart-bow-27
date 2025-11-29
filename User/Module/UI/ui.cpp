@@ -1,19 +1,21 @@
 #include "ui.hpp"
-#include "crc.hpp"
-#include "usart.h"
-#include "dma.h"
-#include <array>
-#include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <functional>
-#include <string_view>
 
-extern UART_HandleTypeDef huart1;
-extern DMA_HandleTypeDef hdma_usart1_rx;
-extern DMA_HandleTypeDef hdma_usart1_tx;
+__attribute__((section(".RAM_D1"))) UI::UIObject UI::UIObjectList[UI_TOTAL_COUNT];
+__attribute__((section(".RAM_D1"))) uint8_t UI::UITxBuffer[TX_BUFFER_SIZE];
+__attribute__((section(".RAM_D1"))) UI::UIDelete UI::UIDeleteOp;
 
 /* ==================================== 绘图接口 ==================================== */
+
+void UI::SetSenderReceiverId(uint16_t senderId, uint16_t receiverId)
+{
+    auto header = getFrameHeader();
+    header->SOF = 0xA5;
+    header->Seq = 0;
+    header->SenderId = senderId;
+    header->ReceiverId = receiverId;
+    header->CommandId = 0x0301;
+    memset(UIObjectList, 0, sizeof(UIObjectList));
+}
 
 /* Object creation functions */
 int8_t UI::CreateLine(int width, UIObjectColor color, int layer, int x1, int y1, int x2, int y2) 
@@ -295,14 +297,14 @@ void UI::DeleteAll()
 {
     UIDeleteOp.Type = 2;
     UIDeleteOp.Layer = 0xFF;
-    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
+    SendData(reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
 }
 
 void UI::DeleteLayer(int layer) 
 {
     UIDeleteOp.Type = 2;
     UIDeleteOp.Layer = layer;
-    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
+    SendData(reinterpret_cast<uint8_t*>(&UIDeleteOp), sizeof(UIDeleteOp));
 }
 
 
@@ -327,7 +329,7 @@ void UI::TransmitStringObject(uint8_t index, UIOperation op)
     std::fill(strBuf, strBuf + STRING_MAX_LENGTH, 0);
     strncpy(strBuf, obj.detailDword3.strVal, std::min(uint8_t(obj.detailDword1.detailB), STRING_MAX_LENGTH));
     Append_CRC16_Check_Sum(UITxBuffer, 60);
-    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(UITxBuffer), 60);
+    SendData(UITxBuffer, 60);
 }
 
 void UI::TransmitOtherObjects(uint8_t count) 
@@ -344,7 +346,7 @@ void UI::TransmitOtherObjects(uint8_t count)
     }
 
     Append_CRC16_Check_Sum(UITxBuffer, 13 + elementCount * 15 + 2);
-    HAL_UART_Transmit_DMA(&huart1, reinterpret_cast<uint8_t*>(UITxBuffer), 60);
+    SendData(UITxBuffer, 60);
 }
 
 /* ==================================== 更新函数 ==================================== */

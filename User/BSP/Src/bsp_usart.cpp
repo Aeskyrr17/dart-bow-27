@@ -15,9 +15,9 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 
 #define XROBOT_IMUDATA_SIZE 59
 
-__attribute__((section (".AXI_SRAM"))) uint8_t UART7RxBuffer[XROBOT_IMUDATA_SIZE] = {0};
-__attribute__((section (".AXI_SRAM"))) uint8_t USART1RxBuffer[1] = {0};
-__attribute__((section (".AXI_SRAM"))) uint8_t SBUS_MultiRx_Buf[2][SBUS_RX_BUF_NUM] = {0};
+__attribute__((section (".RAM_D1"))) uint8_t UART7RxBuffer[XROBOT_IMUDATA_SIZE] = {0};
+__attribute__((section (".RAM_D1"))) uint8_t USART1RxBuffer[1] = {0};
+__attribute__((section (".RAM_D1"))) uint8_t SBUS_MultiRx_Buf[2][SBUS_RX_BUF_NUM] = {0};
 
 static void USART_RxDMA_MultiBuffer_Init(UART_HandleTypeDef *, uint32_t *, uint32_t *, uint32_t);
 
@@ -106,10 +106,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   else if (huart == &huart1)
   {
-    // //清空cache
-    // DMA_Cache_PrepareForReceive(USART1RxBuffer, 1);
+    //清空cache
+    DMA_Cache_PrepareForReceive(USART1RxBuffer, 1);
     //
     // Referee::Instance()->Referee_Rx_Queue.Push(USART1RxBuffer[0]);
-    // HAL_UART_Receive_DMA(&huart1, USART1RxBuffer, 1);
+    HAL_UART_Receive_DMA(&huart1, USART1RxBuffer, 1);
   }
 }
