@@ -381,3 +381,34 @@ enum JudgeID
     SentryReceivedData = 0x0307,      // 选手端小地图接收哨兵数据，频率上限1Hz
     RobotReceivedData = 0x0308,       // 选手端小地图接收机器人数据，频率上限3Hz
 };
+
+class Referee
+{
+public:
+    void HandleMsg(uint8_t *_Msgptr);
+
+    GameStatus_t          GameStatus;
+    GameResult_t          GameResult;
+    RobotHP_t             RobotHP;
+    EventData_t           EventData;
+    RefereeWarning_t      RefereeWarning;
+    DartInfo_t            DartInfo;
+    GameRobotStatus_t     GameRobotStatus;
+    PowerHeatData_t       PowerHeatData;
+    GameRobotPos_t        GameRobotPos;
+    Buff_t                Buff;
+    RobotHurt_t           RobotHurt;
+    ShootData_t           ShootData;
+    RfidStatus_t          RfidStatus;
+    DartClientCmd_t      DartClientCmd;
+    RoboInteractData_t    RoboInteractData;
+
+    uint32_t              GameRobotStatusTick = 0;
+    uint32_t              PowerHeatTick = 0;
+
+    static Referee& Instance()
+    {
+        static Referee instance;
+        return instance;
+    }
+};
