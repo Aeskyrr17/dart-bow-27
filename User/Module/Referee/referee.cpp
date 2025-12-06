@@ -2,6 +2,11 @@
 #include "string.h"
 #include "bsp_dwt.hpp"
 
+void Referee::ProcessData()
+{
+
+}
+
 void Referee::HandleMsg(uint8_t *_Msgptr)
 {
     uint16_t cmd_id = 0;
@@ -9,65 +14,65 @@ void Referee::HandleMsg(uint8_t *_Msgptr)
     _Msgptr += sizeof(uint16_t);
     switch (cmd_id)
     {
-    case JudgeID::GameStatus:
+    case RefereeID::GameStatus:
         memcpy(&GameStatus, _Msgptr, sizeof(GameStatus));
         break;
 
-    case JudgeID::GameResult:
+    case RefereeID::GameResult:
         memcpy(&GameResult, _Msgptr, sizeof(GameResult));
         break;
 
-    case JudgeID::RobotHP:
+    case RefereeID::RobotHP:
         memcpy(&RobotHP, _Msgptr, sizeof(RobotHP));
         break;
 
-    case JudgeID::EventData:
+    case RefereeID::EventData:
         memcpy(&EventData, _Msgptr, sizeof(EventData));
         break;
 
-    case JudgeID::RefereeWarning:
+    case RefereeID::RefereeWarning:
         memcpy(&RefereeWarning, _Msgptr, sizeof(RefereeWarning));
         break;
 
-    case JudgeID::DartInfo:
+    case RefereeID::DartInfo:
         memcpy(&DartInfo, _Msgptr, sizeof(DartInfo));
         break;
 
-    case JudgeID::GameRobotStatus:
+    case RefereeID::GameRobotStatus:
         memcpy(&GameRobotStatus, _Msgptr, sizeof(GameRobotStatus));
         GameRobotStatusTick = DWT_GetTimeline_ms();
         break;
 
-    case JudgeID::PowerHeatData:
+    case RefereeID::PowerHeatData:
         memcpy(&PowerHeatData, _Msgptr, sizeof(PowerHeatData));
         PowerHeatTick = DWT_GetTimeline_ms();
         break;
 
-    case JudgeID::GameRobotPos:
+    case RefereeID::GameRobotPos:
         memcpy(&GameRobotPos, _Msgptr, sizeof(GameRobotPos));
         break;
 
-    case JudgeID::Buff:
+    case RefereeID::Buff:
         memcpy(&Buff, _Msgptr, sizeof(Buff));
         break;
 
-    case JudgeID::RobotHurt:
+    case RefereeID::RobotHurt:
         memcpy(&RobotHurt, _Msgptr, sizeof(RobotHurt));
         break;
 
-    case JudgeID::ShootData:
+    case RefereeID::ShootData:
         memcpy(&ShootData, _Msgptr, sizeof(ShootData));
         break;
 
-    case JudgeID::RfidStatus:
+    case RefereeID::RfidStatus:
         memcpy(&RfidStatus, _Msgptr, sizeof(RfidStatus));
         break;
 
-    case JudgeID::DartClientCmd:
+    case RefereeID::DartClientCmd:
         memcpy(&DartClientCmd, _Msgptr, sizeof(DartClientCmd));
         break;
 
-    case JudgeID::RoboInteractData:
+    case RefereeID::RoboInteractData:
         memcpy(&RoboInteractData, _Msgptr, sizeof(RoboInteractData));
         break;
 

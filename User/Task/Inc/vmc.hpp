@@ -10,6 +10,7 @@ protected:
     /*雅可比矩阵*/
     float J_mat[4]={0};
     float JT_mat[4]={0};
+    float JT_inv_mat[4]={0};
 
     /*关节电机弧度*/
     float phi1 = 0.0f;
@@ -106,6 +107,11 @@ public:
         JT_mat[1] = VMC_L1 * cos03 * sin12 / (sin32 * PendulumLength);
         JT_mat[2] = VMC_L1 * sin02 * sin34 / sin32;
         JT_mat[3] = VMC_L1 * cos02 * sin34 / (sin32 * PendulumLength);
+
+        JT_inv_mat[0] = -cos02 / (sin12 * VMC_L1);
+        JT_inv_mat[1] = cos03 / (sin34 * VMC_L1);
+        JT_inv_mat[2] = sin02 / (sin12 * VMC_L1);
+        JT_inv_mat[3] = -sin03 / (sin34 * VMC_L1);
     }
 
     void VMCCal(float *F, float *T)
@@ -116,14 +122,14 @@ public:
 
     void VMCRevCal(float *F, float *T)
     {
-        F[0] = this->J_mat[0] * T[0] + this->J_mat[1] * T[1];
-        F[1] = this->J_mat[2] * T[0] + this->J_mat[3] * T[1];
+        F[0] = this->JT_inv_mat[0] * T[0] + this->JT_inv_mat[1] * T[1];
+        F[1] = this->JT_inv_mat[2] * T[0] + this->JT_inv_mat[3] * T[1];
     }
 
     void VMCVelCal(float *phi_dot, float *v_dot)
     {
-        v_dot[0] = (this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1]) * 0.001f;
-        v_dot[1] = (this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1]) * 0.001f;
+        v_dot[0] = (this->JT_inv_mat[0] * phi_dot[0] + this->JT_inv_mat[1] * phi_dot[1]) * 0.001f;
+        v_dot[1] = (this->JT_inv_mat[2] * phi_dot[0] + this->JT_inv_mat[3] * phi_dot[1]) * 0.001f;
     }
 
     inline float GetPendulumLen() {

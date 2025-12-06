@@ -87,7 +87,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.alpha_dot</member>
-			<member name="last_addr" type="uint32">0x2000DCF4</member>
+			<member name="last_addr" type="uint32">0x2000C48C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -136,7 +136,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.pitch</member>
-			<member name="last_addr" type="uint32">0x2000DD08</member>
+			<member name="last_addr" type="uint32">0x2000C4A0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -185,7 +185,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.Tp</member>
-			<member name="last_addr" type="uint32">0x2000DD14</member>
+			<member name="last_addr" type="uint32">0x2000C4AC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -234,7 +234,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.l</member>
-			<member name="last_addr" type="uint32">0x2000DD00</member>
+			<member name="last_addr" type="uint32">0x2000C498</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -283,7 +283,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.alpha</member>
-			<member name="last_addr" type="uint32">0x2000DCF0</member>
+			<member name="last_addr" type="uint32">0x2000C488</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -332,7 +332,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.x</member>
-			<member name="last_addr" type="uint32">0x2000DCF8</member>
+			<member name="last_addr" type="uint32">0x2000C490</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -381,7 +381,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.Fl</member>
-			<member name="last_addr" type="uint32">0x2000DD18</member>
+			<member name="last_addr" type="uint32">0x2000C4B0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -430,7 +430,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.v</member>
-			<member name="last_addr" type="uint32">0x2000DCFC</member>
+			<member name="last_addr" type="uint32">0x2000C494</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -479,7 +479,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.Fr</member>
-			<member name="last_addr" type="uint32">0x2000DD1C</member>
+			<member name="last_addr" type="uint32">0x2000C4B4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -528,7 +528,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.T</member>
-			<member name="last_addr" type="uint32">0x2000DD10</member>
+			<member name="last_addr" type="uint32">0x2000C4A8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -577,7 +577,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.pitch_dot</member>
-			<member name="last_addr" type="uint32">0x2000DD0C</member>
+			<member name="last_addr" type="uint32">0x2000C4A4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1606,7 +1606,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.l_ref</member>
-			<member name="last_addr" type="uint32">0x2000DD04</member>
+			<member name="last_addr" type="uint32">0x2000C49C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1655,7 +1655,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">lenpd_tuning.ki</member>
-			<member name="last_addr" type="uint32">0x2000DD2C</member>
+			<member name="last_addr" type="uint32">0x2000C4C4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1704,7 +1704,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">lenpd_tuning.kd</member>
-			<member name="last_addr" type="uint32">0x2000DD30</member>
+			<member name="last_addr" type="uint32">0x2000C4C8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1753,7 +1753,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">lenpd_tuning.kp</member>
-			<member name="last_addr" type="uint32">0x2000DD28</member>
+			<member name="last_addr" type="uint32">0x2000C4C0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1802,7 +1802,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.Cphi</member>
-			<member name="last_addr" type="uint32">0x2000DD24</member>
+			<member name="last_addr" type="uint32">0x2000C4BC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1851,7 +1851,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">pendulum_debug.delta_phi</member>
-			<member name="last_addr" type="uint32">0x2000DD20</member>
+			<member name="last_addr" type="uint32">0x2000C4B8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1900,7 +1900,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">phi0pd_tuning.kd</member>
-			<member name="last_addr" type="uint32">0x2000DD3C</member>
+			<member name="last_addr" type="uint32">0x2000C4D4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1949,7 +1949,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">phi0pd_tuning.kp</member>
-			<member name="last_addr" type="uint32">0x2000DD34</member>
+			<member name="last_addr" type="uint32">0x2000C4CC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
