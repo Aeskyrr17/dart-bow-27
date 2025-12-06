@@ -59,7 +59,7 @@ pid_tuning_t phi0pd_tuning;
     PID rleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
     PID lleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
     PID phi0_pd(10.0f, 0.0f, -2.0f, 5.0f, 0.0f);
-    lenpd_tuning.kp = 5000.0f;
+    lenpd_tuning.kp = 4000.0f;
     lenpd_tuning.ki = 0.0f;
     lenpd_tuning.kd = -8000.0f;
     phi0pd_tuning.kp = 10.0f;
@@ -178,8 +178,8 @@ pid_tuning_t phi0pd_tuning;
                 rleg_len_pd.UpdateResult(solver_fdb.rlen_dot);
                 pendulum_ctrl.Tr[0] = rleg_len_pd.result;//0.0f;//
 
-                observedX[0] = alpha_fdb;
-                observedX[1] = alphadot_fdb;
+                observedX[0] = alpha_fdb;//0.0f;//
+                observedX[1] = alphadot_fdb;//0.0f;//
                 observedX[2] = odom.x;//0.0f;//
                 observedX[3] = odom.v;//0.0f;//
                 observedX[4] = ins.pitch*DegreeToRad;

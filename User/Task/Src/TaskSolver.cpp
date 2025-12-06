@@ -201,6 +201,8 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 
             LWheel.currentSet = 0;
             RWheel.currentSet = 0;
+
+            odom.Reset();
         }
         
         LKMotorHandler::Instance()->sendControlData();

@@ -1,6 +1,7 @@
 # pragma once
 
 #include "stdint.h"
+#include <cstdint>
 
 /* 通信协议内容: 常规链路由裁判系统服务器和主控模块进行数据转发，从电源管理模块的User串口收发数据 */
 
@@ -351,7 +352,7 @@ enum RobotId
     ClientBlueDrone = 0x016A,
 };
 
-enum JudgeID
+enum RefereeID
 {
     GameStatus = 0x0001,              // 比赛状态，1Hz
     GameResult = 0x0002,              // 比赛结果，比赛结束后发送
@@ -382,10 +383,14 @@ enum JudgeID
     RobotReceivedData = 0x0308,       // 选手端小地图接收机器人数据，频率上限3Hz
 };
 
+#define REFEREE_RX_BUF_LEN 128
+
 class Referee
 {
 public:
+    void ProcessData();
     void HandleMsg(uint8_t *_Msgptr);
+    uint8_t RxBuffer[128];
 
     GameStatus_t          GameStatus;
     GameResult_t          GameResult;
