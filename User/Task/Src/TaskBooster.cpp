@@ -27,5 +27,5 @@ extern "C" void TaskBooster(void)
 
     tx_thread_create(&UIThread, TX_NAME("UIThread"), UIThreadFun, 0x1234,
                      UIThreadStack, sizeof(UIThreadStack),
-                     7, 7, TX_NO_TIME_SLICE, TX_AUTO_START);
+                     8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

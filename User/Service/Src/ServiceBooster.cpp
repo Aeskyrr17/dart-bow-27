@@ -93,7 +93,7 @@ extern "C" void ServiceBooster()
 
     tx_thread_create(&RemoterThread, TX_NAME("RemoterThread"),
         RemoterThreadFun, 0x1234, RemoterThreadStack, sizeof(RemoterThreadStack),
-        4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
+        2, 2, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_semaphore_create(&RemoterThreadSem, TX_NAME("RemoterThreadSem"), 0);
 
@@ -105,5 +105,5 @@ extern "C" void ServiceBooster()
 
     tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
         IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),
-        5, 5, TX_NO_TIME_SLICE, TX_AUTO_START);
+        4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

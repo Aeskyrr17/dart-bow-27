@@ -48,7 +48,7 @@ end
 leg = 0.12:0.01:0.32;
 %    alpha alpha_dot x x_dot theta theta_dot
 % Q=diag([1000 10 100 300 1000 10]);
-Q=diag([4000 450 100 6 7000 150]);
+Q=diag([4000 200 100 60 4000 200]);
 %    T   Tp
 R=diag([6 3]);
 % Q=diag([30000 600 100 30 35000 250]);

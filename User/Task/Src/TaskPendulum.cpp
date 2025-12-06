@@ -61,7 +61,7 @@ pid_tuning_t phi0pd_tuning;
     PID phi0_pd(10.0f, 0.0f, -2.0f, 5.0f, 0.0f);
     lenpd_tuning.kp = 4000.0f;
     lenpd_tuning.ki = 0.0f;
-    lenpd_tuning.kd = -8000.0f;
+    lenpd_tuning.kd = -800.0f;
     phi0pd_tuning.kp = 10.0f;
     phi0pd_tuning.ki = 0.0f;
     phi0pd_tuning.kd = -2.0f;
@@ -118,7 +118,7 @@ pid_tuning_t phi0pd_tuning;
         om_suber_export(remoter_suber, &remoter, false);
 
         alpha_fdb = 0.5f*(solver_fdb.lphi + solver_fdb.rphi - Pi) + ins.pitch*DegreeToRad;
-        alphadot_fdb = 0.5f*(solver_fdb.lphi_dot + solver_fdb.rphi_dot) + ins.gyro_p;
+        alphadot_fdb = -0.5f*(solver_fdb.lphi_dot + solver_fdb.rphi_dot) + ins.gyro_p;
         lenfdb = 0.5f * (solver_fdb.llen + solver_fdb.rlen);
 
         if (tx_semaphore_get(&IMUThreadSem, TX_WAIT_FOREVER) == TX_SUCCESS)
