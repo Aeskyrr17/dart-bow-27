@@ -151,6 +151,8 @@ pid_tuning_t phi0pd_tuning;
                 vlen = ((float)vlen_rx) / 15000.0f - 2.0f;
                 vy = ((float)vy_rx) / 15000.0f - 2.0f;
 
+                vy = remoter.left_y *0.002f;
+
                 if (isnan(vlen_rx) || isnan(vy_rx) || isnan(relativeangle) || (mode.chassis_mode > 3) || (mode.rotate_type > 1) || (mode.jump_ctrl > 2)) // 如果出现nan错误，将速度设定值设为0
                 {
                     vlen = 0;
