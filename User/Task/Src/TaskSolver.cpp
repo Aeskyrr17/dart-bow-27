@@ -56,6 +56,10 @@ struct solver_debug_t
     float lwheel_tor_ref;
     float rwheel_tor_fdb;
     float lwheel_tor_fdb;
+    float lhip1_pos;
+    float lhip2_pos;
+    float rhip1_pos;
+    float rhip2_pos;
 };
 __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 #endif
@@ -190,6 +194,11 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
         solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
         solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
+
+        solver_debug.lhip1_pos = LHip1.motorFeedback.positionFdb;
+        solver_debug.lhip2_pos = LHip2.motorFeedback.positionFdb;
+        solver_debug.rhip1_pos = RHip1.motorFeedback.positionFdb;
+        solver_debug.rhip2_pos = RHip2.motorFeedback.positionFdb;
     #endif
 
         if (remoter.ctrl_sw == Relax || remoter.offline)
