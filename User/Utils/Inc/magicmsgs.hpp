@@ -87,14 +87,14 @@ struct msg_remoter_t
  * @brief AHRS消息结构
  */
 struct msg_ins_t {
-    float quaternion[4]; ///< 四元数
-    float roll;   ///< 横滚角
-    float pitch;  ///< 俯仰角
-    float yaw;    ///< 偏航角
-    float total_yaw; ///< 偏航总角度
-    float gyro_r; ///< roll角速度
-    float gyro_p; ///< pitch角速度
-    float gyro_y; ///< yaw角速度
+    float quaternion[4];    ///< 四元数
+    float roll;             ///< 横滚角, deg
+    float pitch;            ///< 俯仰角, deg
+    float yaw;              ///< 偏航角, deg
+    float total_yaw;        ///< 偏航总角度, deg
+    float gyro_r;           ///< roll角速度, rad/s
+    float gyro_p;           ///< pitch角速度, rad/s
+    float gyro_y;           ///< yaw角速度, rad/s
     float accel[3];
 };
 

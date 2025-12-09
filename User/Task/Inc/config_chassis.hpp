@@ -18,6 +18,9 @@
 
 #define WHEEL_RADIUS 0.077f
 
+#define MAX_HIP_TOR 40.0f
+#define MAX_WHEEL_TOR 15.0f
+
 #ifndef DEBUG
 #define DEBUG
 #endif
