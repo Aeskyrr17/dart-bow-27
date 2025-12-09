@@ -166,14 +166,13 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
 
-        LHip1.currentSet = -LTp[1]*Tk_LK8016;
-        LHip2.currentSet = -LTp[0]*Tk_LK8016;
-        RHip1.currentSet = RTp[1]*Tk_LK8016;
-        RHip2.currentSet = RTp[0]*Tk_LK8016;
+        LHip1.currentSet = -Numeric::FloatConstrain(LTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        LHip2.currentSet = -Numeric::FloatConstrain(LTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        RHip1.currentSet = Numeric::FloatConstrain(RTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        RHip2.currentSet = Numeric::FloatConstrain(RTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
 
-        LWheel.currentSet = pendulumctrl.Twl * Tk_LK9025;//
-        RWheel.currentSet = -pendulumctrl.Twr * Tk_LK9025;//0.0f;//
-
+        LWheel.currentSet = Numeric::FloatConstrain(pendulumctrl.Twl, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
+        RWheel.currentSet = -Numeric::FloatConstrain(pendulumctrl.Twr, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
 
     #ifdef DEBUG
         solver_debug.llength = solverfdb.llen;
