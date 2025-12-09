@@ -45,22 +45,34 @@ function K = LQR_cal(L, Lm, MatQ, MatR)
     [K,~,~] = dlqr(Ad, Bd, MatQ, MatR);
 end
 
-leg = 0.12:0.01:0.32;
+leg = 0.15:0.01:0.35;
 %    alpha alpha_dot x x_dot theta theta_dot
-% Q=diag([1000 10 100 300 1000 10]);
-Q=diag([12000 200 50 15 12000 200]);
-%    T   Tp
-R=diag([6 3]);
-% Q=diag([30000 600 100 30 35000 250]);
-% R=diag([5 2]);
-% Q=diag([4000 500 100 6 15000 200]);
+%    T   Tp`
+Q=diag([6000 200 150 100 9000 500]);
+R=diag([2 1]);
+
+Ks = zeros(2,6,length(leg));
 
 for i = leg
     L = i/2;
     Lm = i/2;
 
     K = LQR_cal(L,Lm,Q,R);
+    Ks(:,:,round((i-0.15)/0.01)+1) = K;
     fprintf('\t/* Normal -K\tL=%8.6f\tR00=%2.2f\tR11=%2.2f */\n \t{%8.5f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f, %8.6f},\n',i,R(1,1),R(2,2),-K(1,1),-K(1,2),-K(1,3),-K(1,4),-K(1,5),-K(1,6),-K(2,1),-K(2,2),-K(2,3),-K(2,4),-K(2,5),-K(2,6))
     fprintf('\t/* OffGround -K\tL=%8.6f\tR00=%2.2f\tR11=%2.2f */\n \t{0, 0, 0, 0, 0, 0, %8.6f, %8.6f, 0, 0, 0, 0},\n',i,R(1,1),R(2,2),-K(2,1),-K(2,2))
 end
 fprintf('\n');
+
+% Kfit = sym('Kfit', [2,6]);
+% syms Lval;
+
+% for x = 1:2
+%     for y = 1:6
+%         p = polyfit(leg, reshape(Ks(x,y,:),1,length(leg)), 3);
+%         Kfit(x,y) = p(1)*Lval^3 + p(2)*Lval^2 + p(3)*Lval + p(4);
+%         fprintf('Kfit(%d,%d) = %8.6f*L^3 + %8.6f*L^2 + %8.6f*L + %8.6f;\n', x, y, p(1), p(2), p(3), p(4));
+%     end
+% end
+
+% matlabFunction(Kfit,'File','kfun');

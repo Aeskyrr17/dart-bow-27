@@ -46,8 +46,12 @@ struct solver_debug_t
     float rphi_dot;
     float lphi1;
     float lphi4;
+    float lphi1dot;
+    float lphi4dot;
     float rphi1;
     float rphi4;
+    float rphi1dot;
+    float rphi4dot;
     float lhip1_tor;
     float lhip2_tor;
     float rhip1_tor;
@@ -138,10 +142,10 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solverfdb.llen = Lsolver.GetPendulumLen();
         solverfdb.rlen = Rsolver.GetPendulumLen();
 
-        Lqdot[0] = LHip1.motorFeedback.speedFdb;
-        Lqdot[1] = LHip2.motorFeedback.speedFdb;
-        Rqdot[0] = -RHip1.motorFeedback.speedFdb;
-        Rqdot[1] = -RHip2.motorFeedback.speedFdb;
+        Lqdot[0] = -LHip2.motorFeedback.speedFdb;
+        Lqdot[1] = -LHip1.motorFeedback.speedFdb;
+        Rqdot[0] = RHip2.motorFeedback.speedFdb;
+        Rqdot[1] = RHip1.motorFeedback.speedFdb;
 
         Lsolver.VMCVelCal(Lqdot, Lxdot);
         Rsolver.VMCVelCal(Rqdot, Rxdot);
@@ -162,13 +166,13 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
 
-        LHip1.currentSet = LTp[0]*Tk_LK8016;
-        LHip2.currentSet = LTp[1]*Tk_LK8016;
-        RHip1.currentSet = -RTp[0]*Tk_LK8016;
-        RHip2.currentSet = -RTp[1]*Tk_LK8016;
+        LHip1.currentSet = -LTp[1]*Tk_LK8016;
+        LHip2.currentSet = -LTp[0]*Tk_LK8016;
+        RHip1.currentSet = RTp[1]*Tk_LK8016;
+        RHip2.currentSet = RTp[0]*Tk_LK8016;
 
-        LWheel.currentSet = pendulumctrl.Twl * Tk_LK9025;
-        RWheel.currentSet = -pendulumctrl.Twr * Tk_LK9025;
+        LWheel.currentSet = pendulumctrl.Twl * Tk_LK9025;//
+        RWheel.currentSet = -pendulumctrl.Twr * Tk_LK9025;//0.0f;//
 
 
     #ifdef DEBUG
@@ -199,6 +203,11 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.lhip2_pos = LHip2.motorFeedback.positionFdb;
         solver_debug.rhip1_pos = RHip1.motorFeedback.positionFdb;
         solver_debug.rhip2_pos = RHip2.motorFeedback.positionFdb;
+
+        solver_debug.lphi1dot = Lqdot[1];
+        solver_debug.lphi4dot = Lqdot[0];
+        solver_debug.rphi1dot = Rqdot[1];
+        solver_debug.rphi4dot = Rqdot[0];
     #endif
 
         if (remoter.ctrl_sw == Relax || remoter.offline)

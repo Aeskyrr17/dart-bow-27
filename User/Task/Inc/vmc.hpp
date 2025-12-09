@@ -67,7 +67,7 @@ public:
         /*计算u2*/
         float u2t = 0.0f;
         arm_atan2_f32((B0 + sqrtf(A0 * A0 + B0 * B0 - C0 * C0)), (A0 + C0), &u2t);
-        this->U2 = 2.0f * (u2t); //Move u2t to 0 - 2PI
+        this->U2 = 2.0f*(u2t);
 
         /*计算B*/
         this->CoorB[0] = VMC_L1 * COS1 - VMC_HalfMotorDistance;
@@ -83,7 +83,7 @@ public:
         /*计算u3*/
         float u3t;
         arm_atan2_f32((this->CoorD[1] - this->CoorC[1]), (this->CoorD[0] - this->CoorC[0]), &u3t);
-        this->U3 = u3t + PI; //Move u3t to 0 - 2PI
+        this->U3 = PI+u3t;
 
         /*计算倒立摆长度*/
         arm_atan2_f32(this->CoorC[1], this->CoorC[0], &this->PendulumRadian);
@@ -122,14 +122,18 @@ public:
 
     void VMCRevCal(float *F, float *T)
     {
-        F[0] = this->JT_inv_mat[0] * T[0] + this->JT_inv_mat[1] * T[1];
-        F[1] = this->JT_inv_mat[2] * T[0] + this->JT_inv_mat[3] * T[1];
+        // F[0] = this->JT_inv_mat[0] * T[0] + this->JT_inv_mat[1] * T[1];
+        // F[1] = this->JT_inv_mat[2] * T[0] + this->JT_inv_mat[3] * T[1];
+        F[0] = this->J_mat[0] * T[0] + this->J_mat[1] * T[1];
+        F[1] = this->J_mat[2] * T[0] + this->J_mat[3] * T[1];
     }
 
     void VMCVelCal(float *phi_dot, float *v_dot)
     {
-        v_dot[0] = (this->JT_inv_mat[0] * phi_dot[0] + this->JT_inv_mat[1] * phi_dot[1]) * 0.001f;
-        v_dot[1] = (this->JT_inv_mat[2] * phi_dot[0] + this->JT_inv_mat[3] * phi_dot[1]) * 0.001f;
+        // v_dot[0] = (this->JT_inv_mat[0] * phi_dot[0] + this->JT_inv_mat[1] * phi_dot[1]) * 0.001f;
+        // v_dot[1] = (this->JT_inv_mat[2] * phi_dot[0] + this->JT_inv_mat[3] * phi_dot[1]) * 0.001f;
+        v_dot[0] = (this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1])*0.1f;
+        v_dot[1] = (this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1])*0.1f;
     }
 
     inline float GetPendulumLen() {
