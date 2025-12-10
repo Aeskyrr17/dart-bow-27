@@ -122,18 +122,14 @@ public:
 
     void VMCRevCal(float *F, float *T)
     {
-        // F[0] = this->JT_inv_mat[0] * T[0] + this->JT_inv_mat[1] * T[1];
-        // F[1] = this->JT_inv_mat[2] * T[0] + this->JT_inv_mat[3] * T[1];
-        F[0] = this->J_mat[0] * T[0] + this->J_mat[1] * T[1];
-        F[1] = this->J_mat[2] * T[0] + this->J_mat[3] * T[1];
+        F[0] = this->JT_inv_mat[0] * T[0] + this->JT_inv_mat[1] * T[1];
+        F[1] = this->JT_inv_mat[2] * T[0] + this->JT_inv_mat[3] * T[1];
     }
 
     void VMCVelCal(float *phi_dot, float *v_dot)
     {
-        // v_dot[0] = (this->JT_inv_mat[0] * phi_dot[0] + this->JT_inv_mat[1] * phi_dot[1]) * 0.001f;
-        // v_dot[1] = (this->JT_inv_mat[2] * phi_dot[0] + this->JT_inv_mat[3] * phi_dot[1]) * 0.001f;
-        v_dot[0] = (this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1])*0.1f;
-        v_dot[1] = (this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1])*0.1f;
+        v_dot[0] = this->J_mat[0] * phi_dot[0] + this->J_mat[1] * phi_dot[1];
+        v_dot[1] = this->J_mat[2] * phi_dot[0] + this->J_mat[3] * phi_dot[1];
     }
 
     inline float GetPendulumLen() {

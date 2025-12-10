@@ -118,7 +118,7 @@ void LK8016::UpdateSensorData(uint8_t *buffer_ptr)
     motorFeedback.lastSpeedFdb = motorFeedback.speedFdb;
 
     motorFeedback.positionFdb = LoopFloatConstrain((float)(motorFeedback.ecd - offset) * LKMotor::RawPos2Rad, -Numeric::Pi, Pi);
-    motorFeedback.speedFdb = motorFeedback.speed_dps * LKMotor::RawDps2Rpsps;
+    motorFeedback.speedFdb = motorFeedback.speed_dps * LKMotor::RawDps2Rpsps * GearRatio;
 
     motorFeedback.torqueFdb = motorFeedback.currentFdb * 0.0230399882f;
 }

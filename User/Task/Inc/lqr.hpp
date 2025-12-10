@@ -4,6 +4,7 @@
 
 using namespace Numeric;
 
+#ifdef USE_MODEL_A
 class LQR
 {
 protected:
@@ -139,3 +140,4 @@ public:
     }
 
 };
+#endif
