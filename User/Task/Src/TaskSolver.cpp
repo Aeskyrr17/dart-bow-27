@@ -52,18 +52,18 @@ struct solver_debug_t
     float rphi4;
     float rphi1dot;
     float rphi4dot;
-    float lhip1_tor;
-    float lhip2_tor;
-    float rhip1_tor;
-    float rhip2_tor;
+    float ljoint4_tor;
+    float ljoint1_tor;
+    float rjoint4_tor;
+    float rjoint1_tor;
     float rwheel_tor_ref;
     float lwheel_tor_ref;
     float rwheel_tor_fdb;
     float lwheel_tor_fdb;
-    float lhip1_pos;
-    float lhip2_pos;
-    float rhip1_pos;
-    float rhip2_pos;
+    float ljoint4_pos;
+    float ljoint1_pos;
+    float rjoint4_pos;
+    float rjoint1_pos;
 };
 __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 #endif
@@ -76,24 +76,24 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
     LK9025 RWheel;
     LK9025 LWheel;
 
-    LK8016 RHip1;
-    LK8016 RHip2;
+    LK8016 RJoint4;
+    LK8016 RJoint1;
 
-    LK8016 LHip1;
-    LK8016 LHip2;
+    LK8016 LJoint4;
+    LK8016 LJoint1;
 
-    LKMotorHandler::Instance()->registerMotor(&LHip1, &hfdcan1, 0x141);
-    LHip1.currentSet = 0;
-    LHip1.offset = LHIP1_OFFSET;
-    LKMotorHandler::Instance()->registerMotor(&LHip2, &hfdcan1, 0x142);
-    LHip2.currentSet = 0;
-    LHip2.offset = LHIP2_OFFSET;
-    LKMotorHandler::Instance()->registerMotor(&RHip1, &hfdcan1, 0x143);
-    RHip1.currentSet = 0;
-    RHip1.offset = RHIP1_OFFSET;
-    LKMotorHandler::Instance()->registerMotor(&RHip2, &hfdcan1, 0x144);
-    RHip2.currentSet = 0;
-    RHip2.offset = RHIP2_OFFSET;
+    LKMotorHandler::Instance()->registerMotor(&LJoint4, &hfdcan1, 0x141);
+    LJoint4.currentSet = 0;
+    LJoint4.offset = LJOINT4_OFFSET;
+    LKMotorHandler::Instance()->registerMotor(&LJoint1, &hfdcan1, 0x142);
+    LJoint1.currentSet = 0;
+    LJoint1.offset = LJOINT1_OFFSET;
+    LKMotorHandler::Instance()->registerMotor(&RJoint4, &hfdcan1, 0x143);
+    RJoint4.currentSet = 0;
+    RJoint4.offset = RJOINT4_OFFSET;
+    LKMotorHandler::Instance()->registerMotor(&RJoint1, &hfdcan1, 0x144);
+    RJoint1.currentSet = 0;
+    RJoint1.offset = RJOINT1_OFFSET;
     LKMotorHandler::Instance()->registerMotor(&LWheel, &hfdcan3, 0x141);
     LWheel.currentSet = 0;
     LKMotorHandler::Instance()->registerMotor(&RWheel, &hfdcan3, 0x142);
@@ -137,16 +137,16 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(pendulumctrl_suber, &pendulumctrl, false);
 
-        Lsolver.Resolve(LHip1.motorFeedback.positionFdb, LHip2.motorFeedback.positionFdb, 0);
-        Rsolver.Resolve(RHip1.motorFeedback.positionFdb, RHip2.motorFeedback.positionFdb, 1);
+        Lsolver.Resolve(-LJoint4.motorFeedback.positionFdb, PI-LJoint1.motorFeedback.positionFdb);
+        Rsolver.Resolve(RJoint4.motorFeedback.positionFdb, PI+RJoint1.motorFeedback.positionFdb);
 
         solverfdb.llen = Lsolver.GetPendulumLen();
         solverfdb.rlen = Rsolver.GetPendulumLen();
 
-        Lqdot[0] = -LHip2.motorFeedback.speedFdb;
-        Lqdot[1] = -LHip1.motorFeedback.speedFdb;
-        Rqdot[0] = RHip2.motorFeedback.speedFdb;
-        Rqdot[1] = RHip1.motorFeedback.speedFdb;
+        Lqdot[0] = -LJoint1.motorFeedback.speedFdb;
+        Lqdot[1] = -LJoint4.motorFeedback.speedFdb;
+        Rqdot[0] = RJoint1.motorFeedback.speedFdb;
+        Rqdot[1] = RJoint4.motorFeedback.speedFdb;
 
         Lsolver.VMCVelCal(Lqdot, Lxdot);
         Rsolver.VMCVelCal(Rqdot, Rxdot);
@@ -167,10 +167,10 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
 
-        LHip1.currentSet = -Numeric::FloatConstrain(LTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
-        LHip2.currentSet = -Numeric::FloatConstrain(LTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
-        RHip1.currentSet = Numeric::FloatConstrain(RTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
-        RHip2.currentSet = Numeric::FloatConstrain(RTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        LJoint4.currentSet = -Numeric::FloatConstrain(LTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        LJoint1.currentSet = -Numeric::FloatConstrain(LTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        RJoint4.currentSet = Numeric::FloatConstrain(RTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        RJoint1.currentSet = Numeric::FloatConstrain(RTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
 
         LWheel.currentSet = Numeric::FloatConstrain(pendulumctrl.Twl, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
         RWheel.currentSet = -Numeric::FloatConstrain(pendulumctrl.Twr, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
@@ -190,19 +190,19 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.rphi1 = Rsolver.GetPhi1();
         solver_debug.rphi4 = Rsolver.GetPhi4();
 
-        solver_debug.lhip1_tor = LTp[0];
-        solver_debug.lhip2_tor = LTp[1];
-        solver_debug.rhip1_tor = RTp[0];
-        solver_debug.rhip2_tor = RTp[1];
+        solver_debug.ljoint4_tor = LTp[0];
+        solver_debug.ljoint1_tor = LTp[1];
+        solver_debug.rjoint4_tor = RTp[0];
+        solver_debug.rjoint1_tor = RTp[1];
         solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
         solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
         solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
         solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
 
-        solver_debug.lhip1_pos = LHip1.motorFeedback.positionFdb;
-        solver_debug.lhip2_pos = LHip2.motorFeedback.positionFdb;
-        solver_debug.rhip1_pos = RHip1.motorFeedback.positionFdb;
-        solver_debug.rhip2_pos = RHip2.motorFeedback.positionFdb;
+        solver_debug.ljoint4_pos = LJoint4.motorFeedback.positionFdb;
+        solver_debug.ljoint1_pos = LJoint1.motorFeedback.positionFdb;
+        solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
+        solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
 
         solver_debug.lphi1dot = Lqdot[1];
         solver_debug.lphi4dot = Lqdot[0];
@@ -212,10 +212,10 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 
         if (remoter.ctrl_sw == Relax || remoter.offline)
         {
-            LHip1.currentSet = 0;
-            LHip2.currentSet = 0;
-            RHip1.currentSet = 0;
-            RHip2.currentSet = 0;
+            LJoint4.currentSet = 0;
+            LJoint1.currentSet = 0;
+            RJoint4.currentSet = 0;
+            RJoint1.currentSet = 0;
 
             LWheel.currentSet = 0;
             RWheel.currentSet = 0;

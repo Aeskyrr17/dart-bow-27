@@ -38,18 +38,10 @@ protected:
 
 public:
 
-    void Resolve(float phi4_radian, float phi1_radian, int leg_type)
+    void Resolve(float phi4_fdb, float phi1_fdb)
     {
-        if (leg_type == 0)
-        {
-            this->phi4 = -phi4_radian;
-            this->phi1 = PI - phi1_radian;
-        }
-        else if (leg_type == 1)
-        {
-            this->phi4 = phi4_radian;
-            this->phi1 = PI + phi1_radian;
-        }
+        this->phi4 = phi4_fdb;
+        this->phi1 = phi1_fdb;
 
         float SIN1 = arm_sin_f32(this->phi1);
         float COS1 = arm_cos_f32(this->phi1);
