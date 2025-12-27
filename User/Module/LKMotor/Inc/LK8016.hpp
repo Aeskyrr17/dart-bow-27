@@ -17,6 +17,8 @@ public:
      * @brief 构造函数，初始化GM6020电机控制类。
      */
     ~LK8016();
+
+    constexpr static float GearRatio = 0.166667f; // 1/6
     
     /**
      * @brief 实现电机输出设置。

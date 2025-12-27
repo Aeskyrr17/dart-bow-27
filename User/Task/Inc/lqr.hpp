@@ -4,6 +4,7 @@
 
 using namespace Numeric;
 
+#ifdef USE_MODEL_A
 class LQR
 {
 protected:
@@ -120,8 +121,7 @@ public:
         Tout[1] = this->LQROutBuf[1];
     }
 
-    /*根据腿长更新使用的矩阵k
-    */
+    /*根据腿长更新使用的矩阵k*/
     void refreshLQRK(float LegLenth, bool isFly)
     {
         LegLenth = (LegLenth < LQR_MIN_LEN_CTRL) ? LQR_MIN_LEN_CTRL : LegLenth;
@@ -139,3 +139,4 @@ public:
     }
 
 };
+#endif

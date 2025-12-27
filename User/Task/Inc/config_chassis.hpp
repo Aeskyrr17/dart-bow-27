@@ -25,6 +25,11 @@
 #define DEBUG
 #endif
 
+#define USE_MODEL_A
+#ifndef USE_MODEL_A
+#define USE_MODEL_B
+#endif
+
 typedef enum{
     ON_GROUND = 0,
     OFF_GROUND = 1,

@@ -26,12 +26,12 @@ uint8_t UIThreadStack[2048] = {0};
     // ui.CreateString(3, UIObjectColor::Cyan, 2, 1542, 500, 20, TXT_BASE);
     // ui.CreateString(3, UIObjectColor::Cyan, 2, 1542, 460, 20, TXT_NONE);
 
-    ui.CreateLine(3, UIObjectColor::Pink, 3, 582, 440, 682, 543);
+    ui.CreateLine(3, UIObjectColor::Pink, 2, 582, 440, 682, 543);
     ui.CreateLine(3, UIObjectColor::Pink, 3, 1087, 544, 1317, 387);
-    int8_t LINE_SUPERCAP = ui.CreateLine(30, UIObjectColor::Yellow, 3, 800, 100, 1175, 100);
+    ui.CreateLine(30, UIObjectColor::Yellow, 4, 800, 100, 1175, 100); //int8_t LINE_SUPERCAP = 
     for (;;)
     {
-        ui.MoveP2To(LINE_SUPERCAP, 800+DWT_GetTimeline_ms(), 100);
+        // ui.MoveP2To(LINE_SUPERCAP, 800+DWT_GetTimeline_ms(), 100);
         ui.Update();
         tx_thread_sleep(100);
     }

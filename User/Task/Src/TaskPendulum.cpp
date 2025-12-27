@@ -64,6 +64,7 @@ float last_alpha = 0.0f;
 float debug_alpha_dot = 0.0f;
 #endif
 
+#ifdef USE_MODEL_A
 [[noreturn]] void PendulumThreadFun(ULONG initial_input)
 {
     UNUSED(initial_input);
@@ -297,3 +298,4 @@ float debug_alpha_dot = 0.0f;
         tx_thread_sleep(MIN(1, 1-(tx_time_get()-thread_start_time)));
     }
 }
+#endif

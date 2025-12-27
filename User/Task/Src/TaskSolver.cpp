@@ -68,6 +68,7 @@ struct solver_debug_t
 __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 #endif
 
+#ifdef USE_MODEL_A
 [[noreturn]] void SolverThreadFun(ULONG initial_input)
 {
     UNUSED(initial_input);
@@ -226,3 +227,4 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         tx_thread_sleep(MIN(1, 1-(tx_time_get()-thread_start_time)));
     }
 }
+#endif
