@@ -290,7 +290,6 @@ void UI::Delete(int id)
 {
     auto& obj = UIObjectList[id];
     obj.metadata.deleted = true;
-    UIObjectNum--;
 }
 
 void UI::DeleteAll() 
@@ -340,13 +339,14 @@ void UI::TransmitOtherObjects(uint8_t count)
     Append_CRC8_Check_Sum(reinterpret_cast<unsigned char*>(header), 5);
     header->ContentId = contentIdTable[count];
 
-    for (size_t i = count; i < elementCount; ++i) 
+    for (uint8_t i = count; i < elementCount; i++) 
     {
         getBufferNthUiObject(i)->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(UIOperation::Noop);
     }
 
-    Append_CRC16_Check_Sum(UITxBuffer, 13+elementCount*15+2);
-    SendData(UITxBuffer, 120);
+    uint8_t length = 13+elementCount*15+2;
+    Append_CRC16_Check_Sum(UITxBuffer, length);
+    SendData(UITxBuffer, length);
 }
 
 /* ==================================== 更新函数 ==================================== */
