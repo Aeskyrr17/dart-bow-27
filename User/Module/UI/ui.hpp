@@ -114,7 +114,7 @@ private:
             bool dirty : 1;
             bool dirtyVisibility : 1;
             bool visible : 1;
-        } metadata;
+        } __attribute__((packed)) metadata;
 
         uint8_t refereeHandle[3];
 
@@ -129,8 +129,8 @@ private:
                 uint32_t color : 4;
                 uint32_t detailA : 9;
                 uint32_t detailB : 9;
-            };
-        } detailDword1;
+            } __attribute__((packed));
+        } detailDword1 __attribute__((packed));
 
         union DetailDword2Internals
         {
@@ -140,8 +140,8 @@ private:
                 uint32_t width : 10;
                 uint32_t x : 11;
                 uint32_t y : 11;
-            };
-        } detailDword2;
+            } __attribute__((packed));
+        } detailDword2 __attribute__((packed));
 
         union DetailDword3Internals
         {
@@ -150,23 +150,23 @@ private:
             {
                 uint32_t radius : 10;
                 uint32_t reserved : 22;
-            } circle;
+            } circle __attribute__((packed));
             struct
             {
                 uint32_t reserved : 10;
                 uint32_t x2 : 11;
                 uint32_t y2 : 11;
-            } line;
+            } line __attribute__((packed));
             struct
             {
                 uint32_t reserved : 10;
                 uint32_t xSemiaxis : 11;
                 uint32_t ySemiaxis : 11;
-            } ellipse;
+            } ellipse __attribute__((packed));
             int intVal;
             uint32_t floatVal;
             const char* strVal;
-        } detailDword3;
+        } detailDword3 __attribute__((packed));
     } __attribute__((packed));
 
     struct OfficialUIObject
@@ -179,8 +179,8 @@ private:
             {
                 uint32_t operation : 3;
                 uint32_t not_used : 29;
-            } detailDword1Internal;
-        }Dword1;
+            } __attribute__((packed)) detailDword1Internal;
+        } __attribute__((packed)) Dword1;
         uint32_t detailDword2;
         uint32_t detailDword3;
     } __attribute__((packed));
@@ -189,7 +189,7 @@ private:
     {
         uint8_t Type;
         uint8_t Layer;
-    }__attribute__((packed));
+    } __attribute__((packed));
 
     static constexpr uint8_t UI_TOTAL_COUNT = 30;
     static constexpr uint8_t STRING_MAX_LENGTH = 30;
@@ -239,7 +239,7 @@ private:
 
     inline int8_t CreateAndInitObject() 
     {
-        for (uint8_t i = 0; i < UI_TOTAL_COUNT; ++i) 
+        for (uint8_t i = 0; i < UI_TOTAL_COUNT; i++) 
         {
             auto& obj = UIObjectList[i];
             if (!obj.metadata.valid) 
@@ -249,7 +249,7 @@ private:
                 obj.metadata.dirty = false;
                 obj.metadata.dirtyVisibility = true;
                 obj.metadata.visible = true;
-                memcpy(obj.refereeHandle, &UIObjectNum, 3);
+                memcpy(obj.refereeHandle, (void *)&UIObjectNum, 3);
                 obj.detailDword1.dw = 0;
                 obj.detailDword2.dw = 0;
                 obj.detailDword3.dw = 0;

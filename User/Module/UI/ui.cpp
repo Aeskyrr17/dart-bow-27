@@ -1,4 +1,5 @@
 #include "ui.hpp"
+#include <cstdint>
 
 __attribute__((section(".RAM_D1"))) UI::UIObject UI::UIObjectList[UI_TOTAL_COUNT];
 __attribute__((section(".RAM_D1"))) uint8_t UI::UITxBuffer[TX_BUFFER_SIZE];
@@ -101,7 +102,6 @@ int8_t UI::CreateArc(int width, UIObjectColor color, int layer, int x, int y, in
     obj.detailDword3.ellipse.ySemiaxis = ySemiaxis;
     obj.detailDword1.detailA = startAngle;
     obj.detailDword1.detailB = endAngle;
-
     return newId;
 }
 
@@ -322,7 +322,7 @@ void UI::TransmitStringObject(uint8_t index, UIOperation op)
     meta->Dword1.detailDword1 = obj.detailDword1.dw;
     meta->detailDword2 = obj.detailDword2.dw;
     meta->detailDword3 = obj.detailDword3.dw;
-    memcpy(&meta->name, obj.refereeHandle, 3);
+    memcpy((void *)&meta->name, (void *)&obj.refereeHandle, 3);
     meta->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(op);
 
     char* strBuf = getBufferStringBuffer();
@@ -345,22 +345,23 @@ void UI::TransmitOtherObjects(uint8_t count)
         getBufferNthUiObject(i)->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(UIOperation::Noop);
     }
 
-    Append_CRC16_Check_Sum(UITxBuffer, 13 + elementCount * 15 + 2);
-    SendData(UITxBuffer, 60);
+    Append_CRC16_Check_Sum(UITxBuffer, 13+elementCount*15+2);
+    SendData(UITxBuffer, 120);
 }
 
 /* ==================================== 更新函数 ==================================== */
 
 void UI::Update()
 {
-    uint8_t stringProcessed = 0;
-    uint8_t otherProcessed  = 0;
+RestartForStringProcessing:
 
-    // 优先处理字符串对象
-    while (UIPendingUpdateIsString && stringProcessed < MAX_STRING_PER_FRAME)
+    bool alreadySentStringOnce = false;
+    // 处理字符串对象
+    if (UIPendingUpdateIsString)
     {
         auto& obj = UIObjectList[UIPendingStringIndex];
         obj.metadata.dirty = false;
+        alreadySentStringOnce = true;
 
         if (obj.metadata.dirtyVisibility && obj.metadata.visible)
         {
@@ -382,73 +383,85 @@ void UI::Update()
             {
                 UIPendingStringIndex = i;
                 UIPendingUpdateIsString = true;
-                return false; // 停止扫描
+                return false;
             }
             return true;
         };
         loopScanObjectList(UIPendingStringIndex, UIScanOffset, checkStr);
-        ++stringProcessed;
     }
 
-    // 处理非字符串对象
-    auto processObj = [&](size_t i, UIObject& obj) -> bool
+    else 
     {
-        loopIncrement(UIScanOffset);
-        if (!obj.metadata.valid) return true;
-        if (!obj.metadata.dirty && !obj.metadata.dirtyVisibility && !obj.metadata.deleted) return true;
+        uint8_t itemProcessed  = 0;
+        // 处理非字符串对象
+        auto processObj = [&](size_t i, UIObject& obj) -> bool
+        {
+            loopIncrement(UIScanOffset);
+            if (!obj.metadata.valid) 
+                return true;
+            if (!obj.metadata.dirty && !obj.metadata.dirtyVisibility && !obj.metadata.deleted) 
+                return true;
 
-        auto writeBufferObj = [&](UIOperation op)
-        {
-            auto bufferObj = getBufferNthUiObject(otherProcessed);
-            bufferObj->Dword1.detailDword1 = obj.detailDword1.dw;
-            bufferObj->detailDword2 = obj.detailDword2.dw;
-            bufferObj->detailDword3 = obj.detailDword3.dw;
-            memcpy(&bufferObj->name, obj.refereeHandle, 3);
-            bufferObj->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(op);
-            otherProcessed++;
-        };
-
-        if (obj.metadata.deleted)
-        {
-            obj.metadata.valid = false;
-            writeBufferObj(UIOperation::Delete);
-        }
-        else if (obj.metadata.dirtyVisibility)
-        {
-            obj.metadata.dirtyVisibility = false;
-            if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str))
+            auto writeBufferObj = [&](UIOperation op)
             {
-                if (!UIPendingUpdateIsString)
+                auto bufferObj = getBufferNthUiObject(itemProcessed);
+                bufferObj->Dword1.detailDword1 = obj.detailDword1.dw;
+                bufferObj->detailDword2 = obj.detailDword2.dw;
+                bufferObj->detailDword3 = obj.detailDword3.dw;
+                memcpy((void *)&bufferObj->name, (void *)&obj.refereeHandle, 3);
+                bufferObj->Dword1.detailDword1Internal.operation = static_cast<uint32_t>(op);
+                itemProcessed++;
+            };
+
+            if (obj.metadata.deleted)
+            {
+                obj.metadata.valid = false;
+                writeBufferObj(UIOperation::Delete);
+            }
+            else if (obj.metadata.dirtyVisibility)
+            {
+                if (obj.metadata.visible)
+                {
+                    if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str) && !UIPendingUpdateIsString)
+                    {
+                        UIPendingUpdateIsString = true;
+                        UIPendingStringIndex = i;
+                    }
+                    else
+                    {
+                        obj.metadata.dirtyVisibility = false;
+                        writeBufferObj(UIOperation::Add);
+                    }
+                }
+                else 
+                {
+                    obj.metadata.dirtyVisibility = false;
+                    writeBufferObj(UIOperation::Delete);
+                }
+            }
+            else if (obj.metadata.dirty)
+            {
+                if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str) && !UIPendingUpdateIsString)
                 {
                     UIPendingUpdateIsString = true;
                     UIPendingStringIndex = i;
                 }
+                else
+                {
+                    obj.metadata.dirty = false;
+                    writeBufferObj(UIOperation::Modify);
+                }
             }
-            else
-            {
-                writeBufferObj(UIOperation::Add);
-            }
-        }
-        else if (obj.metadata.dirty)
-        {
-            if (obj.detailDword1.type == static_cast<uint8_t>(UIObjectType::Str) && !UIPendingUpdateIsString)
-            {
-                UIPendingUpdateIsString = true;
-                UIPendingStringIndex = i;
-            }
-            else
-            {
-                obj.metadata.dirty = false;
-                writeBufferObj(UIOperation::Modify);
-            }
-        }
 
-        return otherProcessed < MAX_OTHER_PER_FRAME;
-    };
+            return itemProcessed < MAX_OTHER_PER_FRAME;
+        };
 
-    loopScanObjectList(UIScanOffset, UIScanOffset, processObj);
+        loopScanObjectList(UIScanOffset, UIScanOffset, processObj);
 
-    if (otherProcessed > 0)
-        TransmitOtherObjects(otherProcessed);
+        if (itemProcessed > 0)
+            TransmitOtherObjects(itemProcessed);
+        else if (itemProcessed == 0 && UIPendingUpdateIsString && !alreadySentStringOnce)
+            goto RestartForStringProcessing; // 如果没有处理简单图形项但是出现了需要处理的字符串，就跳到函数开头重新开始
+    }
 }
 
