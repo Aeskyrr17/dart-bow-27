@@ -201,7 +201,7 @@ private:
     static uint8_t UITxBuffer[TX_BUFFER_SIZE];
     static UIDelete UIDeleteOp;
 
-    uint8_t UIObjectNum = 0;
+    uint8_t IncreaseID = 0;
     bool UIPendingUpdateIsString = false;
     uint8_t UIPendingStringIndex = 0;
     uint8_t UIScanOffset = 0;
@@ -214,9 +214,9 @@ private:
         return reinterpret_cast<UITxFrameHeader*>(UITxBuffer);
     }
 
-    inline OfficialUIObject* getBufferNthUiObject(size_t index) 
+    inline OfficialUIObject* getBufferNthUiObject(uint8_t index) 
     {
-        return reinterpret_cast<OfficialUIObject*>(UITxBuffer + sizeof(UITxFrameHeader) + index * sizeof(UIObject));
+        return reinterpret_cast<OfficialUIObject*>(UITxBuffer + sizeof(UITxFrameHeader) + index * sizeof(OfficialUIObject));
     }
 
     inline char* getBufferStringBuffer() 
@@ -249,11 +249,11 @@ private:
                 obj.metadata.dirty = false;
                 obj.metadata.dirtyVisibility = true;
                 obj.metadata.visible = true;
-                memcpy(obj.refereeHandle, (void *)&UIObjectNum, 3);
+                memcpy(obj.refereeHandle, (void *)&IncreaseID, 3);
                 obj.detailDword1.dw = 0;
                 obj.detailDword2.dw = 0;
                 obj.detailDword3.dw = 0;
-                UIObjectNum++;
+                IncreaseID++;
                 return static_cast<int8_t>(i);
             }
         }
