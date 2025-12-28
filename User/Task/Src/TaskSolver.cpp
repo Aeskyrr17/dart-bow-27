@@ -68,7 +68,6 @@ struct solver_debug_t
 __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 #endif
 
-#ifdef USE_MODEL_A
 [[noreturn]] void SolverThreadFun(ULONG initial_input)
 {
     UNUSED(initial_input);
@@ -137,8 +136,9 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(pendulumctrl_suber, &pendulumctrl, false);
 
-        Lsolver.Resolve(-LJoint4.motorFeedback.positionFdb, PI-LJoint1.motorFeedback.positionFdb);
-        Rsolver.Resolve(RJoint4.motorFeedback.positionFdb, PI+RJoint1.motorFeedback.positionFdb);
+        // 先将反馈值计算到符合模型的角度，再传入VMC
+        Lsolver.Resolve(PI-LJoint1.motorFeedback.positionFdb, -LJoint4.motorFeedback.positionFdb);
+        Rsolver.Resolve(PI+RJoint1.motorFeedback.positionFdb, RJoint4.motorFeedback.positionFdb);
 
         solverfdb.llen = Lsolver.GetPendulumLen();
         solverfdb.rlen = Rsolver.GetPendulumLen();
@@ -167,10 +167,10 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
 
-        LJoint4.currentSet = -Numeric::FloatConstrain(LTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
         LJoint1.currentSet = -Numeric::FloatConstrain(LTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
-        RJoint4.currentSet = Numeric::FloatConstrain(RTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        LJoint4.currentSet = -Numeric::FloatConstrain(LTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
         RJoint1.currentSet = Numeric::FloatConstrain(RTp[0], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
+        RJoint4.currentSet = Numeric::FloatConstrain(RTp[1], -MAX_HIP_TOR, MAX_HIP_TOR) * Tk_LK8016;
 
         LWheel.currentSet = Numeric::FloatConstrain(pendulumctrl.Twl, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
         RWheel.currentSet = -Numeric::FloatConstrain(pendulumctrl.Twr, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
@@ -190,10 +190,11 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.rphi1 = Rsolver.GetPhi1();
         solver_debug.rphi4 = Rsolver.GetPhi4();
 
-        solver_debug.ljoint4_tor = LTp[0];
-        solver_debug.ljoint1_tor = LTp[1];
-        solver_debug.rjoint4_tor = RTp[0];
-        solver_debug.rjoint1_tor = RTp[1];
+        solver_debug.ljoint1_tor = LTp[0];
+        solver_debug.ljoint4_tor = LTp[1];
+        solver_debug.rjoint1_tor = RTp[0];
+        solver_debug.rjoint4_tor = RTp[1];
+        
         solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
         solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
         solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
@@ -204,10 +205,10 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
         solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
 
-        solver_debug.lphi1dot = Lqdot[1];
-        solver_debug.lphi4dot = Lqdot[0];
-        solver_debug.rphi1dot = Rqdot[1];
-        solver_debug.rphi4dot = Rqdot[0];
+        solver_debug.lphi1dot = Lqdot[0];
+        solver_debug.lphi4dot = Lqdot[1];
+        solver_debug.rphi1dot = Rqdot[0];
+        solver_debug.rphi4dot = Rqdot[1];
     #endif
 
         if (remoter.ctrl_sw == Relax || remoter.offline)
@@ -227,4 +228,3 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         tx_thread_sleep(MIN(1, 1-(tx_time_get()-thread_start_time)));
     }
 }
-#endif

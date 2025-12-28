@@ -1,6 +1,7 @@
 #pragma once
 
-#define LQR_K_NUM               46
+#define STJU_MODEL
+
 #define LQR_MIN_LEN_CTRL       0.15f
 #define LQR_MAX_LEN_CTRL       0.35f
 #define LQR_LEN_RESOLUTION     0.01f
@@ -23,11 +24,6 @@
 
 #ifndef DEBUG
 #define DEBUG
-#endif
-
-#define USE_MODEL_A
-#ifndef USE_MODEL_A
-#define USE_MODEL_B
 #endif
 
 typedef enum{
