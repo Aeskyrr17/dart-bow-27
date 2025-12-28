@@ -75,7 +75,7 @@ float debug_alpha_dot = 0.0f;
     /* Legs Params Initialization */
     PID rleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
     PID lleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
-    PID phi0_pd(50.0f, 0.0f, 10.0f, 50.0f, 0.0f);
+    // PID phi0_pd(50.0f, 0.0f, 10.0f, 50.0f, 0.0f);
     
     IIRFilter leg_len_filter(2,LOWPASS,1);
     SLOPE leg_len_updater(0.13f,0.0001f);
@@ -156,8 +156,18 @@ float debug_alpha_dot = 0.0f;
                 pendulum_ctrl.Twr = 0.0f;
                 Tout[0] = 0.0f;
                 Tout[1] = 0.0f;
-                refX[2] = odom.x;
+                Tout[2] = 0.0f;
+                Tout[3] = 0.0f;
+                refX[0] = odom.x;
+                refX[1] = 0.0f;
+                refX[2] = 0.0f;
                 refX[3] = 0.0f;
+                refX[4] = 0.0f;
+                refX[5] = 0.0f;
+                refX[6] = 0.0f;
+                refX[7] = 0.0f;
+                refX[8] = 0.0f;
+                refX[9] = 0.0f;
             }
             
             else 
@@ -212,8 +222,8 @@ float debug_alpha_dot = 0.0f;
 
                 observedX[0] = odom.x;//0.0f;//
                 observedX[1] = odom.v;//0.0f;//
-                observedX[2] = ins.yaw*DegreeToRad;
-                observedX[3] = ins.gyro_y;
+                observedX[2] = ins.yaw*DegreeToRad;//0.0f;//
+                observedX[3] = ins.gyro_y;//0.0f;//
                 observedX[4] = solver_fdb.lphi-0.5f*Pi+ins.pitch*DegreeToRad;//0.0f;//
                 observedX[5] = solver_fdb.lphi_dot + ins.gyro_p;
                 observedX[6] = solver_fdb.rphi-0.5f*Pi+ins.pitch*DegreeToRad;//0.0f;//
@@ -254,11 +264,11 @@ float debug_alpha_dot = 0.0f;
                 pendulum_ctrl.Tr[1] = Tout[3];//0.0f;//
                 
 
-                phi0_pd.ref = 0.0f;
-                phi0_pd.fdb = solver_fdb.lphi - solver_fdb.rphi;
-                phi0_pd.UpdateResult();
-                pendulum_ctrl.Tl[1] += phi0_pd.result;//0.0f;//
-                pendulum_ctrl.Tr[1] -= phi0_pd.result;//0.0f;//
+                // phi0_pd.ref = 0.0f;
+                // phi0_pd.fdb = solver_fdb.lphi - solver_fdb.rphi;
+                // phi0_pd.UpdateResult();
+                // pendulum_ctrl.Tl[1] += phi0_pd.result;//0.0f;//
+                // pendulum_ctrl.Tr[1] -= phi0_pd.result;//0.0f;//
             }
         }
 
@@ -280,12 +290,14 @@ float debug_alpha_dot = 0.0f;
         pendulum_debug.v = odom.v;
         pendulum_debug.vref = refX[3];
         pendulum_debug.delta_phi = solver_fdb.lphi - solver_fdb.rphi;
-        pendulum_debug.Cphi = phi0_pd.result;
+        // pendulum_debug.Cphi = phi0_pd.result;
         pendulum_debug.llendot = solver_fdb.llen_dot;
-        pendulum_debug.yaw = ins.total_yaw*DegreeToRad;
+        pendulum_debug.yaw = ins.yaw*DegreeToRad;
+        pendulum_debug.yawref = 0.0f;
+        pendulum_debug.yaw_dot = ins.gyro_r;
         lleg_len_pd.Tuning(lenpd_tuning.kp, lenpd_tuning.ki, lenpd_tuning.kd);
         rleg_len_pd.Tuning(lenpd_tuning.kp, lenpd_tuning.ki, lenpd_tuning.kd);
-        phi0_pd.Tuning(phi0pd_tuning.kp, phi0pd_tuning.ki, phi0pd_tuning.kd);
+        // phi0_pd.Tuning(phi0pd_tuning.kp, phi0pd_tuning.ki, phi0pd_tuning.kd);
     #endif
         
         om_publish(pendulumctrl_topic, &pendulum_ctrl, sizeof(msg_ctrl_t), true, false);

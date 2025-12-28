@@ -43,7 +43,8 @@ leg = 0.14:0.01:0.35;
 
 %Q矩阵
 %    s     ds     phi     dphi     theta_ll dtheta_ll theta_lr dtheta_lr theta_b dtheta_b
-Q = diag([10 1 100 100 1000 8 1000 8 20000 100]);
+% Q = diag([10 1 100 100 1000 8 1000 8 20000 100]);
+Q = diag([10 1 10 10 100 1 100 1 2000 10]);
 % 其中：
 % s       : 自然坐标系下机器人水平方向移动距离，单位：m，ds为其导数
 % phi     ：机器人水平方向移动时yaw偏航角度，dphi为其导数
