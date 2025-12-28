@@ -4,11 +4,141 @@
 
 using namespace Numeric;
 
-#ifdef USE_MODEL_A
+#ifdef STJU_MODEL
 class LQR
 {
 protected:
-    float LQRKbuf[LQR_K_NUM][12] =
+    float LQRKcoeffs[40][6] =
+    {
+        /*Q = [10.00, 1.00, 100.00, 100.00, 1000.00, 8.00, 1000.00, 8.00, 20000.00, 100.00] R = [0.25, 0.25, 1.50, 1.50]*/ 
+        /* a1 + a2*L_len + a3*R_len + a4*L_len^2 + a5*L_len*R_len + a6*R_len^2 */ 
+        { 4.327161 , 14.259173, -13.528510, -20.500283, 8.732669, 10.860208}, 
+        { 13.897464 , 24.177587, -45.621186, -44.944234, 36.298696, 38.168825}, 
+        { 11.167077 , -27.061893, 1.242484, 41.474574, -27.366821, -1.507186}, 
+        { 11.479175 , -30.278966, 1.384972, 45.782009, -31.220773, -1.766105}, 
+        { 50.879285 , 140.879158, -23.788660, -132.312889, 161.851209, 13.482798}, 
+        { 5.328964 , 15.686971, -4.938488, -2.295573, 11.711024, 4.936927}, 
+        { 15.513720 , -62.885203, 16.887178, 132.393620, -208.191569, -42.349550}, 
+        { 1.427324 , -4.545085, 5.353686, 7.722479, -11.805976, -10.132092}, 
+        { 74.278505 , -217.959588, -28.837984, 223.540164, 14.467768, 45.665325}, 
+        { 8.274832 , -22.746783, -5.435858, 16.924605, 9.004196, 7.096638}, 
+        { 4.327161 , -13.528510, 14.259173, 10.860208, 8.732669, -20.500283}, 
+        { 13.897464 , -45.621186, 24.177587, 38.168825, 36.298696, -44.944234}, 
+        { -11.167077 , -1.242484, 27.061893, 1.507186, 27.366821, -41.474574}, 
+        { -11.479175 , -1.384972, 30.278966, 1.766105, 31.220773, -45.782009}, 
+        { 15.513720 , 16.887178, -62.885203, -42.349550, -208.191569, 132.393620}, 
+        { 1.427324 , 5.353686, -4.545085, -10.132092, -11.805976, 7.722479}, 
+        { 50.879285 , -23.788660, 140.879158, 13.482798, 161.851209, -132.312889}, 
+        { 5.328964 , -4.938488, 15.686971, 4.936927, 11.711024, -2.295573}, 
+        { 74.278505 , -28.837984, -217.959588, 45.665325, 14.467768, 223.540164}, 
+        { 8.274832 , -5.435858, -22.746783, 7.096638, 9.004196, 16.924605}, 
+        { -0.341597 , -1.382593, 2.222894, 2.605649, -1.384650, -1.885453}, 
+        { -1.010281 , -3.194802, 6.566257, 6.441388, -4.313896, -5.910795}, 
+        { 3.846894 , 4.013490, 4.289001, -6.337170, 1.981405, -5.277597}, 
+        { 3.980697 , 5.020996, 5.063272, -7.533954, 2.333649, -6.038052}, 
+        { -13.154712 , -35.778454, -13.887912, 20.829697, -31.010948, 22.716706}, 
+        { -1.550952 , -0.633531, -1.016879, -3.663770, -2.593456, 1.711601}, 
+        { 3.012945 , 18.926829, 50.609071, -33.117149, 32.555896, -33.906618}, 
+        { 0.521254 , 1.692332, 2.566562, -2.670674, 2.598743, 1.885929}, 
+        { 80.766012 , 67.216913, -44.162078, -80.923603, 2.460086, 47.101375}, 
+        { 7.912154 , 10.123262, -6.740882, -10.795094, -0.289094, 6.726074}, 
+        { -0.341597 , 2.222894, -1.382593, -1.885453, -1.384650, 2.605649}, 
+        { -1.010281 , 6.566257, -3.194802, -5.910795, -4.313896, 6.441388}, 
+        { -3.846894 , -4.289001, -4.013490, 5.277597, -1.981405, 6.337170}, 
+        { -3.980697 , -5.063272, -5.020996, 6.038052, -2.333649, 7.533954}, 
+        { 3.012945 , 50.609071, 18.926829, -33.906618, 32.555896, -33.117149}, 
+        { 0.521254 , 2.566562, 1.692332, 1.885929, 2.598743, -2.670674}, 
+        { -13.154712 , -13.887912, -35.778454, 22.716706, -31.010948, 20.829697}, 
+        { -1.550952 , -1.016879, -0.633531, 1.711601, -2.593456, -3.663770}, 
+        { 80.766012 , -44.162078, 67.216913, 47.101375, 2.460086, -80.923603}, 
+        { 7.912154 , -6.740882, 10.123262, 6.726074, -0.289094, -10.795094}, 
+    };
+
+    float LQRKBuf[40] = {0};
+    float LQROutBuf[4] = {0};
+    float LQRXerrorBuf[10] = {0};
+    float MatLQRNegK_fly[40] = {0};
+
+    float * LQRXRefX;
+    float * LQRXObsX;
+
+public:
+
+    /* [Tl;Tr;Tpl;Tpr] = -K(X_obs - X_ref) */
+    void LQRCal(float *Tout)
+    {
+        // 1. Calculate Error: X_err = X_obs - X_ref
+        // Manually unrolled loop for 6 elements is very fast
+        float err[10] = {0};
+        for (int i=0; i<10; i++)
+        {
+            err[i] = this->LQRXObsX[i] - this->LQRXRefX[i];
+        }    
+        
+        // 2. Calculate U = -K * X_err
+        // Matrix multiplication: [4x10] * [10x1] = [4x1]
+        for (int i=0; i<4; i++)
+        {
+            float temp = 0.0f;
+            for (int j=0; j<10; j++)
+            {
+                temp += LQRKBuf[i*10+j]*err[j];
+            }   
+            Tout[i] = temp;
+        }
+            
+    }
+
+    /* 根据腿长更新使用的矩阵k */
+    void refreshLQRK(float L_LegLenth, float R_LegLenth, bool isFly)
+    {
+        L_LegLenth = (L_LegLenth < LQR_MIN_LEN_CTRL) ? LQR_MIN_LEN_CTRL : L_LegLenth;
+        L_LegLenth = (L_LegLenth > LQR_MAX_LEN_CTRL) ? LQR_MAX_LEN_CTRL : L_LegLenth;
+        R_LegLenth = (R_LegLenth < LQR_MIN_LEN_CTRL) ? LQR_MIN_LEN_CTRL : R_LegLenth;
+        R_LegLenth = (R_LegLenth > LQR_MAX_LEN_CTRL) ? LQR_MAX_LEN_CTRL : R_LegLenth;
+        //保留两位小数
+        L_LegLenth = roundf(L_LegLenth * 100) / 100.0f;
+        R_LegLenth = roundf(R_LegLenth * 100) / 100.0f;
+
+        /* a1 + a2*L_len + a3*R_len + a4*L_len^2 + a5*L_len*R_len + a6*R_len^2 */ 
+        if (!isFly)
+        {
+            for(int i = 0; i < 40; i++)
+            {
+                LQRKBuf[i] = LQRKcoeffs[i][0] + LQRKcoeffs[i][1] * L_LegLenth + LQRKcoeffs[i][2] * R_LegLenth + LQRKcoeffs[i][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[i][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[i][5] * R_LegLenth * R_LegLenth;
+            }
+        }
+        else
+        {
+            for(int i = 0; i < 40; i++)
+            {
+                MatLQRNegK_fly[i] = 0.0f;
+            }
+            for(int j = 24; j < 28; j++)
+            {
+                MatLQRNegK_fly[j] = LQRKcoeffs[j][0] + LQRKcoeffs[j][1] * L_LegLenth + LQRKcoeffs[j][2] * R_LegLenth + LQRKcoeffs[j][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[j][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[j][5] * R_LegLenth * R_LegLenth;
+            }
+            for(int k = 34; k < 38; k++)
+            {
+                MatLQRNegK_fly[k] = LQRKcoeffs[k][0] + LQRKcoeffs[k][1] * L_LegLenth + LQRKcoeffs[k][2] * R_LegLenth + LQRKcoeffs[k][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[k][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[k][5] * R_LegLenth * R_LegLenth;
+            }
+        }
+    }
+
+    // Modified to accept raw float pointers or extract data pointer from arm_matrix_instance_f32 if needed
+    void InitMatX(float *pMatXRef, float *pMatXObs) 
+    {
+        // Store pointers to the actual data arrays
+        this->LQRXRefX = pMatXRef;
+        this->LQRXObsX = pMatXObs;
+    }
+
+};
+#else
+class LQR
+{
+protected:
+    float LQRKbuf[46][12] =
     {
         /* Normal -K    L=0.150000      R00=2.00        R11=1.00 */
         {71.74399, 10.291710, 6.773399, 13.227805, 34.303614, 10.781166, -43.842445, -7.651665, -5.717753, -10.784869, 79.874031, 20.585260},
@@ -100,40 +230,53 @@ protected:
     float LQRXerrorBuf[6] = {0};
     float MatLQRNegK_fly[12] = {0};
 
-    arm_matrix_instance_f32 * LQRXRefX;
-    arm_matrix_instance_f32 * LQRXObsX;
+    float * LQRXRefX;
+    float * LQRXObsX;
 
-    arm_matrix_instance_f32 MatLQRNegK = {2, 6, (float *) LQRKbuf[0]};
-    arm_matrix_instance_f32 MatLQRErrX = {6, 1, LQRXerrorBuf};
-    arm_matrix_instance_f32 MatLQROutU = {2, 1, LQROutBuf};
+    float * current_K = (float *) LQRKbuf[0];
+
 
 public:
 
     /*[T;Tp] = -K(X_obs - X_ref)*/
     void LQRCal(float *Tout)
     {
-        //calculate (X_obs - X_ref)
-        arm_mat_sub_f32(this->LQRXObsX, this->LQRXRefX, &this->MatLQRErrX);
-        //calculate U = -K(X_obs - X_ref)
-        arm_mat_mult_f32(&this->MatLQRNegK, &this->MatLQRErrX, &this->MatLQROutU);
-        //return value
-        Tout[0] = this->LQROutBuf[0];
-        Tout[1] = this->LQROutBuf[1];
+        // 1. Calculate Error: X_err = X_obs - X_ref
+        // Manually unrolled loop for 6 elements is very fast
+        for (int i=0; i<6; i++)
+        {
+            this->LQRXerrorBuf[i] = this->LQRXObsX[i] - this->LQRXRefX[i];
+        }
+
+        // 2. Calculate U = -K * X_err
+        // Matrix multiplication: [2x6] * [6x1] = [2x1]
+        // Row 0
+        for (int i=0; i<2; i++)
+        {
+            float temp = 0.0f;
+            for (int j=0; j<6; j++)
+            {
+                temp += current_K[i*6+j]*LQRXerrorBuf[j];
+            }   
+            Tout[i] = temp;
+        }
     }
 
-    /*根据腿长更新使用的矩阵k*/
+    /* 根据腿长更新使用的矩阵k */
     void refreshLQRK(float LegLenth, bool isFly)
     {
         LegLenth = (LegLenth < LQR_MIN_LEN_CTRL) ? LQR_MIN_LEN_CTRL : LegLenth;
         LegLenth = (LegLenth > LQR_MAX_LEN_CTRL) ? LQR_MAX_LEN_CTRL : LegLenth;
-        volatile uint8_t ID = roundf((LegLenth - LQR_MIN_LEN_CTRL) / LQR_LEN_RESOLUTION);
+        volatile int ID = std::round((LegLenth - LQR_MIN_LEN_CTRL) / LQR_LEN_RESOLUTION);
 
-        this->MatLQRNegK.pData = (float *) LQRKbuf[2 * ID + isFly];
+        this->current_K = (float *) LQRKbuf[2 * ID + isFly];
 
     }
 
-    void InitMatX(arm_matrix_instance_f32 *pMatXRef, arm_matrix_instance_f32 *pMatXObs) 
+    // Modified to accept raw float pointers or extract data pointer from arm_matrix_instance_f32 if needed
+    void InitMatX(float *pMatXRef, float *pMatXObs) 
     {
+        // Store pointers to the actual data arrays
         this->LQRXRefX = pMatXRef;
         this->LQRXObsX = pMatXObs;
     }

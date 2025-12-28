@@ -38,10 +38,10 @@ protected:
 
 public:
 
-    void Resolve(float phi4_fdb, float phi1_fdb)
+    void Resolve(float phi1_fdb, float phi4_fdb)
     {
-        this->phi4 = phi4_fdb;
         this->phi1 = phi1_fdb;
+        this->phi4 = phi4_fdb;       
 
         float SIN1 = arm_sin_f32(this->phi1);
         float COS1 = arm_cos_f32(this->phi1);

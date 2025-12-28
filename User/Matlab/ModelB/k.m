@@ -1,4 +1,4 @@
-clear all; 
+clear; 
 
 syms L Lm
 
@@ -92,8 +92,8 @@ for i = 1:num_L
         l_br = Leg_data_r(R_row_index,3);       % 机体转轴到左腿摆杆质心距离                          （单位：m）
         I_lr = Leg_data_r(R_row_index,4);       % 左腿摆杆转动惯量                                   （单位：kg m^2）
 
-        J_A = Afun(L_length, R_length,L_row_index,l_wl,l_bl,I_ll,R_row_index, l_wr,l_br,I_lr);
-        J_B = Bfun(L_length, R_length,L_row_index,l_wl,l_bl,I_ll,R_row_index, l_wr,l_br,I_lr);
+        J_A = Amatrix(L_length, R_length,l_wl,l_bl,I_ll,l_wr,l_br,I_lr);
+        J_B = Bmatrix(L_length, R_length,l_wl,l_bl,I_ll,l_wr,l_br,I_lr);
 
         A = compute_A(J_A, R_w, R_l, l_l, l_r);
         B = compute_B(J_B, R_w, R_l, l_l, l_r);
@@ -129,9 +129,9 @@ end
 syms L_length R_length
 sym('K', [4,10]);
 %输出当前QR矩阵
-fprintf('\t/*Q = [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f] R = [%.2f, %.2f, %.2f, %.2f]*/ \n', ...
+fprintf('\t/*Q = [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f] R = [%.2f, %.2f, %.2f, %.2f]*/\n', ...
           Q(1,1), Q(2,2), Q(3,3), Q(4,4), Q(5,5), Q(6,6),Q(7,7),Q(8,8),Q(9,9),Q(10,10),R(1,1),R(2,2),R(3,3),R(4,4));
-fprintf('\t/* a1 + a2*L_len + a3*R_len + a4*L_len^2 + a5*L_len*R_len + a6*R_len^2 */ \n');
+fprintf('\t/* a1 + a2*L_len + a3*R_len + a4*L_len^2 + a5*L_len*R_len + a6*R_len^2 */\n');
 for i = 1:4
     for j = 1:10
         % 提取拟合系数
@@ -147,12 +147,11 @@ for i = 1:4
         % %输出与左右腿长相关的数组
         % fprintf('\tK(%.f,%.f) = %8.6f + %8.6f*L_len + %8.6f*R_len + %8.6f*L_len^2 + %8.6f*L_len*R_len + %8.6f*R_len^2; \n', ...
         %           i, j, p00, p10, p01, p20, p11, p02);
-        fprintf('\t { %8.6f , %8.6f, %8.6f, %8.6f, %8.6f, %8.6f}, \n', ...
+        fprintf('\t{ %8.6f , %8.6f, %8.6f, %8.6f, %8.6f, %8.6f}, \n', ...
              p00, p10, p01, p20, p11, p02);
 
     end
 end
-sim_K = matlabFunction(K,'File','Kfun');
 
 function A = compute_A(J_A, R_w, R_l, l_l, l_r)
     % 初始化A矩阵为零矩阵
@@ -213,3 +212,4 @@ function B = compute_B(J_B, R_w, R_l, l_l, l_r)
     B = double(B);  % 转换为数值类型
 end
 
+% matlabFunction(K,'File','Kfun');
