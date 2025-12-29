@@ -8,11 +8,11 @@ uint8_t RemoterThreadStack[1024] = {0};
 TX_SEMAPHORE RemoterThreadSem;
 
 // 数组在 D1 RAM
-__attribute__((section(".RAM_D1"))) uint8_t data_rx[DR16_DATA_SIZE];
+__attribute__((section(".RAM_D1"))) uint8_t dr16_rx[DR16_DATA_SIZE];
 
 inline dr16_data_t& Dr16_Data()
 {
-    return *reinterpret_cast<dr16_data_t*>(data_rx);
+    return *reinterpret_cast<dr16_data_t*>(dr16_rx);
 }
 
 [[noreturn]] void RemoterThreadFun(ULONG initial_input) 
@@ -23,7 +23,7 @@ inline dr16_data_t& Dr16_Data()
     om_topic_t *remoter_topic = om_config_topic(nullptr, "ca", "remoter", sizeof(msg_remoter_t));
     msg_remoter_t msg_remoter{};
     msg_remoter.offline = true;
-    HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
 
     for (;;) 
     {
@@ -33,7 +33,7 @@ inline dr16_data_t& Dr16_Data()
             HAL_UART_Abort(&huart5);
             om_publish(remoter_topic, &msg_remoter, sizeof(msg_remoter), true, false);
             tx_thread_sleep(3);
-            HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
+            HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
         }
 
         msg_remoter.offline = false;
@@ -77,17 +77,16 @@ inline dr16_data_t& Dr16_Data()
         msg_remoter.last_ctrl_sw = msg_remoter.ctrl_sw;
         msg_remoter.last_shoot_sw = msg_remoter.shoot_sw;
         memcpy(&msg_remoter.last_key, &msg_remoter.key, sizeof(msg_remoter.key));
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart5, data_rx, DR16_DATA_SIZE);
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
         tx_thread_sleep(1);
     }
 }
 
-volatile uint16_t size_test = 0;
-
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if (huart == &huart5) {
-        SCB_InvalidateDCache_by_Addr((uint32_t*)data_rx, DR16_DATA_SIZE);
-        size_test = Size;
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) 
+{
+    if (huart == &huart5) 
+    {
+        SCB_InvalidateDCache_by_Addr((uint32_t*)dr16_rx, DR16_DATA_SIZE);
         tx_semaphore_put(&RemoterThreadSem);
     }
 }
