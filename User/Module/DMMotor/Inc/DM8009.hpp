@@ -1,9 +1,5 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
-
-#ifndef RM26_DM8009_HPP
-#define RM26_DM8009_HPP
+#ifndef DM8009_HPP
+#define DM8009_HPP
 
 #include "DMMotor.hpp"
 
@@ -18,7 +14,6 @@ private:
 
     float T_MIN; ///< 扭矩最小值
     float T_MAX; ///< 扭矩最大值
-
 public:
     float LowerPosLimit; // 电机位置下限
     float UpperPosLimit; // 电机位置上限
@@ -27,13 +22,13 @@ public:
     float KP;
     float KD;
     DM8009();
-    virtual ~DM8009() = default;
-    [[nodiscard]] inline float Get_P_MAX() const override { return P_MAX; };
-    [[nodiscard]] inline float Get_P_MIN() const override { return P_MIN; };
-    [[nodiscard]] inline float Get_V_MAX() const override { return V_MAX; };
-    [[nodiscard]] inline float Get_V_MIN() const override { return V_MIN; };
-    [[nodiscard]] inline float Get_T_MAX() const override { return T_MAX; };
-    [[nodiscard]] inline float Get_T_MIN() const override { return T_MIN; };
+    ~DM8009();
+    inline float Get_P_MAX() const override { return P_MAX; };
+    inline float Get_P_MIN() const override { return P_MIN; };
+    inline float Get_V_MAX() const override { return V_MAX; };
+    inline float Get_V_MIN() const override { return V_MIN; };
+    inline float Get_T_MAX() const override { return T_MAX; };
+    inline float Get_T_MIN() const override { return T_MIN; };
 
     MotorStateTypeDef AliveCheck() override;
 
@@ -41,4 +36,4 @@ public:
     void ReceiveData(uint8_t *buffer) override; // 接收电机数据
 };
 
-#endif //RM26_DM8009_HPP
+#endif // DM8009_HPP
