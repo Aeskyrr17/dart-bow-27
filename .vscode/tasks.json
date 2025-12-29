@@ -7,7 +7,7 @@
         "command": "openocd",
         "args": [
             "-f",
-            "interface/cmsis-dap.cfg",//stlink.cfg",//
+            "interface/stlink.cfg",//cmsis-dap.cfg",//
             "-f",
             "target/stm32h7x.cfg",
             "-c",

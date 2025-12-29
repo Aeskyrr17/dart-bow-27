@@ -2,6 +2,8 @@
 
 #define STJU_MODEL
 
+#define TOF_DATA_SIZE 9
+
 #define LQR_MIN_LEN_CTRL       0.15f
 #define LQR_MAX_LEN_CTRL       0.35f
 #define LQR_LEN_RESOLUTION     0.01f
@@ -63,5 +65,14 @@ typedef struct{
     jump_ctrl_e jump_ctrl : 2;
     fly_ctrl_e fly_ctrl : 1;
 } chassis_mode_t;
+
+struct tof_data_t
+{
+    uint8_t header[2];
+    uint16_t distance;
+    uint16_t strength;
+    uint16_t temp_raw;
+    uint8_t check_sum;
+};
 
 #pragma pack(pop)
