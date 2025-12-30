@@ -102,8 +102,8 @@ public:
 
         JT_inv_mat[0] = -cos02 / (sin12 * VMC_L1);
         JT_inv_mat[1] = cos03 / (sin34 * VMC_L1);
-        JT_inv_mat[2] = sin02 / (sin12 * VMC_L1);
-        JT_inv_mat[3] = -sin03 / (sin34 * VMC_L1);
+        JT_inv_mat[2] = sin02 * PendulumLength / (sin12 * VMC_L1);
+        JT_inv_mat[3] = -sin03 * PendulumLength / (sin34 * VMC_L1);
     }
 
     void VMCCal(float *F, float *T)

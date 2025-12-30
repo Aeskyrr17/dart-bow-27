@@ -12,8 +12,8 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
-extern uint8_t xyAndRefAngleMsg[8];
-extern uint8_t chassisStateMsg[8];
+uint8_t xyAndRefAngleMsg[8] = {0};
+uint8_t StateAnduiMsg[8] = {0};
 
 /**
  * @brief 初始化CAN滤波器配置。
@@ -106,6 +106,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
         }
     }
 
+    /*--------------------------------------------------达妙电机数据--------------------------------------------------*/
     else if (rx_header.Identifier >= 0x05 && rx_header.Identifier <= 0x08)//Master ID 数值范围，自己在上位机定义
     {
         if (hfdcan == &hfdcan1)
@@ -117,5 +118,17 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
             DMMotorHandler::Instance()->UpdateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x05));
         }
     }
-
+    
+    /*----------------------------------------------------云台数据----------------------------------------------------*/
+    else if (rx_header.Identifier >= 0xB1 && rx_header.Identifier <= 0xB4)
+    {
+        if (rx_header.Identifier == 0xB1)
+        {
+            memcpy(xyAndRefAngleMsg, rx_data, 8);
+        }
+        else if (rx_header.Identifier == 0xB2)
+        {
+            memcpy(StateAnduiMsg, rx_data, 8);
+        }
+    }
 }

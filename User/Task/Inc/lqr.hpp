@@ -4,7 +4,7 @@
 
 using namespace Numeric;
 
-#ifdef STJU_MODEL
+#ifdef SJTU_MODEL
 class LQR
 {
 protected:
@@ -57,7 +57,6 @@ protected:
     float LQRKBuf[40] = {0};
     float LQROutBuf[4] = {0};
     float LQRXerrorBuf[10] = {0};
-    float MatLQRNegK_fly[40] = {0};
 
     float * LQRXRefX;
     float * LQRXObsX;
@@ -90,7 +89,7 @@ public:
     }
 
     /* 根据腿长更新使用的矩阵k */
-    void refreshLQRK(float L_LegLenth, float R_LegLenth, bool isFly)
+    void refreshLQRK(float L_LegLenth, float R_LegLenth, bool ifOffground)
     {
         L_LegLenth = (L_LegLenth < LQR_MIN_LEN_CTRL) ? LQR_MIN_LEN_CTRL : L_LegLenth;
         L_LegLenth = (L_LegLenth > LQR_MAX_LEN_CTRL) ? LQR_MAX_LEN_CTRL : L_LegLenth;
@@ -101,7 +100,7 @@ public:
         R_LegLenth = roundf(R_LegLenth * 100) / 100.0f;
 
         /* a1 + a2*L_len + a3*R_len + a4*L_len^2 + a5*L_len*R_len + a6*R_len^2 */ 
-        if (!isFly)
+        if (!ifOffground)
         {
             for(int i = 0; i < 40; i++)
             {
@@ -112,15 +111,15 @@ public:
         {
             for(int i = 0; i < 40; i++)
             {
-                MatLQRNegK_fly[i] = 0.0f;
+                LQRKBuf[i] = 0.0f;
             }
             for(int j = 24; j < 28; j++)
             {
-                MatLQRNegK_fly[j] = LQRKcoeffs[j][0] + LQRKcoeffs[j][1] * L_LegLenth + LQRKcoeffs[j][2] * R_LegLenth + LQRKcoeffs[j][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[j][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[j][5] * R_LegLenth * R_LegLenth;
+                LQRKBuf[j] = LQRKcoeffs[j][0] + LQRKcoeffs[j][1] * L_LegLenth + LQRKcoeffs[j][2] * R_LegLenth + LQRKcoeffs[j][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[j][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[j][5] * R_LegLenth * R_LegLenth;
             }
             for(int k = 34; k < 38; k++)
             {
-                MatLQRNegK_fly[k] = LQRKcoeffs[k][0] + LQRKcoeffs[k][1] * L_LegLenth + LQRKcoeffs[k][2] * R_LegLenth + LQRKcoeffs[k][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[k][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[k][5] * R_LegLenth * R_LegLenth;
+                LQRKBuf[k] = LQRKcoeffs[k][0] + LQRKcoeffs[k][1] * L_LegLenth + LQRKcoeffs[k][2] * R_LegLenth + LQRKcoeffs[k][3] * L_LegLenth * L_LegLenth + LQRKcoeffs[k][4] * L_LegLenth * R_LegLenth + LQRKcoeffs[k][5] * R_LegLenth * R_LegLenth;
             }
         }
     }
@@ -228,7 +227,7 @@ protected:
 
     float LQROutBuf[2] = {0};
     float LQRXerrorBuf[6] = {0};
-    float MatLQRNegK_fly[12] = {0};
+    float MatLQRNegK_offground[12] = {0};
 
     float * LQRXRefX;
     float * LQRXObsX;

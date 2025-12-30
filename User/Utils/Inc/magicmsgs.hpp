@@ -109,6 +109,13 @@ struct msg_solver_t
     float lphi_dot;
     float rphi;
     float rphi_dot;
+
+    float lalpha;
+    float lalpha_dot;
+    float ralpha;
+    float ralpha_dot;
+    
+    float N;
 };
 
 struct msg_ctrl_t
@@ -124,4 +131,17 @@ struct msg_odometry_t
     float x;
     float v;
     float a_z;
+};
+
+struct msg_cmd_t
+{
+    float x;
+    float v;
+    float w;
+    float dyaw;
+    float dlen;
+    float roll;
+    bool move;
+    bool ifjump;
+    bool ifflip;
 };
