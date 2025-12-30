@@ -11,7 +11,7 @@
 
 using namespace Filter;
 
-#ifdef STJU_MODEL
+#ifdef SJTU_MODEL
 
 TX_THREAD PendulumThread;
 uint8_t PendulumThreadStack[4096] = {0};
@@ -70,16 +70,11 @@ float debug_alpha_dot = 0.0f;
     /* Legs Params Initialization */
     PID rleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
     PID lleg_len_pd(5000.0f, 0.0f, -8000.0f, 200.0f, 0.0f, PID_DVEL);
-   
-    SLOPE leg_len_updater(0.13f,0.0001f);
 
     /* Roll Params Initialization */
     PID roll_pd(0.7f, 0.0f, 0.01f, 3.0f, 0.0f);
     SLOPE roll_updater(0.0f,0.0002f);
 
-    SLOPE yaw_updater(0.0f, 0.01f);
-    /* Speed Params Initialization */
-    SLOPE v_updater(0.0f,0.01f);
     /* LQR Initialization */
     LQR lqr_controller;
     float Tout[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -87,15 +82,8 @@ float debug_alpha_dot = 0.0f;
     float refX[10] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     lqr_controller.InitMatX(&refX[0], &observedX[0]);
 
-    
-    // float vlen;
-    float v;
-    float x_maintain;
-    float lenfdb;
     float lenref = 0.21f;
     float thread_start_time;
-    bool stop_flag = false;
-    bool maintained_x = false;
 
     /* One Message Initialization */
     om_topic_t *pendulumctrl_topic =om_config_topic(nullptr, "ca", "pendulumctrl", sizeof(msg_ctrl_t));
@@ -107,8 +95,8 @@ float debug_alpha_dot = 0.0f;
     msg_solver_t solver_fdb{};
     om_suber_t *odom_suber = om_subscribe(om_find_topic("odom", UINT32_MAX));
     msg_odometry_t odom{};
-    om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
-    msg_remoter_t remoter{};
+    om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
+    msg_cmd_t cmd{};
 
 #ifdef DEBUG
     lenpd_tuning.kp = 4000.0f;
@@ -128,13 +116,11 @@ float debug_alpha_dot = 0.0f;
         om_suber_export(ins_suber, &ins, false);
         om_suber_export(solver_suber, &solver_fdb, false);
         om_suber_export(odom_suber, &odom, false);
-        om_suber_export(remoter_suber, &remoter, false);
-
-        lenfdb = 0.5f * (solver_fdb.llen + solver_fdb.rlen);
+        om_suber_export(cmd_suber, &cmd, false);
 
         if (tx_semaphore_get(&IMUThreadSem, TX_WAIT_FOREVER) == TX_SUCCESS)
         {
-            if (remoter.ctrl_sw == Relax || remoter.offline)
+            if (!cmd.move)
             {
                 pendulum_ctrl.Tl[0] = 0.0f;
                 pendulum_ctrl.Tr[0] = 0.0f;
@@ -160,10 +146,7 @@ float debug_alpha_dot = 0.0f;
             
             else 
             {
-                v = v_updater.UpdateVal(remoter.left_y *0.5f);
-                stop_flag = (fabsf(v) < 0.002f);
-
-                roll_pd.ref = 0.0f;//remoter.left_x*0.1f;
+                roll_pd.ref = cmd.roll;
                 roll_pd.fdb = ins.roll*DegreeToRad;
                 roll_pd.UpdateResult(ins.gyro_r);
 
@@ -179,33 +162,20 @@ float debug_alpha_dot = 0.0f;
 
                 observedX[0] = odom.x;//0.0f;//
                 observedX[1] = odom.v;//0.0f;//
-                observedX[2] = ins.yaw*DegreeToRad;//0.0f;//
+                observedX[2] = ins.total_yaw*DegreeToRad;//0.0f;//
                 observedX[3] = ins.gyro_y;//0.0f;//
-                observedX[4] = solver_fdb.lphi-0.5f*Pi+ins.pitch*DegreeToRad;//0.0f;//
-                observedX[5] = solver_fdb.lphi_dot + ins.gyro_p;
-                observedX[6] = solver_fdb.rphi-0.5f*Pi+ins.pitch*DegreeToRad;//0.0f;//
-                observedX[7] = solver_fdb.rphi_dot + ins.gyro_p;
+                observedX[4] = solver_fdb.lalpha;//0.0f;//
+                observedX[5] = solver_fdb.lalpha_dot;
+                observedX[6] = solver_fdb.ralpha;//0.0f;//
+                observedX[7] = solver_fdb.ralpha_dot;
                 observedX[8] = ins.pitch*DegreeToRad;
                 observedX[9] = ins.gyro_p;
 
-                if (stop_flag)
-                {
-                    if (!maintained_x)
-                    {
-                        x_maintain = odom.x;
-                        maintained_x = true;
-                    }
-                    refX[0] = x_maintain;
-                    refX[1] = 0.0f;
-                }
-                else
-                {   
-                    maintained_x = false;
-                    refX[0] = odom.x+v*0.001f;
-                    refX[1] = v;
-                }
-                refX[2] = 0.0f;
-                refX[3] = 0.0f;
+                
+                refX[0] = cmd.x;
+                refX[1] = cmd.v;
+                refX[2] = ins.total_yaw*DegreeToRad;
+                refX[3] = cmd.w+cmd.dyaw;
                 refX[4] = 0.0f;
                 refX[5] = 0.0f;
                 refX[6] = 0.0f;
@@ -213,7 +183,7 @@ float debug_alpha_dot = 0.0f;
                 refX[8] = 0.0f;
                 refX[9] = 0.0f;
 
-                lqr_controller.refreshLQRK(solver_fdb.llen, solver_fdb.rlen, false);//mode.fly_ctrl == FLY_MODE);
+                lqr_controller.refreshLQRK(solver_fdb.llen, solver_fdb.rlen, solver_fdb.N<20.0f);
                 lqr_controller.LQRCal(Tout);
                 pendulum_ctrl.Twl = Tout[0];
                 pendulum_ctrl.Twr = Tout[1];
@@ -224,7 +194,7 @@ float debug_alpha_dot = 0.0f;
 
     #ifdef DEBUG
         debug_ins = ins;
-        debug_remoter = remoter;
+        // debug_remoter = remoter;
         pendulum_debug.alphal = observedX[4];
         pendulum_debug.alphal_dot = observedX[5];
         pendulum_debug.pitch = ins.pitch*DegreeToRad;
@@ -233,7 +203,7 @@ float debug_alpha_dot = 0.0f;
         pendulum_debug.Tp = Tout[1];
         pendulum_debug.Fl = pendulum_ctrl.Tl[0];
         pendulum_debug.Fr = pendulum_ctrl.Tr[0];
-        pendulum_debug.l = lenfdb;
+        // pendulum_debug.l = lenfdb;
         pendulum_debug.l_ref = lenref;
         pendulum_debug.x = odom.x;
         pendulum_debug.xref = refX[2];
@@ -253,7 +223,6 @@ float debug_alpha_dot = 0.0f;
     }
 }
 #else
-
 TX_THREAD PendulumThread;
 uint8_t PendulumThreadStack[4096] = {0};
 

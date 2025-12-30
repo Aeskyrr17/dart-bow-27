@@ -1,4 +1,5 @@
 #include "GM6020.hpp"
+#include "fast_math_functions.h"
 #include "main.h"
 
 #include "om.h"
@@ -65,7 +66,23 @@ struct solver_debug_t
     float rjoint4_pos;
     float rjoint1_pos;
 };
-__attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
+struct force_debug_t
+{
+    float Flreal;
+    float Frreal;
+    float Tleal;
+    float Treal;
+    float Nl;
+    float Nr;
+    float Pl;
+    float Pr;
+    float N;
+    float Tljoint4;
+    float Tljoint1;
+    float Trjoint4;
+    float Trjoint1;
+};
+__attribute__((section(".RAM_D3"))) force_debug_t force_debug;
 #endif
 
 [[noreturn]] void SolverThreadFun(ULONG initial_input)
@@ -127,6 +144,18 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
     float LTp[2] = {0};
     float RTp[2] = {0};
 
+    float LTpfdb[2] = {0};
+    float RTpfdb[2] = {0};
+
+    float TlRev[2] = {0};
+    float TrRev[2] = {0};
+
+    float prev_llen_dot = 0.0f;
+    float prev_rlen_dot = 0.0f;
+
+    float prev_lalpha_dot = 0.0f;
+    float prev_ralpha_dot = 0.0f;
+
     float thread_start_time;
 
     for (;;)
@@ -136,10 +165,11 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(pendulumctrl_suber, &pendulumctrl, false);
 
-        // 先将反馈值计算到符合模型的角度，再传入VMC
+        /* 将反馈值转化到模型对应角度，传入VMC */
         Lsolver.Resolve(PI-LJoint1.motorFeedback.positionFdb, -LJoint4.motorFeedback.positionFdb);
         Rsolver.Resolve(PI+RJoint1.motorFeedback.positionFdb, RJoint4.motorFeedback.positionFdb);
 
+        /* VMC逆运动学解算 */
         solverfdb.llen = Lsolver.GetPendulumLen();
         solverfdb.rlen = Rsolver.GetPendulumLen();
 
@@ -161,8 +191,49 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         float vel = 0.5f * (LWheel.motorFeedback.speedFdb - RWheel.motorFeedback.speedFdb) * WHEEL_RADIUS;
         odom_data = odom.Update(ins.quaternion, ins.accel, vel, ins.yaw);
 
+        solverfdb.lalpha = solverfdb.lphi-0.5f*Pi+ins.pitch*DegreeToRad;
+        solverfdb.lalpha_dot = solverfdb.lphi_dot+ins.gyro_p;
+        solverfdb.ralpha = solverfdb.rphi-0.5f*Pi+ins.pitch*DegreeToRad;
+        solverfdb.ralpha_dot = solverfdb.rphi_dot+ins.gyro_p;
+
+        /* VMC逆动力学解算 */
+        LTpfdb[0] = -LJoint1.motorFeedback.torqueFdb;
+        LTpfdb[1] = -LJoint4.motorFeedback.torqueFdb;
+        RTpfdb[0] = RJoint1.motorFeedback.torqueFdb;
+        RTpfdb[1] = RJoint4.motorFeedback.torqueFdb;
+
+        Lsolver.VMCRevCal(TlRev, LTpfdb);
+        Rsolver.VMCRevCal(TrRev, RTpfdb);
+
+        // float alpha = 0.5f*(solverfdb.lalpha+solverfdb.ralpha);
+        // float dalpha = 0.5f*(solverfdb.lalpha_dot+solverfdb.ralpha_dot);
+        // float ddalpha = 0.5f*(solverfdb.lalpha_dot-prev_lalpha_dot + solverfdb.ralpha_dot-prev_ralpha_dot);
+        // float cosAlpha = arm_cos_f32(alpha);
+        // float sinAlpha = arm_sin_f32(alpha);
+        // float len = 0.5f*(solverfdb.llen+solverfdb.rlen);
+        // float dlen = 0.5f*(solverfdb.llen_dot+solverfdb.rlen_dot);
+        // float ddlen = 0.5f*(solverfdb.llen_dot-prev_llen_dot + solverfdb.rlen_dot-prev_rlen_dot);
+        // float Pwheel = Freal*cosAlpha + Treal/len*sinAlpha;
+        // float a_zw = odom_data.a_z-Gravity
+        //             - ddlen*cosAlpha
+        //             +2*dlen*dalpha*sinAlpha
+        //             +len*ddalpha*sinAlpha
+        //             +len*dalpha*dalpha*cosAlpha;
+        float Pl = TlRev[0]*arm_cos_f32(solverfdb.lalpha)+TlRev[1]/solverfdb.llen*arm_sin_f32(solverfdb.lalpha);
+        float Pr = TrRev[0]*arm_cos_f32(solverfdb.ralpha)+TrRev[1]/solverfdb.rlen*arm_sin_f32(solverfdb.ralpha);
+        float ddlenl = solverfdb.llen_dot - prev_llen_dot;
+        float ddlenr = solverfdb.rlen_dot - prev_rlen_dot;
+        float Nl = Pl + WHEEL_MASS*(odom_data.a_z - ddlenl*arm_cos_f32(solverfdb.lalpha));
+        float Nr = Pr + WHEEL_MASS*(odom_data.a_z - ddlenr*arm_cos_f32(solverfdb.ralpha));
+        solverfdb.N = Nl + Nr;
+
         om_publish(solverfdb_topic, &solverfdb, sizeof(msg_solver_t), true, false);
         om_publish(odom_pub, &odom_data, sizeof(msg_odometry_t), true, false);
+
+        prev_llen_dot = solverfdb.llen_dot;
+        prev_rlen_dot = solverfdb.rlen_dot;
+        prev_lalpha_dot = solverfdb.lalpha_dot;
+        prev_ralpha_dot = solverfdb.ralpha_dot;
 
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);
@@ -176,39 +247,54 @@ __attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
         RWheel.currentSet = -Numeric::FloatConstrain(pendulumctrl.Twr, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
 
     #ifdef DEBUG
-        solver_debug.llength = solverfdb.llen;
-        solver_debug.rlength = solverfdb.rlen;
-        solver_debug.lphi = solverfdb.lphi;
-        solver_debug.rphi = solverfdb.rphi;
-        solver_debug.llength_dot = solverfdb.llen_dot;
-        solver_debug.rlength_dot = solverfdb.rlen_dot;
-        solver_debug.lphi_dot = solverfdb.lphi_dot;
-        solver_debug.rphi_dot = solverfdb.rphi_dot;
+        // solver_debug.llength = solverfdb.llen;
+        // solver_debug.rlength = solverfdb.rlen;
+        // solver_debug.lphi = solverfdb.lphi;
+        // solver_debug.rphi = solverfdb.rphi;
+        // solver_debug.llength_dot = solverfdb.llen_dot;
+        // solver_debug.rlength_dot = solverfdb.rlen_dot;
+        // solver_debug.lphi_dot = solverfdb.lphi_dot;
+        // solver_debug.rphi_dot = solverfdb.rphi_dot;
         
-        solver_debug.lphi1 = Lsolver.GetPhi1();
-        solver_debug.lphi4 = Lsolver.GetPhi4();
-        solver_debug.rphi1 = Rsolver.GetPhi1();
-        solver_debug.rphi4 = Rsolver.GetPhi4();
+        // solver_debug.lphi1 = Lsolver.GetPhi1();
+        // solver_debug.lphi4 = Lsolver.GetPhi4();
+        // solver_debug.rphi1 = Rsolver.GetPhi1();
+        // solver_debug.rphi4 = Rsolver.GetPhi4();
 
-        solver_debug.ljoint1_tor = LTp[0];
-        solver_debug.ljoint4_tor = LTp[1];
-        solver_debug.rjoint1_tor = RTp[0];
-        solver_debug.rjoint4_tor = RTp[1];
+        // solver_debug.ljoint1_tor = LTp[0];
+        // solver_debug.ljoint4_tor = LTp[1];
+        // solver_debug.rjoint1_tor = RTp[0];
+        // solver_debug.rjoint4_tor = RTp[1];
         
-        solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
-        solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
-        solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
-        solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
+        // solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
+        // solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
+        // solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
+        // solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
 
-        solver_debug.ljoint4_pos = LJoint4.motorFeedback.positionFdb;
-        solver_debug.ljoint1_pos = LJoint1.motorFeedback.positionFdb;
-        solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
-        solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
+        // solver_debug.ljoint4_pos = LJoint4.motorFeedback.positionFdb;
+        // solver_debug.ljoint1_pos = LJoint1.motorFeedback.positionFdb;
+        // solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
+        // solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
 
-        solver_debug.lphi1dot = Lqdot[0];
-        solver_debug.lphi4dot = Lqdot[1];
-        solver_debug.rphi1dot = Rqdot[0];
-        solver_debug.rphi4dot = Rqdot[1];
+        // solver_debug.lphi1dot = Lqdot[0];
+        // solver_debug.lphi4dot = Lqdot[1];
+        // solver_debug.rphi1dot = Rqdot[0];
+        // solver_debug.rphi4dot = Rqdot[1];
+
+        // solver_debug = solverfdb;
+        force_debug.Flreal = TlRev[0];
+        force_debug.Frreal = TrRev[0];
+        force_debug.Tleal = TlRev[1];
+        force_debug.Treal = TrRev[1];
+        force_debug.Pl = Pl;
+        force_debug.Pr = Pr;
+        force_debug.Nl = Nl;
+        force_debug.Nr = Nr;
+        force_debug.Tljoint4 = -LJoint4.motorFeedback.torqueFdb;
+        force_debug.Tljoint1 = -LJoint1.motorFeedback.torqueFdb;
+        force_debug.Trjoint4 = RJoint4.motorFeedback.torqueFdb;
+        force_debug.Trjoint1 = RJoint1.motorFeedback.torqueFdb;
+        force_debug.N = solverfdb.N;
     #endif
 
         if (remoter.ctrl_sw == Relax || remoter.offline)

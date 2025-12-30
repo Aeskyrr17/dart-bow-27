@@ -1,6 +1,7 @@
 #pragma once
 
-#define STJU_MODEL
+#define SJTU_MODEL
+#define CHASSIS_ONLY
 
 #define TOF_DATA_SIZE 9
 
@@ -20,6 +21,7 @@
 #define RJOINT1_OFFSET 0x8419
 
 #define WHEEL_RADIUS 0.077f
+#define WHEEL_MASS 1.41f
 
 #define MAX_HIP_TOR 40.0f
 #define MAX_WHEEL_TOR 15.0f
@@ -34,32 +36,37 @@ typedef enum{
 } fly_flag_e;
 
 /*底盘运动模式*/
-typedef enum{
+typedef enum
+{
     NONE = 0,
     NORMAL_MOVING_MODE,
     ESCAPE_MODE,
     ABNORMAL_MOVING_MODE
 } chassis_mode_e;
 
-typedef enum{
+typedef enum
+{
     NORMAL_ROTATE = 0,
     SPIN_ROTATE
 } rotate_ctrl_e;
 
-typedef enum{
+typedef enum
+{
     DO_NOT_JUMP = 0,
     JUMP_READY,
     JUMP_START
 } jump_ctrl_e;
 
-typedef enum{
+typedef enum
+{
     NOT_FLY_MODE = 0,
     FLY_MODE
 } fly_ctrl_e;
 
 #pragma pack(push,1)
 
-typedef struct{
+typedef struct
+{
     chassis_mode_e chassis_mode : 2;
     rotate_ctrl_e rotate_type : 1;
     jump_ctrl_e jump_ctrl : 2;
