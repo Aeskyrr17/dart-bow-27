@@ -2,6 +2,9 @@
 #include "XRobot.hpp"
 #include "referee.hpp"
 #include "config_chassis.hpp"
+#include "config_remoter.hpp"
+#include "tx_api.h"
+#include "usart.h"
 
 /*------------全局变量------------*/
 extern UART_HandleTypeDef huart5;
@@ -16,6 +19,9 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 __attribute__((section (".RAM_D1"))) uint8_t UART7RxBuffer[TOF_DATA_SIZE] = {0};
 __attribute__((section (".RAM_D1"))) uint8_t USART1RxBuffer[1] = {0};
 extern uint8_t tof_rx[TOF_DATA_SIZE];
+extern uint8_t dr16_rx[DR16_DATA_SIZE];
+extern TX_SEMAPHORE RemoterGot;
+extern TX_SEMAPHORE TOFGot;
 
 /**
  * @brief  Configures the USART.
@@ -25,37 +31,38 @@ extern uint8_t tof_rx[TOF_DATA_SIZE];
 
 void USART_Init()
 {
-  // uart5 双缓冲区初始化
-  // USART_RxDMA_MultiBuffer_Init(&huart5, (uint32_t *)SBUS_MultiRx_Buf[0], (uint32_t *)SBUS_MultiRx_Buf[1], SBUS_RX_BUF_NUM);
-  // uart7
-  __HAL_DMA_DISABLE_IT(&hdma_uart7_rx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_uart7_rx, DMA_IT_TC);
-  __HAL_DMA_DISABLE_IT(&hdma_uart7_tx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_uart7_tx, DMA_IT_TC);
-  __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST);
-  HAL_UART_Receive_DMA(&huart7, tof_rx, TOF_DATA_SIZE);
-
   // usart1
   __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_usart1_rx, DMA_IT_TC);
   __HAL_DMA_DISABLE_IT(&hdma_usart1_tx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_usart1_tx, DMA_IT_TC);
-  HAL_UART_Receive_DMA(&huart1, USART1RxBuffer, 1);
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 1);
+  // uart5
+  __HAL_DMA_DISABLE_IT(&hdma_uart5_rx, DMA_IT_HT);
+  __HAL_DMA_ENABLE_IT(&hdma_uart5_rx, DMA_IT_TC);
+  __HAL_UART_SEND_REQ(&huart5, UART_RXDATA_FLUSH_REQUEST);
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
+  // uart7
+  __HAL_DMA_DISABLE_IT(&hdma_uart7_rx, DMA_IT_HT);
+  __HAL_DMA_ENABLE_IT(&hdma_uart7_rx, DMA_IT_TC);
+  __HAL_DMA_DISABLE_IT(&hdma_uart7_tx, DMA_IT_HT);
+  __HAL_DMA_ENABLE_IT(&hdma_uart7_tx, DMA_IT_TC);
+  // __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST); // 清空缓存，消除接收错位
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart7, tof_rx, TOF_DATA_SIZE);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) 
 {
-  if (huart == &huart7)
+  if (huart == &huart5) 
   {
-    //清空cache
-    SCB_InvalidateDCache_by_Addr(tof_rx, TOF_DATA_SIZE);
-    __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST);
-    HAL_UART_Receive_DMA(&huart7, tof_rx, TOF_DATA_SIZE);
-  }
-  else if (huart == &huart1)
+    SCB_InvalidateDCache_by_Addr((uint32_t*)dr16_rx, DR16_DATA_SIZE);
+    tx_semaphore_put(&RemoterGot);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
+  } 
+  else if (huart == &huart7) 
   {
-    //清空cache
-    SCB_InvalidateDCache_by_Addr(USART1RxBuffer, 1);
-    HAL_UART_Receive_DMA(&huart1, USART1RxBuffer, 1);
+    SCB_InvalidateDCache_by_Addr((uint32_t*)tof_rx, TOF_DATA_SIZE);
+    tx_semaphore_put(&TOFGot);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart7, tof_rx, TOF_DATA_SIZE);
   }
 }

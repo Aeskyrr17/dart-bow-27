@@ -54,7 +54,6 @@ struct pid_tuning_t {
 };
 
 __attribute__((section(".RAM_D3"))) msg_ins_t debug_ins;
-__attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
 pendulum_debug_t pendulum_debug;
 pid_tuning_t lenpd_tuning;
 pid_tuning_t phi0pd_tuning;
