@@ -14,7 +14,7 @@
 #include "usart.h"
 
 TX_THREAD FunctionThread;
-uint8_t FunctionThreadStack[4096] = {0};
+uint8_t FunctionThreadStack[2048] = {0};
 TX_SEMAPHORE TOFGot;
 
 extern uint8_t xyAndRefAngleMsg[8];
@@ -26,6 +26,8 @@ extern TX_SEMAPHORE IMUThreadSem;
 #ifdef DEBUG
 float debug_temp;
 float debug_dist;
+bool debug_tof_valid;
+__attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
 #endif
 
 [[noreturn]] void FunctionThreadFun(ULONG initial_input)
@@ -77,7 +79,7 @@ float debug_dist;
         if (tof_raw->header[0]==0x59 && tof_raw->header[1]==0x59)
         {
             uint8_t checksum = 0;
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
                 checksum += ((uint8_t*)tof_raw)[i];
             }
@@ -86,8 +88,8 @@ float debug_dist;
                 tof_valid = true;
             }
         }
-        float tof_distance = static_cast<float>(tof_raw->distance) / 1.0f; // cm
-        float tof_temp = static_cast<float>(tof_raw->temp_raw) / 8.0f + 25.0f; // °C
+        float tof_distance = static_cast<float>(tof_raw->distance) * 1.0f; // cm
+        float tof_temp = static_cast<float>(tof_raw->temp_raw) / 8.0f - 256.0f; // °C
 
         if (tx_semaphore_get(&IMUThreadSem, TX_WAIT_FOREVER) == TX_SUCCESS)
         {
@@ -170,6 +172,8 @@ float debug_dist;
     #ifdef DEBUG
         debug_dist = tof_distance;
         debug_temp = tof_temp;
+        debug_tof_valid = tof_valid;
+        debug_remoter = remoter;
     #endif
         /* Thread periodic delay */
         tx_thread_sleep(MIN(1, 1-(tx_time_get()-thread_start_time)));

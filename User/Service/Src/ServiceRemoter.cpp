@@ -5,7 +5,7 @@
 
 TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[1024] = {0};
-TX_SEMAPHORE RemoterThreadSem;
+TX_SEMAPHORE RemoterGot;
 
 // 数组在 D1 RAM
 __attribute__((section(".RAM_D1"))) uint8_t dr16_rx[DR16_DATA_SIZE];
@@ -23,11 +23,10 @@ inline dr16_data_t& Dr16_Data()
     om_topic_t *remoter_topic = om_config_topic(nullptr, "ca", "remoter", sizeof(msg_remoter_t));
     msg_remoter_t msg_remoter{};
     msg_remoter.offline = true;
-    HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
 
     for (;;) 
     {
-        while (tx_semaphore_get(&RemoterThreadSem, 100) != TX_SUCCESS) 
+        while (tx_semaphore_get(&RemoterGot, 100) != TX_SUCCESS) 
         {
             msg_remoter.offline = true;
             HAL_UART_Abort(&huart5);
@@ -77,16 +76,6 @@ inline dr16_data_t& Dr16_Data()
         msg_remoter.last_ctrl_sw = msg_remoter.ctrl_sw;
         msg_remoter.last_shoot_sw = msg_remoter.shoot_sw;
         memcpy(&msg_remoter.last_key, &msg_remoter.key, sizeof(msg_remoter.key));
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
         tx_thread_sleep(1);
-    }
-}
-
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) 
-{
-    if (huart == &huart5) 
-    {
-        SCB_InvalidateDCache_by_Addr((uint32_t*)dr16_rx, DR16_DATA_SIZE);
-        tx_semaphore_put(&RemoterThreadSem);
     }
 }

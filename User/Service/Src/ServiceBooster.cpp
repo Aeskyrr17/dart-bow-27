@@ -14,7 +14,7 @@ TX_THREAD my_thread2;
 uint8_t my_thread_stack2[512];
 
 extern TX_THREAD RemoterThread;
-extern TX_SEMAPHORE RemoterThreadSem;
+extern TX_SEMAPHORE RemoterGot;
 extern uint8_t RemoterThreadStack[1024];
 extern void RemoterThreadFun(ULONG initial_input);
 
@@ -95,7 +95,7 @@ extern "C" void ServiceBooster()
         RemoterThreadFun, 0x1234, RemoterThreadStack, sizeof(RemoterThreadStack),
         2, 2, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    tx_semaphore_create(&RemoterThreadSem, TX_NAME("RemoterThreadSem"), 0);
+    tx_semaphore_create(&RemoterGot, TX_NAME("RemoterGot"), 0);
 
     tx_thread_create(&IMUThread, TX_NAME("IMUThread"),
         IMUThreadFun, 0x1234, IMUThreadStack, sizeof(IMUThreadStack),

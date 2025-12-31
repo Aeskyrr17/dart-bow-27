@@ -10,7 +10,7 @@ extern uint8_t SolverThreadStack[4096];
 extern void SolverThreadFun(ULONG initial_input);
 
 extern TX_THREAD FunctionThread;
-extern uint8_t FunctionThreadStack[4096];
+extern uint8_t FunctionThreadStack[2048];
 extern void FunctionThreadFun(ULONG initial_input);
 
 extern TX_THREAD UIThread;
