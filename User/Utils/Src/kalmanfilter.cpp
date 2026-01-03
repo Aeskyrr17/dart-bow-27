@@ -145,59 +145,59 @@ namespace Filter
         {
             temp_vector.numRows = xhatSize;
             temp_vector.numCols = 1;
-            MatStatus = arm_mat_mult_f32(&F, &xhat, &temp_vector);
+            arm_mat_mult_f32(&F, &xhat, &temp_vector);
             temp_vector1.numRows = xhatSize;
             temp_vector1.numCols = 1;
-            MatStatus = arm_mat_mult_f32(&B, &u, &temp_vector1);
-            MatStatus = arm_mat_add_f32(&temp_vector, &temp_vector1, &xhatminus);
+            arm_mat_mult_f32(&B, &u, &temp_vector1);
+            arm_mat_add_f32(&temp_vector, &temp_vector1, &xhatminus);
         }
         else
         {
-            MatStatus = arm_mat_mult_f32(&F, &xhat, &xhatminus);
+            arm_mat_mult_f32(&F, &xhat, &xhatminus);
         }
     }
 
     void KalmanFilter::pMinusUpdate()
     {
-        MatStatus = arm_mat_trans_f32(&F, &FT);
-        MatStatus = arm_mat_mult_f32(&F, &P, &Pminus);
+        arm_mat_trans_f32(&F, &FT);
+        arm_mat_mult_f32(&F, &P, &Pminus);
         temp_matrix.numRows = Pminus.numRows;
         temp_matrix.numCols = FT.numCols;
-        MatStatus = arm_mat_mult_f32(&Pminus, &FT, &temp_matrix); // temp_matrix = F P(k-1) FT
-        MatStatus = arm_mat_add_f32(&temp_matrix, &Q, &Pminus);
+        arm_mat_mult_f32(&Pminus, &FT, &temp_matrix); // temp_matrix = F P(k-1) FT
+        arm_mat_add_f32(&temp_matrix, &Q, &Pminus);
     }
 
     void KalmanFilter::setK()
     {
-        MatStatus = arm_mat_trans_f32(&H, &HT); // z|x => x|z
+        arm_mat_trans_f32(&H, &HT); // z|x => x|z
         temp_matrix.numRows = H.numRows;
         temp_matrix.numCols = Pminus.numCols;
-        MatStatus = arm_mat_mult_f32(&H, &Pminus, &temp_matrix); // temp_matrix = H·P'(k)
+        arm_mat_mult_f32(&H, &Pminus, &temp_matrix); // temp_matrix = H·P'(k)
         temp_matrix1.numRows = temp_matrix.numRows;
         temp_matrix1.numCols = HT.numCols;
-        MatStatus = arm_mat_mult_f32(&temp_matrix, &HT, &temp_matrix1); // temp_matrix1 = H·P'(k)·HT
+        arm_mat_mult_f32(&temp_matrix, &HT, &temp_matrix1); // temp_matrix1 = H·P'(k)·HT
         S.numRows = R.numRows;
         S.numCols = R.numCols;
-        MatStatus = arm_mat_add_f32(&temp_matrix1, &R, &S); // S = H P'(k) HT + R
-        MatStatus = arm_mat_inverse_f32(&S, &temp_matrix1);     // temp_matrix1 = inv(H·P'(k)·HT + R)
+        arm_mat_add_f32(&temp_matrix1, &R, &S); // S = H P'(k) HT + R
+        arm_mat_inverse_f32(&S, &temp_matrix1);     // temp_matrix1 = inv(H·P'(k)·HT + R)
         temp_matrix.numRows = Pminus.numRows;
         temp_matrix.numCols = HT.numCols;
-        MatStatus = arm_mat_mult_f32(&Pminus, &HT, &temp_matrix); // temp_matrix = P'(k)·HT
-        MatStatus = arm_mat_mult_f32(&temp_matrix, &temp_matrix1, &K);
+        arm_mat_mult_f32(&Pminus, &HT, &temp_matrix); // temp_matrix = P'(k)·HT
+        arm_mat_mult_f32(&temp_matrix, &temp_matrix1, &K);
     }
 
     void KalmanFilter::xhatUpdate()
     {
         temp_vector.numRows = H.numRows;
         temp_vector.numCols = 1;
-        MatStatus = arm_mat_mult_f32(&H, &xhatminus, &temp_vector); // temp_vector = H xhat'(k)
+        arm_mat_mult_f32(&H, &xhatminus, &temp_vector); // temp_vector = H xhat'(k)
         temp_vector1.numRows = z.numRows;
         temp_vector1.numCols = 1;
-        MatStatus = arm_mat_sub_f32(&z, &temp_vector, &temp_vector1); // temp_vector1 = z(k) - H·xhat'(k)
+        arm_mat_sub_f32(&z, &temp_vector, &temp_vector1); // temp_vector1 = z(k) - H·xhat'(k)
         temp_vector.numRows = K.numRows;
         temp_vector.numCols = 1;
-        MatStatus = arm_mat_mult_f32(&K, &temp_vector1, &temp_vector); // temp_vector = K(k)·(z(k) - H·xhat'(k))
-        MatStatus = arm_mat_add_f32(&xhatminus, &temp_vector, &xhat);
+        arm_mat_mult_f32(&K, &temp_vector1, &temp_vector); // temp_vector = K(k)·(z(k) - H·xhat'(k))
+        arm_mat_add_f32(&xhatminus, &temp_vector, &xhat);
     }
 
     void KalmanFilter::pUpdate()
@@ -206,10 +206,11 @@ namespace Filter
         temp_matrix.numCols = H.numCols;
         temp_matrix1.numRows = temp_matrix.numRows;
         temp_matrix1.numCols = Pminus.numCols;
-        MatStatus = arm_mat_mult_f32(&K, &H, &temp_matrix);                 // temp_matrix = K(k)·H
-        MatStatus = arm_mat_mult_f32(&temp_matrix, &Pminus, &temp_matrix1); // temp_matrix1 = K(k)·H·P'(k)
-        MatStatus = arm_mat_sub_f32(&Pminus, &temp_matrix1, &P);
+        arm_mat_mult_f32(&K, &H, &temp_matrix);                 // temp_matrix = K(k)·H
+        arm_mat_mult_f32(&temp_matrix, &Pminus, &temp_matrix1); // temp_matrix1 = K(k)·H·P'(k)
+        arm_mat_sub_f32(&Pminus, &temp_matrix1, &P);
     }
+    
     void KalmanFilter::adjustHKR()
     {
         MeasurementValidNum = 0;
@@ -254,25 +255,20 @@ namespace Filter
     {
         // 0. 获取量测信息
         measure();
-
         // 先验估计
         // 1. xhat'(k)= A·xhat(k-1) + B·u
         xhatMinusUpdate();
-
         // 预测更新
         // 2. P'(k) = A·P(k-1)·AT + Q
         pMinusUpdate();
-
         if (MeasurementValidNum != 0 || UseAutoAdjustment == 0)
         {
             // 量测更新
             // 3. K(k) = P'(k)·HT / (H·P'(k)·HT + R)
             setK();
-
             // 融合
             // 4. xhat(k) = xhat'(k) + K(k)·(z(k) - H·xhat'(k))
             xhatUpdate();
-
             // 修正方差
             // 5. P(k) = (1-K(k)·H)·P'(k) ==> P(k) = P'(k)-K(k)·H·P'(k)
             pUpdate();
@@ -290,7 +286,6 @@ namespace Filter
             if (P_data[i * xhatSize + i] < StateMinVariance[i])
                 P_data[i * xhatSize + i] = StateMinVariance[i];
         }
-
         std::memcpy(FilteredValue, xhat_data, sizeof(float) * xhatSize);
 
         return FilteredValue;

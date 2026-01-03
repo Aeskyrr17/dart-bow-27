@@ -54,13 +54,6 @@ namespace Filter
         float *MatR_DiagonalElements; // 量测方差
         float *StateMinVariance;      // 最小方差
 
-        // 标志位，用于跳过特定步骤
-        bool SkipEq1 = false;
-        bool SkipEq2 = false;
-        bool SkipEq3 = false;
-        bool SkipEq4 = false;
-        bool SkipEq5 = false;
-
         // 矩阵定义
         arm_matrix_instance_f32 xhat;      // x(k|k)
         arm_matrix_instance_f32 xhatminus; // x(k|k-1)
@@ -74,9 +67,7 @@ namespace Filter
         arm_matrix_instance_f32 Q;         // process noise covariance matrix Q
         arm_matrix_instance_f32 R;         // measurement noise covariance matrix R
         arm_matrix_instance_f32 K;         // kalman gain K
-
-        int8_t MatStatus;
-
+        
     protected:
 
         // 虚函数，基类提供默认实现，子类可重写这些函数以扩展功能

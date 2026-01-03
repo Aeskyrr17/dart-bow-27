@@ -3,9 +3,8 @@
 
 #include "bsp_dwt.hpp"
 #include "bsp_pwm.hpp"
-#include "AHRS.hpp"
+#include "quaternion_ekf.hpp"
 #include "BMI088.hpp"
-// #include "QuaternionEKF.h"
 #include "magicmsgs.hpp"
 
 using namespace BMI088;
@@ -17,7 +16,7 @@ cBMI088 bmi088;
 cIMU *imu_handler = &bmi088;
 
 TX_THREAD IMUThread;
-uint8_t IMUThreadStack[1024] = {0};
+uint8_t IMUThreadStack[4096] = {0};
 TX_SEMAPHORE IMUThreadSem;
 
 [[noreturn]] void IMUThreadFun(ULONG initial_input) 
@@ -28,6 +27,8 @@ TX_SEMAPHORE IMUThreadSem;
     /* INS Topic */
     om_topic_t *ins_topic = om_config_topic(nullptr, "ca", "ins", sizeof(msg_ins_t));
     msg_ins_t msg_ins{};
+
+    QuaternionEKF qekf;
 
     imu_handler->self_test.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
     imu_handler->self_test.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
@@ -70,18 +71,21 @@ TX_SEMAPHORE IMUThreadSem;
             // {
             //     imu_handler->gyro_data.z = 0;
             // }
-            // IMU_QuaternionEKF_Update(imu_handler->gyro_data.x, imu_handler->gyro_data.y, imu_handler->gyro_data.z,
-            //     imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
-            //     DWT_GetDeltaT(&INS_Count));
+            qekf.UpdateKalman(
+                imu_handler->gyro_data.x, imu_handler->gyro_data.y, imu_handler->gyro_data.z,
+                imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
+                DWT_GetDeltaT(&INS_Count)
+            );
+            
         }
 
         tx_semaphore_put(&IMUThreadSem);
 
-        // memcpy(msg_ins.quaternion, QEKF_INS.q, sizeof(QEKF_INS.q));
-        // msg_ins.yaw = QEKF_INS.Yaw;
-        // msg_ins.pitch = QEKF_INS.Pitch;
-        // msg_ins.roll = QEKF_INS.Roll;
-        // msg_ins.total_yaw = QEKF_INS.YawTotalAngle;
+        memcpy(msg_ins.quaternion, qekf.q, sizeof(qekf.q));
+        msg_ins.yaw = qekf.yaw;
+        msg_ins.pitch = qekf.pitch;
+        msg_ins.roll = qekf.roll;
+        msg_ins.total_yaw = qekf.total_yaw;
         msg_ins.gyro_r = imu_handler->gyro_data.x;
         msg_ins.gyro_p = imu_handler->gyro_data.y;
         msg_ins.gyro_y = imu_handler->gyro_data.z;

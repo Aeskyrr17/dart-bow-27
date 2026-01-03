@@ -176,6 +176,9 @@ enum BMI088_SENSOR
 #define GYRO_SELF_TEST_ADDR 0x3C
 #define GYRO_SELF_TEST_ON 0x01
 
+#define GYRO_DRDY_OFF 0x00
+#define GYRO_DRDY_ON 0x80
+
 /* pre calibrate parameter to go here */
 #define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
 #define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f

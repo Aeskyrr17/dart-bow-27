@@ -5,6 +5,7 @@
 #include "BMI088.hpp"
 #include "bsp_spi.hpp"
 
+#include "stm32h7xx_hal_spi.h"
 #include "tx_api.h"
 #include "bsp_pwm.hpp"
 #include "bsp_dwt.hpp"
@@ -197,6 +198,11 @@ namespace BMI088
 
         HAL_SPI_Transmit(&BMI088_SPI, &pTxData, 1, 1000); //< 发送地址
         HAL_SPI_Transmit(&BMI088_SPI, data, len, 1000);   //< 发送数据
+
+        if (self_test.INIT_ERR == true)
+        {
+            DWT_Delay(0.001);
+        }
         
         //< 取消片选
         if (cs == BMI088_CS_ACC)
@@ -230,33 +236,27 @@ namespace BMI088
 
         /*-------------------------------------加速度计初始化-------------------------------------*/
         //< 先软重启，清空所有寄存器
-        while (self_test.ACC_CHIP_ID_ERR)
-        {
-            VerifyAccChipID();
-            tx_thread_sleep(90);
-        }
-
         uint8_t pTxData;
         pTxData = ACC_SOFTRESET_VAL;
         WriteReg(BMI088_CS_ACC, ACC_SOFTRESET_ADDR, &pTxData, 1);
         tx_thread_sleep(100); //< 延时100ms,重启需要时间
-
-        //< 打开加速度计电源
-        pTxData = ACC_PWR_CTRL_ON;
-        WriteReg(BMI088_CS_ACC, ACC_PWR_CTRL_ADDR, &pTxData, 1);
-        tx_thread_sleep(10); //
 
         //< 加速度计变成正常模式
         pTxData = ACC_PWR_CONF_ACT;
         WriteReg(BMI088_CS_ACC, ACC_PWR_CONF_ADDR, &pTxData, 1);
         tx_thread_sleep(10); //
 
+        //< 打开加速度计电源
+        pTxData = ACC_PWR_CTRL_ON;
+        WriteReg(BMI088_CS_ACC, ACC_PWR_CTRL_ADDR, &pTxData, 1);
+        tx_thread_sleep(10); //
+
         //< 测量范围
-        pTxData = ACC_RANGE_3G;
+        pTxData = ACC_RANGE_6G;
         WriteReg(BMI088_CS_ACC, ACC_RANGE_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
-        pTxData = 0xAC;
+        pTxData = 0xAB;
         WriteReg(BMI088_CS_ACC, ACC_CONF_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
@@ -274,11 +274,11 @@ namespace BMI088
         WriteReg(BMI088_CS_GYRO, GYRO_SOFTRESET_ADDR, &pTxData, 1);
         tx_thread_sleep(100); //< 延时100ms,重启需要时间
 
-        pTxData = GYRO_RANGE_1000_DEG_S;
+        pTxData = GYRO_RANGE_2000_DEG_S;
         WriteReg(BMI088_CS_GYRO, GYRO_RANGE_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
-        pTxData = 0x02;//GYRO_ODR_1000Hz_BANDWIDTH_116Hz | GYRO_LPM1_SUS;
+        pTxData = GYRO_ODR_2000Hz_BANDWIDTH_230Hz | GYRO_LPM1_SUS;//0x02;//
         WriteReg(BMI088_CS_GYRO, GYRO_BANDWIDTH_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
@@ -286,11 +286,11 @@ namespace BMI088
         WriteReg(BMI088_CS_GYRO, GYRO_LPM1_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
-        pTxData = 0x80;
+        pTxData = GYRO_DRDY_ON;
         WriteReg(BMI088_CS_GYRO, GYRO_INT_CTRL_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
-        pTxData = 0x0C;
+        pTxData = 0x00;
         WriteReg(BMI088_CS_GYRO, GYRO_INT3_INT4_IO_CONF_ADDR, &pTxData, 1);
         tx_thread_sleep(5); //< 延时5ms
 
@@ -309,9 +309,9 @@ namespace BMI088
         acc[0] = ((int16_t)buf[1 + 1] << 8) + (int16_t)buf[0 + 1];
         acc[1] = ((int16_t)buf[3 + 1] << 8) + (int16_t)buf[2 + 1];
         acc[2] = ((int16_t)buf[5 + 1] << 8) + (int16_t)buf[4 + 1];
-        data->x = (float)acc[0] * Acc_coef;//sensor_filter[0].Update((float)acc[0] * Acc_coef);
-        data->y = (float)acc[1] * Acc_coef;//sensor_filter[1].Update((float)acc[1] * Acc_coef);
-        data->z = (float)acc[2] * Acc_coef;//sensor_filter[2].Update((float)acc[2] * Acc_coef);
+        data->x = (float)acc[0] * IMU_ACCEL_6G_SEN;//sensor_filter[0].Update((float)acc[0] * Acc_coef);
+        data->y = (float)acc[1] * IMU_ACCEL_6G_SEN;//sensor_filter[1].Update((float)acc[1] * Acc_coef);
+        data->z = (float)acc[2] * IMU_ACCEL_6G_SEN;//sensor_filter[2].Update((float)acc[2] * Acc_coef);
     }
 
     void cBMI088::ReadGyroData(gyro_data_t *data)
@@ -326,9 +326,9 @@ namespace BMI088
         gyro[2] = ((int16_t)buf[5] << 8) + (int16_t)buf[4];
 
         //< 为了减少摩擦轮抖动带来的影响，加入333Hz滤波滤除
-        data->x = (float)gyro[0] * IMU_GYRO_1000_SEN;//sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
-        data->y = (float)gyro[1] * IMU_GYRO_1000_SEN;//sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
-        data->z = (float)gyro[2] * IMU_GYRO_1000_SEN;//sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
+        data->x = (float)gyro[0] * IMU_GYRO_2000_SEN -0.005280993487f;//sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
+        data->y = (float)gyro[1] * IMU_GYRO_2000_SEN -0.000237223741f;//sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
+        data->z = (float)gyro[2] * IMU_GYRO_2000_SEN -0.000647540528f;//sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
     }
 
 

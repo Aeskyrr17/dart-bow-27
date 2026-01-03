@@ -28,9 +28,13 @@ protected:
     const float R_Init[4] = {rv, 0, 0, ra};
 
 public:
-    VelFusionKF() : KalmanFilter(3, 0, 2, A_Init, nullptr, H_Init, Q_Init, R_Init, P_Init)
+    VelFusionKF() : KalmanFilter(3, 0, 2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)
     {
-        //Inertia odome 3 State 2 observation
+        std::memcpy(this->F_data, A_Init, sizeof(A_Init));
+        std::memcpy(this->H_data, H_Init, sizeof(H_Init));
+        std::memcpy(this->Q_data, Q_Init, sizeof(Q_Init));
+        std::memcpy(this->R_data, R_Init, sizeof(R_Init));
+        std::memcpy(this->P_data, P_Init, sizeof(P_Init));
     }
 
     void ResetKF()

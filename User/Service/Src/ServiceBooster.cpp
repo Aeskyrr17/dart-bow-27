@@ -20,7 +20,7 @@ extern void RemoterThreadFun(ULONG initial_input);
 
 extern TX_THREAD IMUThread;
 extern TX_SEMAPHORE IMUThreadSem;
-extern uint8_t IMUThreadStack[1024];
+extern uint8_t IMUThreadStack[4096];
 extern void IMUThreadFun(ULONG initial_input);
 
 extern TX_THREAD IMUTempThread;
@@ -29,7 +29,7 @@ extern void IMUTempThreadFun(ULONG initial_input);
 
 /*EKF pool*/
 TX_BYTE_POOL KFPool;
-UCHAR KF_PoolBuf[14336] = {0};
+UCHAR KF_PoolBuf[4096] = {0};
 
 /*OneMessage pool*/
 TX_BYTE_POOL MsgPool;
