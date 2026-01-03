@@ -1,7 +1,8 @@
-#include "AHRS.hpp"
+#include "arm_math.h"
 
-namespace AHRS {
-
+class AHRS
+{
+public:
     void QuaternionUpdate(float *q, float gx, float gy, float gz, float dt)
     {
         float qa, qb, qc;
@@ -39,30 +40,30 @@ namespace AHRS {
     void EarthFrameToBodyFrame(const float *vecEF, float *vecBF, float *q)
     {
         vecBF[0] = 2.0f * ((0.5f - q[2] * q[2] - q[3] * q[3]) * vecEF[0] +
-                           (q[1] * q[2] + q[0] * q[3]) * vecEF[1] +
-                           (q[1] * q[3] - q[0] * q[2]) * vecEF[2]);
+                            (q[1] * q[2] + q[0] * q[3]) * vecEF[1] +
+                            (q[1] * q[3] - q[0] * q[2]) * vecEF[2]);
 
         vecBF[1] = 2.0f * ((q[1] * q[2] - q[0] * q[3]) * vecEF[0] +
-                           (0.5f - q[1] * q[1] - q[3] * q[3]) * vecEF[1] +
-                           (q[2] * q[3] + q[0] * q[1]) * vecEF[2]);
+                            (0.5f - q[1] * q[1] - q[3] * q[3]) * vecEF[1] +
+                            (q[2] * q[3] + q[0] * q[1]) * vecEF[2]);
 
         vecBF[2] = 2.0f * ((q[1] * q[3] + q[0] * q[2]) * vecEF[0] +
-                           (q[2] * q[3] - q[0] * q[1]) * vecEF[1] +
-                           (0.5f - q[1] * q[1] - q[2] * q[2]) * vecEF[2]);
+                            (q[2] * q[3] - q[0] * q[1]) * vecEF[1] +
+                            (0.5f - q[1] * q[1] - q[2] * q[2]) * vecEF[2]);
     }
 
     void BodyFrameToEarthFrame(const float *vecBF, float *vecEF, float *q)
     {
         vecEF[0] = 2.0f * ((0.5f - q[2] * q[2] - q[3] * q[3]) * vecBF[0] +
-                           (q[1] * q[2] - q[0] * q[3]) * vecBF[1] +
-                           (q[1] * q[3] + q[0] * q[2]) * vecBF[2]);
+                            (q[1] * q[2] - q[0] * q[3]) * vecBF[1] +
+                            (q[1] * q[3] + q[0] * q[2]) * vecBF[2]);
 
         vecEF[1] = 2.0f * ((q[1] * q[2] + q[0] * q[3]) * vecBF[0] +
-                           (0.5f - q[1] * q[1] - q[3] * q[3]) * vecBF[1] +
-                           (q[2] * q[3] - q[0] * q[1]) * vecBF[2]);
+                            (0.5f - q[1] * q[1] - q[3] * q[3]) * vecBF[1] +
+                            (q[2] * q[3] - q[0] * q[1]) * vecBF[2]);
 
         vecEF[2] = 2.0f * ((q[1] * q[3] - q[0] * q[2]) * vecBF[0] +
-                           (q[2] * q[3] + q[0] * q[1]) * vecBF[1] +
-                           (0.5f - q[1] * q[1] - q[2] * q[2]) * vecBF[2]);
+                            (q[2] * q[3] + q[0] * q[1]) * vecBF[1] +
+                            (0.5f - q[1] * q[1] - q[2] * q[2]) * vecBF[2]);
     }
-}
+};

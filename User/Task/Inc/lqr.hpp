@@ -67,7 +67,6 @@ public:
     void LQRCal(float *Tout)
     {
         // 1. Calculate Error: X_err = X_obs - X_ref
-        // Manually unrolled loop for 6 elements is very fast
         float err[10] = {0};
         for (int i=0; i<10; i++)
         {

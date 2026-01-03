@@ -28,8 +28,8 @@ extern uint8_t IMUTempThreadStack[1024];
 extern void IMUTempThreadFun(ULONG initial_input);
 
 /*EKF pool*/
-TX_BYTE_POOL MathPool;
-UCHAR Math_PoolBuf[14336] = {0};
+TX_BYTE_POOL KFPool;
+UCHAR KF_PoolBuf[14336] = {0};
 
 /*OneMessage pool*/
 TX_BYTE_POOL MsgPool;
@@ -69,10 +69,10 @@ extern "C" void ServiceBooster()
 {
     /*Math pool in ccram*/
     tx_byte_pool_create(
-            &MathPool,
-            (CHAR *) "Math_Pool",
-            Math_PoolBuf,
-            sizeof(Math_PoolBuf));
+            &KFPool,
+            (CHAR *) "KF_Pool",
+            KF_PoolBuf,
+            sizeof(KF_PoolBuf));
 
     tx_byte_pool_create(
             &MsgPool,

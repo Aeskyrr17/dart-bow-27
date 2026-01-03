@@ -197,12 +197,7 @@ namespace BMI088
 
         HAL_SPI_Transmit(&BMI088_SPI, &pTxData, 1, 1000); //< 发送地址
         HAL_SPI_Transmit(&BMI088_SPI, data, len, 1000);   //< 发送数据
-
-        // 理论上，这里不需要延时，但是如果数据出现问题，请尝试增加延时
-        if (self_test.INIT_ERR == true)
-        {
-            DWT_Delay(0.001);
-        }
+        
         //< 取消片选
         if (cs == BMI088_CS_ACC)
             HAL_GPIO_WritePin(BMI088_ACC_GPIOx, BMI088_ACC_GPIOp, GPIO_PIN_SET);
@@ -232,8 +227,15 @@ namespace BMI088
     void cBMI088::Config()
     {
         tx_thread_sleep(10); //< 等待系统稳定
-        //< 加速度计初始化
+
+        /*-------------------------------------加速度计初始化-------------------------------------*/
         //< 先软重启，清空所有寄存器
+        while (self_test.ACC_CHIP_ID_ERR)
+        {
+            VerifyAccChipID();
+            tx_thread_sleep(90);
+        }
+
         uint8_t pTxData;
         pTxData = ACC_SOFTRESET_VAL;
         WriteReg(BMI088_CS_ACC, ACC_SOFTRESET_ADDR, &pTxData, 1);
@@ -307,9 +309,9 @@ namespace BMI088
         acc[0] = ((int16_t)buf[1 + 1] << 8) + (int16_t)buf[0 + 1];
         acc[1] = ((int16_t)buf[3 + 1] << 8) + (int16_t)buf[2 + 1];
         acc[2] = ((int16_t)buf[5 + 1] << 8) + (int16_t)buf[4 + 1];
-        data->x = sensor_filter[0].Update((float)acc[0] * Acc_coef);
-        data->y = sensor_filter[1].Update((float)acc[1] * Acc_coef);
-        data->z = sensor_filter[2].Update((float)acc[2] * Acc_coef);
+        data->x = (float)acc[0] * Acc_coef;//sensor_filter[0].Update((float)acc[0] * Acc_coef);
+        data->y = (float)acc[1] * Acc_coef;//sensor_filter[1].Update((float)acc[1] * Acc_coef);
+        data->z = (float)acc[2] * Acc_coef;//sensor_filter[2].Update((float)acc[2] * Acc_coef);
     }
 
     void cBMI088::ReadGyroData(gyro_data_t *data)
@@ -324,9 +326,9 @@ namespace BMI088
         gyro[2] = ((int16_t)buf[5] << 8) + (int16_t)buf[4];
 
         //< 为了减少摩擦轮抖动带来的影响，加入333Hz滤波滤除
-        data->x = sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
-        data->y = sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
-        data->z = sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
+        data->x = (float)gyro[0] * IMU_GYRO_1000_SEN;//sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
+        data->y = (float)gyro[1] * IMU_GYRO_1000_SEN;//sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
+        data->z = (float)gyro[2] * IMU_GYRO_1000_SEN;//sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
     }
 
 
