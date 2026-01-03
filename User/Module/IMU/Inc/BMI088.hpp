@@ -1,7 +1,3 @@
-//
-// Created by cosmosmount on 2025/9/2.
-//
-
 #ifndef RM26_H7_BMI088_HPP
 #define RM26_H7_BMI088_HPP
 
@@ -178,6 +174,10 @@ enum BMI088_SENSOR
 
 #define GYRO_DRDY_OFF 0x00
 #define GYRO_DRDY_ON 0x80
+
+#define GYRO_PRE_CALI_OFFSET_X -0.005280993487f
+#define GYRO_PRE_CALI_OFFSET_Y -0.000237223741f
+#define GYRO_PRE_CALI_OFFSET_Z -0.000647540528f
 
 /* pre calibrate parameter to go here */
 #define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
