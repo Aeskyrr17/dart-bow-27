@@ -1,3 +1,4 @@
+#include "fast_math_functions.h"
 #include "tx_api.h"
 #include "om.h"
 
@@ -28,8 +29,6 @@ TX_SEMAPHORE IMUThreadSem;
     om_topic_t *ins_topic = om_config_topic(nullptr, "ca", "ins", sizeof(msg_ins_t));
     msg_ins_t msg_ins{};
 
-    QuaternionEKF qekf;
-
     imu_handler->self_test.ACC_CHIP_ID_ERR = true;       // 加速度计ID错误则为true
     imu_handler->self_test.ACC_DATA_ERR = true;          // 加速度计数据错误则为true
     imu_handler->self_test.GYRO_CHIP_ID_ERR = true;      // 陀螺仪ID错误则为true
@@ -38,24 +37,21 @@ TX_SEMAPHORE IMUThreadSem;
     imu_handler->self_test.CALIBRATE_ERR = false; // BMI088标定错误则为true
     imu_handler->self_test.TEMP_CTRL_ERR = false; // BMI088温度控制错误则为true
 
-    imu_handler->Config(); //< 初始化配置
+    imu_handler->Config();              //< 初始化配置
+    imu_handler->VerifyAccChipID();     //< 验证加速度计ID
+    imu_handler->VerifyGyroChipID();    //< 验证陀螺仪ID
 
-    imu_handler->VerifyAccChipID();  //< 验证加速度计ID
-    imu_handler->VerifyGyroChipID(); //< 验证陀螺仪ID
-
-    // while (imu_handler->acc_data.temperature < 45.0f) 
-    // {
-    //     tx_thread_sleep(100);
-    // }
+    while (imu_handler->acc_data.temperature < 45.0f) 
+    {
+        tx_thread_sleep(100);
+    }
     // tx_thread_sleep(2000);
-
-    // imu_handler->Calibrate(); //< 标定IMU
     imu_handler->self_test.INIT_ERR = false;
 
+    imu_handler->Calibrate();          //< 标定陀螺仪
+    QuaternionEKF qekf;
+
     uint32_t INS_Count = 0;
-    // float init_quaternion[4] = {0};
-    // InitQuaternion(init_quaternion);
-    // IMU_QuaternionEKF_Init(init_quaternion, 10, 0.001, 1000000, 1, 0);
     DWT_GetDeltaT(&INS_Count);
 
     for (;;) 
@@ -66,11 +62,6 @@ TX_SEMAPHORE IMUThreadSem;
         {
             imu_handler->ReadAccData(&imu_handler->acc_data);
             imu_handler->ReadGyroData(&imu_handler->gyro_data);
-            // if (fabs(imu_handler->acc_data.x) <= 0.1f && fabs(imu_handler->acc_data.y) <= 0.1f && fabs(imu_handler->acc_data.z) <= 0.1f &&
-            //     fabs(imu_handler->gyro_data.x) <= 0.01f && fabs(imu_handler->gyro_data.y) <= 0.01f && fabs(imu_handler->gyro_data.z) <= 0.01f)
-            // {
-            //     imu_handler->gyro_data.z = 0;
-            // }
             qekf.UpdateKalman(
                 imu_handler->gyro_data.x, imu_handler->gyro_data.y, imu_handler->gyro_data.z,
                 imu_handler->acc_data.x, imu_handler->acc_data.y, imu_handler->acc_data.z,
@@ -116,8 +107,8 @@ uint8_t IMUTempThreadStack[1024] = {0};
     imu_handler->TempPid.ScalarA = 3.5f;
     imu_handler->TempPid.ScalarB = 0.08f;
 
-    imu_handler->TargetTemp = 45.0f;                              //< 设置目标温度，一般为40度以上
-    PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4); //< 启动加热电阻PWM
+    imu_handler->TargetTemp = 45.0f;                                    //< 设置目标温度，一般为40度以上
+    PWM_Start(&HEATING_RESISTANCE_TIM, TIM_CHANNEL_4);    //< 启动加热电阻PWM
 
     float tmp_last = imu_handler->acc_data.temperature;
     tx_thread_sleep(1000);
@@ -131,14 +122,8 @@ uint8_t IMUTempThreadStack[1024] = {0};
     for (;;) 
     {
 
-        // imu_handler->ReadAccTemperature(&imu_handler->acc_data.temperature);
-        // imu_handler->TemperatureControl(imu_handler->TargetTemp);
-
-        // uint8_t time_to_delay = tx_time_get() - IMU_time;
-        // if (time_to_delay < 1) 
-        // {
-        //     tx_thread_sleep(1 - time_to_delay);
-        // }
+        imu_handler->ReadAccTemperature(&imu_handler->acc_data.temperature);
+        imu_handler->TemperatureControl(imu_handler->TargetTemp);
         tx_thread_sleep(125);
     }
 }

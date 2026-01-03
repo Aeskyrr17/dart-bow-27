@@ -53,7 +53,7 @@ public:
     float roll = 0.0f;
 
     QuaternionEKF() 
-        : Filter::KalmanFilter(6, 0, 3, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)
+        : Filter::KalmanFilter(6, 0, 3)
     {
         this->xhat_data[0] = 1.0f;
         this->xhat_data[1] = 0.0f;

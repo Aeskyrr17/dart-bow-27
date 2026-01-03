@@ -3,13 +3,7 @@
 
 namespace Filter 
 {
-    KalmanFilter::KalmanFilter(uint8_t xhatSize, uint8_t uSize, uint8_t zSize,
-                               const float *F_Init,
-                               const float *B_Init,
-                               const float *H_Init,
-                               const float *Q_Init,
-                               const float *R_Init,
-                               const float *P_Init)
+    KalmanFilter::KalmanFilter(uint8_t xhatSize, uint8_t uSize, uint8_t zSize)
     : xhatSize(xhatSize), uSize(uSize), zSize(zSize)
     {
         MeasurementValidNum = 0;
@@ -117,13 +111,6 @@ namespace Filter
         arm_mat_init_f32(&temp_matrix1, xhatSize, xhatSize, (float *)temp_matrix_data1);
         arm_mat_init_f32(&temp_vector, xhatSize, 1, (float *)temp_vector_data);
         arm_mat_init_f32(&temp_vector1, xhatSize, 1, (float *)temp_vector_data1);
-
-        if (F_Init) std::memcpy(F_data, F_Init, sizeof(float) * xhatSize * xhatSize);
-        if (B_Init && uSize > 0) std::memcpy(B_data, B_Init, sizeof(float) * xhatSize * uSize);
-        if (H_Init) std::memcpy(H_data, H_Init, sizeof(float) * zSize * xhatSize);
-        if (Q_Init) std::memcpy(Q_data, Q_Init, sizeof(float) * xhatSize * xhatSize);
-        if (R_Init) std::memcpy(R_data, R_Init, sizeof(float) * zSize * zSize);
-        if (P_Init) std::memcpy(P_data, P_Init, sizeof(float) * xhatSize * xhatSize);
     }
 
     void KalmanFilter::measure()

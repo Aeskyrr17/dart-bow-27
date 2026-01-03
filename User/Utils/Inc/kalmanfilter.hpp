@@ -22,13 +22,7 @@ namespace Filter
         * @param R_Init 量测噪声协方差矩阵 R 初始值 (zSize * zSize)
         * @param P_Init 估计误差协方差矩阵 P 初始值 (xhatSize * xhatSize)
         */
-        KalmanFilter(uint8_t xhatSize, uint8_t uSize, uint8_t zSize,
-                     const float *F_Init = nullptr,
-                     const float *B_Init = nullptr,
-                     const float *H_Init = nullptr,
-                     const float *Q_Init = nullptr,
-                     const float *R_Init = nullptr,
-                     const float *P_Init = nullptr);
+        KalmanFilter(uint8_t xhatSize, uint8_t uSize, uint8_t zSize);
         virtual ~KalmanFilter() = default;
 
         /**

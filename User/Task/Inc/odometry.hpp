@@ -28,7 +28,7 @@ protected:
     const float R_Init[4] = {rv, 0, 0, ra};
 
 public:
-    VelFusionKF() : KalmanFilter(3, 0, 2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)
+    VelFusionKF() : KalmanFilter(3, 0, 2)
     {
         std::memcpy(this->F_data, A_Init, sizeof(A_Init));
         std::memcpy(this->H_data, H_Init, sizeof(H_Init));
