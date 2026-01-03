@@ -1,6 +1,5 @@
 #include "LK9025.hpp"
 #include "bsp_can.hpp"
-#include "filter.hpp"
 #include "math.hpp"
 
 using namespace Numeric;

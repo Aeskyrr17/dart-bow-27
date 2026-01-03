@@ -1,64 +1,64 @@
 # pragma once
 
 #include "math.hpp"
-#include "kalman_filter.h"
+#include "kalmanfilter.hpp"
 #include "magicmsgs.hpp"
+#include <cstring>
 
-#define t  0.001f
-#define t2 0.000001f
-#define t3 0.000000001f
-#define t4 0.000000000001f
-#define t5 0.000000000000001f
+using namespace Filter;
 
-class VelFusionKF
+#define dt  0.001f
+#define dt2 0.000001f
+#define dt3 0.000000001f
+#define dt4 0.000000000001f
+#define dt5 0.000000000000001f
+
+class VelFusionKF : public KalmanFilter
 {
 protected:
     const float qq = 5.0f;//10
     const float rv = 0.1f;
     const float ra = 50.0f;//25.0f
 
-    const float A_Init[9] = {1, t, t2 / 2, 0, 1, t, 0, 0, 1};
-    const float Q_Init[9] = {t5 / 20 * qq, t4 / 8 * qq, t3 / 6 * qq, t4 / 8 * qq, t3 / 3 * qq, t2 / 2 * qq, t3 / 6 * qq,
-                             t2 / 2 * qq, t * qq};
+    const float A_Init[9] = {1, dt, dt2 / 2, 0, 1, dt, 0, 0, 1};
+    const float Q_Init[9] = {dt5 / 20 * qq, dt4 / 8 * qq, dt3 / 6 * qq, dt4 / 8 * qq, dt3 / 3 * qq, dt2 / 2 * qq, dt3 / 6 * qq,
+                             dt2 / 2 * qq, dt * qq};
     const float H_Init[6] = {0, 1, 0, 0, 0, 1};
     const float P_Init[9] = {10, 0, 0, 0, 10, 0, 0, 0, 10};
     const float R_Init[4] = {rv, 0, 0, ra};
 
 public:
-    KalmanFilter_t KF;
-
-    VelFusionKF()
+    VelFusionKF() : KalmanFilter(3, 0, 2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)
     {
-        Kalman_Filter_Init(&this->KF, 3, 0, 2);//Inertia odome 3 State 2 observation
-        memcpy(this->KF.P_data, P_Init, sizeof(P_Init));
-        memcpy(this->KF.F_data, A_Init, sizeof(A_Init));
-        memcpy(this->KF.Q_data, Q_Init, sizeof(Q_Init));
-        memcpy(this->KF.H_data, H_Init, sizeof(H_Init));
-        memcpy(this->KF.R_data, R_Init, sizeof(R_Init));
+        std::memcpy(this->F_data, A_Init, sizeof(A_Init));
+        std::memcpy(this->H_data, H_Init, sizeof(H_Init));
+        std::memcpy(this->Q_data, Q_Init, sizeof(Q_Init));
+        std::memcpy(this->R_data, R_Init, sizeof(R_Init));
+        std::memcpy(this->P_data, P_Init, sizeof(P_Init));
     }
 
-    void ResetKF(KalmanFilter_t *kf)
+    void ResetKF()
     {
-        memset(kf->xhat.pData, 0, sizeof(float) * kf->xhat.numRows);
-        memset(kf->xhatminus.pData, 0, sizeof(float) * kf->xhatminus.numRows);
-        memset(kf->P.pData, 0, sizeof(float) * kf->P.numRows*kf->P.numRows);
+        std::memset(this->xhat_data, 0, sizeof(float) * this->xhatSize);
+        std::memset(this->xhatminus_data, 0, sizeof(float) * this->xhatSize);
+        std::memcpy(this->P_data, P_Init, sizeof(P_Init));
     }
 
     void UpdateKalman(float Velocity, float AccelerationX)
     {
-        this->KF.MeasuredVector[0] = Velocity;
-        this->KF.MeasuredVector[1] = AccelerationX;
-        Kalman_Filter_Update(&this->KF);
+        this->MeasuredVector[0] = Velocity;
+        this->MeasuredVector[1] = AccelerationX;
+        this->Update();
     }
 
     float GetXhat()
     {
-        return this->KF.xhat.pData[0];
+        return this->xhat.pData[0];
     }
 
     float GetVhat()
     {
-        return this->KF.xhat.pData[1];
+        return this->xhat.pData[1];
     }
 
 };
@@ -105,7 +105,7 @@ public:
 
     void Reset()
     {
-        vel_kf.ResetKF(&vel_kf.KF);
+        vel_kf.ResetKF();
         odom_data_ = {0.0f, 0.0f, 0.0f};
     }
 };

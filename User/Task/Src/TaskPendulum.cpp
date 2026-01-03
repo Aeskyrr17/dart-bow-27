@@ -2,14 +2,11 @@
 #include "math.hpp"
 #include "pid.hpp"
 #include "lqr.hpp"
-#include "filter.hpp"
 #include "slope.hpp"
 #include "magicmsgs.hpp"
 #include "config_chassis.hpp"
 #include "vmc.hpp"
 #include "om.h"
-
-using namespace Filter;
 
 #ifdef SJTU_MODEL
 
@@ -53,7 +50,7 @@ struct pid_tuning_t {
     float kd;
 };
 
-__attribute__((section(".RAM_D3"))) msg_ins_t debug_ins;
+msg_ins_t debug_ins; //__attribute__((section(".RAM_D3"))) 
 pendulum_debug_t pendulum_debug;
 pid_tuning_t lenpd_tuning;
 pid_tuning_t phi0pd_tuning;

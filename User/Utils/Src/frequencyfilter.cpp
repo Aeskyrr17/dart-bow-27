@@ -1,64 +1,11 @@
-//
-// Created by cosmosmount on 2025/8/30.
-//
-
-#include "filter.hpp"
+#include "frequencyfilter.hpp"
+#include <cstdint>
 
 using namespace Numeric;
 
 namespace Filter
 {
-    KalmanFilter::KalmanFilter()
-    {
-        LastP = 0.02f;
-        NowP = 0.0f;
-        result = 0.0f;
-        Kg = 0.0f;
-        Q = 0.001f;
-        R = 0.543f;
-    }
-
-    void KalmanFilter::Clear()
-    {
-        LastP = 0.02f;
-        NowP = 0.0f;
-        result = 0.0f;
-        Kg = 0.0f;
-        Q = 0.001f;
-        R = 0.543f;
-    }
-
-    void KalmanFilter::SetKg(float kg)
-    {
-        this->Kg = kg;
-    }
-
-    void KalmanFilter::SetQ(float q)
-    {
-        this->Q = q;
-    }
-
-    void KalmanFilter::SetR(float r)
-    {
-        this->R = r;
-    }
-
-    float KalmanFilter::Update(float input)
-    {
-        // 预测协方差方程：k时刻系统估算协方差 = k-1时刻的系统协方差 + 过程噪声协方差
-        this->NowP = this->LastP + this->Q;
-
-        // 卡尔曼增益方程：卡尔曼增益 = k1-1时刻系统估算协方差 / （k时刻系统估算协方差 + 观测噪声协方差）
-        this->Kg = this->NowP * (1.0f / (this->NowP + this->R));
-        // 更新最优值方程：k时刻状态变量的最优值 = 状态变量的预测值 + 卡尔曼增益 * （测量值 - 状态变量的预测值）
-        this->result = this->result + this->Kg * (input - this->result); // 因为这一次的预测值就是上一次的输出值
-        // 更新协方差方程: 本次的系统协方差付给 kfp->LastP 威下一次运算准备。
-        this->LastP = (1.0f - this->Kg) * this->NowP;
-
-        return this->result;
-    }
-
-    IIRFilter::IIRFilter(uint32_t _order, Filter_Mode _mode, int _freq_low, int _freq_high)
+    IIRFilter::IIRFilter(uint8_t _order, Filter_Mode _mode, int _freq_low, int _freq_high)
     {
         num_stage = _order / 2;
         if (_mode == LOWPASS)
@@ -91,7 +38,7 @@ namespace Filter
     }
 
 
-    FIRFilter::FIRFilter(uint32_t _order, float _constrain_low, float _constrain_high,
+    FIRFilter::FIRFilter(uint8_t _order, float _constrain_low, float _constrain_high,
         Filter_Mode _mode, float _freq_low, float _freq_high)
     {
         order = _order;
@@ -114,7 +61,7 @@ namespace Filter
         {
         case LOWPASS:
         {
-            for (int i = 0; i < order + 1; i++)
+            for (uint8_t i = 0; i < order + 1; i++)
             {
                 system_function[i] = omega_low / PI * arm_sin_f32((static_cast<float>(i) - order / 2.0f) * omega_low);
             }
@@ -123,7 +70,7 @@ namespace Filter
         }
         case HIGHPASS:
         {
-            for (int i = 0; i < order + 1; i++)
+            for (uint8_t i = 0; i < order + 1; i++)
             {
                 system_function[i] = arm_sin_f32((static_cast<float>(i) - order / 2.0f) * PI)
                                     - omega_high / PI * arm_sin_f32((static_cast<float>(i) - order / 2.0f) * omega_high);
@@ -133,7 +80,7 @@ namespace Filter
         }
         case BANDPASS:
         {
-            for (int i = 0; i < order + 1; i++)
+            for (uint8_t i = 0; i < order + 1; i++)
             {
                 system_function[i] = omega_high / PI * arm_sin_f32((static_cast<float>(i) - order / 2.0f) * omega_high)
                                     - omega_low / PI * arm_sin_f32((static_cast<float>(i) - order / 2.0f) * omega_low);
@@ -143,7 +90,7 @@ namespace Filter
         }
         case BANDSTOP:
         {
-            for (int i = 0; i < order + 1; i++)
+            for (uint8_t i = 0; i < order + 1; i++)
             {
                 system_function[i] = arm_sin_f32((static_cast<float>(i) - order / 2.0f) * PI)
                         + omega_low / PI * arm_sin_f32((static_cast<float>(i)- order / 2.0f) * omega_low)
@@ -154,12 +101,12 @@ namespace Filter
         }
         }
 
-        for (int i = 0; i < order + 1; i++)
+        for (uint8_t i = 0; i < order + 1; i++)
         {
             system_function_sum += system_function[i];
         }
 
-        for (int i = 0; i < order + 1; i++)
+        for (uint8_t i = 0; i < order + 1; i++)
         {
             system_function[i] /= system_function_sum;
         }
@@ -190,7 +137,7 @@ namespace Filter
     {
         float result = 0.0f;
         // 执行卷积操作
-        for (int i = 0; i < order + 1; i++)
+        for (uint8_t i = 0; i < order + 1; i++)
         {
             result += system_function[i] * input_signal[(signal_flag + i) % (order + 1)];
         }
@@ -198,4 +145,4 @@ namespace Filter
         return result;
     }
 
-} // namespace Filter
+}

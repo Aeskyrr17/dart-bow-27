@@ -12,7 +12,6 @@
 #include "LKMotorHandler.hpp"
 
 #include "math.hpp"
-#include "filter.hpp"
 #include "odometry.hpp"
 #include "om_core.h"
 #include "om_msg.h"
@@ -153,9 +152,6 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
     float prev_llen_dot = 0.0f;
     float prev_rlen_dot = 0.0f;
 
-    float prev_lalpha_dot = 0.0f;
-    float prev_ralpha_dot = 0.0f;
-
     float thread_start_time;
 
     for (;;)
@@ -205,20 +201,6 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
         Lsolver.VMCRevCal(TlRev, LTpfdb);
         Rsolver.VMCRevCal(TrRev, RTpfdb);
 
-        // float alpha = 0.5f*(solverfdb.lalpha+solverfdb.ralpha);
-        // float dalpha = 0.5f*(solverfdb.lalpha_dot+solverfdb.ralpha_dot);
-        // float ddalpha = 0.5f*(solverfdb.lalpha_dot-prev_lalpha_dot + solverfdb.ralpha_dot-prev_ralpha_dot);
-        // float cosAlpha = arm_cos_f32(alpha);
-        // float sinAlpha = arm_sin_f32(alpha);
-        // float len = 0.5f*(solverfdb.llen+solverfdb.rlen);
-        // float dlen = 0.5f*(solverfdb.llen_dot+solverfdb.rlen_dot);
-        // float ddlen = 0.5f*(solverfdb.llen_dot-prev_llen_dot + solverfdb.rlen_dot-prev_rlen_dot);
-        // float Pwheel = Freal*cosAlpha + Treal/len*sinAlpha;
-        // float a_zw = odom_data.a_z-Gravity
-        //             - ddlen*cosAlpha
-        //             +2*dlen*dalpha*sinAlpha
-        //             +len*ddalpha*sinAlpha
-        //             +len*dalpha*dalpha*cosAlpha;
         float Pl = TlRev[0]*arm_cos_f32(solverfdb.lalpha)+TlRev[1]/solverfdb.llen*arm_sin_f32(solverfdb.lalpha);
         float Pr = TrRev[0]*arm_cos_f32(solverfdb.ralpha)+TrRev[1]/solverfdb.rlen*arm_sin_f32(solverfdb.ralpha);
         float ddlenl = solverfdb.llen_dot - prev_llen_dot;
@@ -232,8 +214,6 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
 
         prev_llen_dot = solverfdb.llen_dot;
         prev_rlen_dot = solverfdb.rlen_dot;
-        prev_lalpha_dot = solverfdb.lalpha_dot;
-        prev_ralpha_dot = solverfdb.ralpha_dot;
 
         Lsolver.VMCCal(pendulumctrl.Tl, LTp);
         Rsolver.VMCCal(pendulumctrl.Tr, RTp);

@@ -3,7 +3,6 @@
 #include "math.hpp"
 #include "pid.hpp"
 #include "lqr.hpp"
-#include "filter.hpp"
 #include "slope.hpp"
 #include "magicmsgs.hpp"
 #include "config_chassis.hpp"
