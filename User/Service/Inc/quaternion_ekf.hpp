@@ -177,6 +177,7 @@ public:
     bool Initialized = false;
     bool ConvergeFlag = false;
     bool StableFlag = false;
+    bool SkipPPredict = false;
     uint64_t ErrorCount = 0;
     uint64_t UpdateCount = 0;
 
@@ -337,12 +338,14 @@ protected:
             if (ErrorCount > 50)
             {
                 ConvergeFlag = false;
+                SkipPPredict = true;
             }
             else
             {
                 // Reject update
                 std::memcpy(xhat_data, xhatminus_data, sizeof(float) * xhatSize);
                 std::memcpy(P_data, Pminus_data, sizeof(float) * xhatSize * xhatSize);
+                SkipPPredict = false;
                 return;
             }
         }
@@ -357,6 +360,7 @@ protected:
             {
                 AdaptiveGainScale = 1.0f;
             }
+            SkipPPredict = false;
             ErrorCount = 0;
         }
 
@@ -430,6 +434,20 @@ protected:
         // Restore dimensions
         temp_vector.numRows = xhatSize;
         temp_vector1.numRows = xhatSize;
+    }
+
+    void pUpdate() override
+    {
+        if (!SkipPPredict)
+        {
+            temp_matrix.numRows = K.numRows;
+            temp_matrix.numCols = H.numCols;
+            temp_matrix1.numRows = temp_matrix.numRows;
+            temp_matrix1.numCols = Pminus.numCols;
+            arm_mat_mult_f32(&K, &H, &temp_matrix);                 // temp_matrix = K(k)·H
+            arm_mat_mult_f32(&temp_matrix, &Pminus, &temp_matrix1); // temp_matrix1 = K(k)·H·P'(k)
+            arm_mat_sub_f32(&Pminus, &temp_matrix1, &P);
+        }
     }
 };
 
