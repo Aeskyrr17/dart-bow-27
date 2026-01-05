@@ -54,9 +54,9 @@ namespace BMI088
         {
             self_test.CALIBRATE_ERR = true;
             // 恢复默认值或保留上次值
-            Gyro_offset[0] = GYRO_PRE_CALI_OFFSET_X; 
-            Gyro_offset[1] = GYRO_PRE_CALI_OFFSET_Y;
-            Gyro_offset[2] = GYRO_PRE_CALI_OFFSET_Z;
+            Gyro_offset[0] = BMI088_GYRO_PRE_CALI_OFFSET_X; 
+            Gyro_offset[1] = BMI088_GYRO_PRE_CALI_OFFSET_Y;
+            Gyro_offset[2] = BMI088_GYRO_PRE_CALI_OFFSET_Z;
         }
         else
         {
@@ -167,6 +167,7 @@ namespace BMI088
         tx_thread_sleep(10); //< 等待系统稳定
 
         /*-------------------------------------加速度计初始化-------------------------------------*/
+        
         //< 先软重启，清空所有寄存器
         uint8_t pTxData;
         pTxData = ACC_SOFTRESET_VAL;
@@ -241,9 +242,9 @@ namespace BMI088
         acc[0] = ((int16_t)buf[1 + 1] << 8) + (int16_t)buf[0 + 1];
         acc[1] = ((int16_t)buf[3 + 1] << 8) + (int16_t)buf[2 + 1];
         acc[2] = ((int16_t)buf[5 + 1] << 8) + (int16_t)buf[4 + 1];
-        data->x = (float)acc[0] * IMU_ACCEL_6G_SEN;//sensor_filter[0].Update((float)acc[0] * Acc_coef);
-        data->y = (float)acc[1] * IMU_ACCEL_6G_SEN;//sensor_filter[1].Update((float)acc[1] * Acc_coef);
-        data->z = (float)acc[2] * IMU_ACCEL_6G_SEN;//sensor_filter[2].Update((float)acc[2] * Acc_coef);
+        data->x = (float)acc[0] * IMU_ACCEL_6G_SEN + BMI088_ACCEL_PRE_CALI_OFFSET_X; //sensor_filter[0].Update((float)acc[0] * Acc_coef);
+        data->y = (float)acc[1] * IMU_ACCEL_6G_SEN + BMI088_ACCEL_PRE_CALI_OFFSET_Y; //sensor_filter[1].Update((float)acc[1] * Acc_coef);
+        data->z = (float)acc[2] * IMU_ACCEL_6G_SEN + BMI088_ACCEL_PRE_CALI_OFFSET_Z; //sensor_filter[2].Update((float)acc[2] * Acc_coef);
     }
 
     void cBMI088::ReadGyroData(gyro_data_t *data)
@@ -258,9 +259,9 @@ namespace BMI088
         gyro[2] = ((int16_t)buf[5] << 8) + (int16_t)buf[4];
 
         //< 为了减少摩擦轮抖动带来的影响，加入333Hz滤波滤除
-        data->x = (float)gyro[0] * IMU_GYRO_2000_SEN - Gyro_offset[0];//sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
-        data->y = (float)gyro[1] * IMU_GYRO_2000_SEN - Gyro_offset[1];//sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
-        data->z = (float)gyro[2] * IMU_GYRO_2000_SEN - Gyro_offset[2];//sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
+        data->x = (float)gyro[0] * IMU_GYRO_2000_SEN - Gyro_offset[0]; // comment when calibration;//sensor_filter[3].Update((float)gyro[0] * IMU_GYRO_1000_SEN);
+        data->y = (float)gyro[1] * IMU_GYRO_2000_SEN - Gyro_offset[1]; // ;//sensor_filter[4].Update((float)gyro[1] * IMU_GYRO_1000_SEN);
+        data->z = (float)gyro[2] * IMU_GYRO_2000_SEN - Gyro_offset[2]; //sensor_filter[5].Update((float)gyro[2] * IMU_GYRO_1000_SEN);
     }
 
 
