@@ -93,6 +93,7 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
         if (tx_semaphore_get(&IMUThreadSem, TX_WAIT_FOREVER) == TX_SUCCESS)
         {
         #ifndef CHASSIS_ONLY
+
             /* Receive Gimbal Msg */
             uint8_t state_msg = StateAnduiMsg[0];
             mode.chassis_mode = static_cast<chassis_mode_e>(state_msg & 0x03);
@@ -104,26 +105,69 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
             memcpy(&v_rx, xyAndRefAngleMsg + 2, 2);                 // 将接收到的数据拷贝到Vy
             memcpy(&relativeangle, xyAndRefAngleMsg + 4, 4);        // 将接收到的数据拷贝到RelativeAngle
 
-            /* v, dlen [0,60000] -> [-2,2] */
-            cmd.dlen = len_updater.UpdateVal(((float)dlen_rx) / 15000.0f - 2.0f);
-            cmd.v = v_updater.UpdateVal(((float)v_rx) / 15000.0f - 2.0f);
+            cmd.roll = 0.0f;
 
             if (isnan(dlen_rx) || isnan(v_rx) || isnan(relativeangle) || (mode.chassis_mode > 3) || (mode.rotate_type > 1) || (mode.jump_ctrl > 2)) // 如果出现nan错误，将速度设定值设为0
             {
-                cmd.dlen = 0;
-                cmd.v = 0;
-                relativeangle = 0;
+                cmd.v = 0.0f;
+                cmd.w = 0.0f;
+                cmd.dlen = 0.0f;
+                cmd.dyaw = 0.0f;
+                relativeangle = 0.0f;
+                cmd.move = false;
                 mode.chassis_mode = NONE;
                 mode.rotate_type = NORMAL_ROTATE;
                 mode.jump_ctrl = DO_NOT_JUMP;
             }
+            else if (mode.chassis_mode == NONE)
+            {
+                cmd.v = 0.0f;
+                cmd.w = 0.0f;
+                cmd.dlen = 0.0f;
+                cmd.dyaw = 0.0f;
+                cmd.move = false;
+            }
+            else if (mode.chassis_mode == NORMAL_MOVING_MODE)
+            {
+                cmd.move = true;
+                if (fabsf(cmd.dlen) < 0.0005f)
+                    cmd.dlen = 0.0f;
+                if (fabsf(cmd.v) < 0.0005f)
+                    cmd.v = 0.0f;
+                if (fabsf(relativeangle) < 0.0001f)
+                    relativeangle = 0.0f;
 
-            if (fabsf(cmd.dlen) < 0.0005f)
-                cmd.dlen = 0;
-            if (fabsf(cmd.v) < 0.0005f)
-                cmd.v = 0;
-            if (fabsf(relativeangle) < 0.0001f)
-                relativeangle = 0;
+                /* v, dlen [0,60000] -> [-2,2] */
+                cmd.dlen = len_updater.UpdateVal(((float)dlen_rx) / 15000.0f - 2.0f);
+                cmd.v = v_updater.UpdateVal(((float)v_rx) / 15000.0f - 2.0f);
+                
+                if (mode.rotate_type == SPIN_ROTATE)
+                {
+                    cmd.w = 3.0f;
+                    cmd.dyaw = 0.0f;
+                }
+                else 
+                {
+                    cmd.dyaw = yaw_updater.UpdateVal(relativeangle)*2.0f;
+                    cmd.w = 0.0f;
+                }
+
+                if (fabsf(cmd.v) < 0.002f || mode.rotate_type == SPIN_ROTATE)
+                {
+                    if (!maintained_x)
+                    {
+                        x_maintain = odom.x;
+                        maintained_x = true;
+                    }
+                    cmd.x = x_maintain;
+                }
+                else
+                {   
+                    maintained_x = false;
+                    cmd.x = odom.x+cmd.v*0.001f;
+                }
+            }
+            
         #else
             if (remoter.ctrl_sw == Relax || remoter.offline)
             {
@@ -136,9 +180,9 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
             else if (remoter.ctrl_sw == Normal)
             {
                 cmd.move = true;
-                cmd.dyaw = yaw_updater.UpdateVal(remoter.left_x);
+                cmd.dyaw = yaw_updater.UpdateVal(-remoter.right_x);
                 cmd.v = v_updater.UpdateVal(remoter.left_y*3.0f);
-                cmd.roll = remoter.right_x*0.1f;
+                cmd.roll = 0.0f;//remoter.right_x*0.1f;
                 cmd.w = 0.0f;
             }
             else if (remoter.ctrl_sw == Spin)

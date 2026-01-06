@@ -2,6 +2,7 @@
 
 #include "arm_math.h"
 #include "kalmanfilter.hpp"
+#include <cstdint>
 #include <cstring>
 #include "math.hpp"
 using namespace Numeric;
@@ -40,7 +41,7 @@ private:
     const float lambda = 1;                 // Fading coefficient
     // const float accLPFcoef = 0; // Accel low-pass filter coefficient
 
-    uint32_t yawroundcount = 0;
+    int16_t yawroundcount = 0;
     float prev_yaw = 0.0f;
     float Gyro[3];
     float Accel[3];

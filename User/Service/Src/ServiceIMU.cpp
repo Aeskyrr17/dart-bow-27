@@ -9,7 +9,6 @@
 #include "magicmsgs.hpp"
 
 using namespace BMI088;
-// using namespace AHRS;
 using namespace Numeric;
 using namespace Matrix;
 
