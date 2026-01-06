@@ -21,8 +21,9 @@ protected:
     const float ra = 50.0f;//25.0f
 
     const float A_Init[9] = {1, dt, dt2 / 2, 0, 1, dt, 0, 0, 1};
-    const float Q_Init[9] = {dt5 / 20 * qq, dt4 / 8 * qq, dt3 / 6 * qq, dt4 / 8 * qq, dt3 / 3 * qq, dt2 / 2 * qq, dt3 / 6 * qq,
-                             dt2 / 2 * qq, dt * qq};
+    const float Q_Init[9] = {dt3 / 20 * qq, dt4 / 8 * qq, dt3 / 6 * qq, 
+                            dt4 / 8 * qq, dt3 / 3 * qq, dt2 / 2 * qq, 
+                            dt3 / 6 * qq, dt2 / 2 * qq, dt * qq};
     const float H_Init[6] = {0, 1, 0, 0, 0, 1};
     const float P_Init[9] = {10, 0, 0, 0, 10, 0, 0, 0, 10};
     const float R_Init[4] = {rv, 0, 0, ra};
@@ -87,9 +88,9 @@ public:
 
         float temp[4] = {0};
         float a_world[4] = {0};
-
+        float _quaternion_conj[4] = {_quaternion[0], -_quaternion[1], -_quaternion[2], -_quaternion[3]};
         arm_quaternion_product_f32(_quaternion, _acc, temp, 1);
-        arm_quaternion_product_f32(temp, _quaternion, a_world, 1);
+        arm_quaternion_product_f32(temp, _quaternion_conj, a_world, 1);
 
         float a_x = sqrtf(a_world[1] * a_world[1] + a_world[2] * a_world[2]) *
                     arm_cos_f32(atan2f(a_world[2], a_world[1]) - _yaw * Numeric::DegreeToRad);

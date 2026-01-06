@@ -42,9 +42,10 @@ Leg_data_r =   Leg_data_l;
 leg = 0.14:0.01:0.35;
 
 %Q矩阵
-%    s     ds     phi     dphi     theta_ll dtheta_ll theta_lr dtheta_lr theta_b dtheta_b
-% Q = diag([10 1 100 100 1000 8 1000 8 20000 100]);
-Q = diag([10 1 10 10 100 1 100 1 2000 10]);
+%         s  ds yaw dyaw alphal dalphal alphar dalphar theta dtheta
+% Q = diag([10 1 100 100 900 7 900 7 15000 80]);
+Q = diag([80 80 80 80 400 1 400 1 4000 40]);
+% Q = diag([10 1 10 10 100 1 100 1 2000 10]);
 % 其中：
 % s       : 自然坐标系下机器人水平方向移动距离，单位：m，ds为其导数
 % phi     ：机器人水平方向移动时yaw偏航角度，dphi为其导数
@@ -54,7 +55,7 @@ Q = diag([10 1 10 10 100 1 100 1 2000 10]);
 
 %R矩阵
 %    T_wl    T_wr     T_bl     T_br
-R = diag([0.25 0.25 1.5 1.5]);
+R = diag([1.5 1.5 0.5 0.5]);
 % 其中：
 % T_wl: 左侧驱动轮输出力矩
 % T_wr：右侧驱动轮输出力矩

@@ -101,8 +101,11 @@ namespace Filter
         arm_mat_init_f32(&K, xhatSize, zSize, (float *)K_data);
 
         S_data = (float *)user_malloc(sizeof(float) * xhatSize * xhatSize);
-        temp_matrix_data = (float *)user_malloc(sizeof(float) * xhatSize * xhatSize);
-        temp_matrix_data1 = (float *)user_malloc(sizeof(float) * xhatSize * xhatSize);
+        uint16_t max_dim_sq = (xhatSize > zSize) ? (xhatSize * xhatSize) : (zSize * zSize);
+        if (xhatSize * zSize > max_dim_sq) 
+            max_dim_sq = xhatSize * zSize;
+        temp_matrix_data = (float *)user_malloc(sizeof(float) * max_dim_sq);
+        temp_matrix_data1 = (float *)user_malloc(sizeof(float) * max_dim_sq);
         temp_vector_data = (float *)user_malloc(sizeof(float) * xhatSize);
         temp_vector_data1 = (float *)user_malloc(sizeof(float) * xhatSize);
         
