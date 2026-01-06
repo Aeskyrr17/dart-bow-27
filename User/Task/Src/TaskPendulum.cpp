@@ -116,6 +116,17 @@ float debug_alpha_dot = 0.0f;
 
         if (tx_semaphore_get(&IMUThreadSem, TX_WAIT_FOREVER) == TX_SUCCESS)
         {
+            observedX[0] = odom.x;//0.0f;//
+            observedX[1] = odom.v;//0.0f;//
+            observedX[2] = ins.total_yaw*DegreeToRad;//0.0f;//
+            observedX[3] = ins.gyro_y;//0.0f;//
+            observedX[4] = solver_fdb.lalpha;//0.0f;//
+            observedX[5] = solver_fdb.lalpha_dot;
+            observedX[6] = solver_fdb.ralpha;//0.0f;//
+            observedX[7] = solver_fdb.ralpha_dot;
+            observedX[8] = ins.pitch*DegreeToRad;
+            observedX[9] = ins.gyro_p;
+            
             if (!cmd.move)
             {
                 pendulum_ctrl.Tl[0] = 0.0f;
@@ -129,8 +140,8 @@ float debug_alpha_dot = 0.0f;
                 Tout[2] = 0.0f;
                 Tout[3] = 0.0f;
                 refX[0] = odom.x;
-                refX[1] = 0.0f;
-                refX[2] = 0.0f;
+                refX[1] = odom.v;
+                refX[2] = ins.total_yaw*DegreeToRad;
                 refX[3] = 0.0f;
                 refX[4] = 0.0f;
                 refX[5] = 0.0f;
@@ -139,7 +150,6 @@ float debug_alpha_dot = 0.0f;
                 refX[8] = 0.0f;
                 refX[9] = 0.0f;
             }
-            
             else 
             {
                 roll_pd.ref = cmd.roll;
@@ -155,18 +165,6 @@ float debug_alpha_dot = 0.0f;
                 rleg_len_pd.fdb = solver_fdb.rlen;
                 rleg_len_pd.UpdateResult(solver_fdb.rlen_dot);
                 pendulum_ctrl.Tr[0] = rleg_len_pd.result;//0.0f;//
-
-                observedX[0] = odom.x;//0.0f;//
-                observedX[1] = odom.v;//0.0f;//
-                observedX[2] = ins.total_yaw*DegreeToRad;//0.0f;//
-                observedX[3] = ins.gyro_y;//0.0f;//
-                observedX[4] = solver_fdb.lalpha;//0.0f;//
-                observedX[5] = solver_fdb.lalpha_dot;
-                observedX[6] = solver_fdb.ralpha;//0.0f;//
-                observedX[7] = solver_fdb.ralpha_dot;
-                observedX[8] = ins.pitch*DegreeToRad;
-                observedX[9] = ins.gyro_p;
-
                 
                 refX[0] = cmd.x;
                 refX[1] = cmd.v;

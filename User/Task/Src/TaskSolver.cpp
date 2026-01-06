@@ -81,6 +81,7 @@ struct force_debug_t
     float Trjoint4;
     float Trjoint1;
 };
+__attribute__((section(".RAM_D3"))) solver_debug_t solver_debug;
 __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
 #endif
 
@@ -121,13 +122,14 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
     msg_ins_t ins{};
     om_suber_t *pendulumctrl_suber = om_subscribe(om_find_topic("pendulumctrl", UINT32_MAX));
     msg_ctrl_t pendulumctrl{};
-    om_suber_t  *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
-    msg_remoter_t remoter{};
+    
 
     om_topic_t *solverfdb_topic = om_config_topic(nullptr, "ca", "solverfdb", sizeof(msg_solver_t));
     msg_solver_t solverfdb{};
     om_topic_t *odom_pub = om_config_topic(nullptr, "ca", "odom", sizeof(msg_odometry_t));
     msg_odometry_t odom_data{};
+    om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
+    msg_cmd_t cmd{};
 
     cVMCSolver Lsolver;
     cVMCSolver Rsolver;
@@ -158,7 +160,7 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
     {
         thread_start_time = tx_time_get();
         om_suber_export(ins_suber, &ins, false);
-        om_suber_export(remoter_suber, &remoter, false);
+        om_suber_export(cmd_suber, &cmd, false);
         om_suber_export(pendulumctrl_suber, &pendulumctrl, false);
 
         /* 将反馈值转化到模型对应角度，传入VMC */
@@ -227,39 +229,39 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
         RWheel.currentSet = -Numeric::FloatConstrain(pendulumctrl.Twr, -MAX_WHEEL_TOR, MAX_WHEEL_TOR) * Tk_LK9025;
 
     #ifdef DEBUG
-        // solver_debug.llength = solverfdb.llen;
-        // solver_debug.rlength = solverfdb.rlen;
-        // solver_debug.lphi = solverfdb.lphi;
-        // solver_debug.rphi = solverfdb.rphi;
-        // solver_debug.llength_dot = solverfdb.llen_dot;
-        // solver_debug.rlength_dot = solverfdb.rlen_dot;
-        // solver_debug.lphi_dot = solverfdb.lphi_dot;
-        // solver_debug.rphi_dot = solverfdb.rphi_dot;
+        solver_debug.llength = solverfdb.llen;
+        solver_debug.rlength = solverfdb.rlen;
+        solver_debug.lphi = solverfdb.lphi;
+        solver_debug.rphi = solverfdb.rphi;
+        solver_debug.llength_dot = solverfdb.llen_dot;
+        solver_debug.rlength_dot = solverfdb.rlen_dot;
+        solver_debug.lphi_dot = solverfdb.lphi_dot;
+        solver_debug.rphi_dot = solverfdb.rphi_dot;
         
-        // solver_debug.lphi1 = Lsolver.GetPhi1();
-        // solver_debug.lphi4 = Lsolver.GetPhi4();
-        // solver_debug.rphi1 = Rsolver.GetPhi1();
-        // solver_debug.rphi4 = Rsolver.GetPhi4();
+        solver_debug.lphi1 = Lsolver.GetPhi1();
+        solver_debug.lphi4 = Lsolver.GetPhi4();
+        solver_debug.rphi1 = Rsolver.GetPhi1();
+        solver_debug.rphi4 = Rsolver.GetPhi4();
 
-        // solver_debug.ljoint1_tor = LTp[0];
-        // solver_debug.ljoint4_tor = LTp[1];
-        // solver_debug.rjoint1_tor = RTp[0];
-        // solver_debug.rjoint4_tor = RTp[1];
+        solver_debug.ljoint1_tor = LTp[0];
+        solver_debug.ljoint4_tor = LTp[1];
+        solver_debug.rjoint1_tor = RTp[0];
+        solver_debug.rjoint4_tor = RTp[1];
         
-        // solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
-        // solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
-        // solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
-        // solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
+        solver_debug.rwheel_tor_ref = -pendulumctrl.Twr;
+        solver_debug.lwheel_tor_ref = pendulumctrl.Twl;
+        solver_debug.rwheel_tor_fdb = RWheel.motorFeedback.torqueFdb;
+        solver_debug.lwheel_tor_fdb = LWheel.motorFeedback.torqueFdb;
 
-        // solver_debug.ljoint4_pos = LJoint4.motorFeedback.positionFdb;
-        // solver_debug.ljoint1_pos = LJoint1.motorFeedback.positionFdb;
-        // solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
-        // solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
+        solver_debug.ljoint4_pos = LJoint4.motorFeedback.positionFdb;
+        solver_debug.ljoint1_pos = LJoint1.motorFeedback.positionFdb;
+        solver_debug.rjoint4_pos = RJoint4.motorFeedback.positionFdb;
+        solver_debug.rjoint1_pos = RJoint1.motorFeedback.positionFdb;
 
-        // solver_debug.lphi1dot = Lqdot[0];
-        // solver_debug.lphi4dot = Lqdot[1];
-        // solver_debug.rphi1dot = Rqdot[0];
-        // solver_debug.rphi4dot = Rqdot[1];
+        solver_debug.lphi1dot = Lqdot[0];
+        solver_debug.lphi4dot = Lqdot[1];
+        solver_debug.rphi1dot = Rqdot[0];
+        solver_debug.rphi4dot = Rqdot[1];
 
         // solver_debug = solverfdb;
         force_debug.Flreal = TlRev[0];
@@ -277,7 +279,7 @@ __attribute__((section(".RAM_D3"))) force_debug_t force_debug;
         force_debug.N = solverfdb.N;
     #endif
 
-        if (remoter.ctrl_sw == Relax || remoter.offline)
+        if (!cmd.move)
         {
             LJoint4.currentSet = 0;
             LJoint1.currentSet = 0;
