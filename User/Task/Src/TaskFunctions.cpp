@@ -45,7 +45,7 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
 
     /* Slope Updaters */
     SLOPE yaw_updater(0.0f, 0.01f);
-    SLOPE v_updater(0.0f,0.01f);
+    SLOPE v_updater(0.0f,0.005f);
     SLOPE len_updater(0.13f,0.0001f);
 
     /* om publishers */
@@ -137,7 +137,7 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
             {
                 cmd.move = true;
                 cmd.dyaw = yaw_updater.UpdateVal(remoter.left_x);
-                cmd.v = v_updater.UpdateVal(remoter.left_y*0.5f);
+                cmd.v = v_updater.UpdateVal(remoter.left_y*3.0f);
                 cmd.roll = remoter.right_x*0.1f;
                 cmd.w = 0.0f;
             }
@@ -147,9 +147,9 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
                 cmd.w = 3.0f;
                 cmd.dyaw = 0.0f;
                 cmd.v = 0.0f;
-            }   
-        #endif
-            if (fabsf(cmd.v) < 0.002f)
+            }
+
+            if (fabsf(cmd.v) < 0.002f || remoter.ctrl_sw == Spin)
             {
                 if (!maintained_x)
                 {
@@ -162,7 +162,8 @@ __attribute__((section(".RAM_D3"))) msg_remoter_t debug_remoter;
             {   
                 maintained_x = false;
                 cmd.x = odom.x+cmd.v*0.001f;
-            }        
+            }
+        #endif           
         }
 
         /* Publish cmd msg */
