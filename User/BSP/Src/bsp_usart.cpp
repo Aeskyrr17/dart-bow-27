@@ -1,8 +1,8 @@
 #include "bsp_usart.hpp"
 #include "XRobot.hpp"
-#include "referee.hpp"
 #include "config_chassis.hpp"
 #include "config_remoter.hpp"
+#include "config_referee.hpp"
 #include "tx_api.h"
 #include "usart.h"
 
@@ -17,11 +17,12 @@ extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 
 __attribute__((section (".RAM_D1"))) uint8_t UART7RxBuffer[TOF_DATA_SIZE] = {0};
-__attribute__((section (".RAM_D1"))) uint8_t USART1RxBuffer[1] = {0};
+__attribute__((section (".RAM_D1"))) uint8_t USART1RxBuffer[256] = {0};
 extern uint8_t tof_rx[TOF_DATA_SIZE];
 extern uint8_t dr16_rx[DR16_DATA_SIZE];
 extern TX_SEMAPHORE RemoterGot;
 extern TX_SEMAPHORE TOFGot;
+extern RefereeRingBuffer referee_fifo;
 
 /**
  * @brief  Configures the USART.
@@ -36,7 +37,7 @@ void USART_Init()
   __HAL_DMA_ENABLE_IT(&hdma_usart1_rx, DMA_IT_TC);
   __HAL_DMA_DISABLE_IT(&hdma_usart1_tx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_usart1_tx, DMA_IT_TC);
-  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 1);
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 256);
   // uart5
   __HAL_DMA_DISABLE_IT(&hdma_uart5_rx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_uart5_rx, DMA_IT_TC);
@@ -64,5 +65,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     SCB_InvalidateDCache_by_Addr((uint32_t*)tof_rx, TOF_DATA_SIZE);
     tx_semaphore_put(&TOFGot);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart7, tof_rx, TOF_DATA_SIZE);
+  }
+  else if (huart == &huart1) 
+  {
+    SCB_InvalidateDCache_by_Addr((uint32_t*)USART1RxBuffer, 256);
+    referee_fifo.push(USART1RxBuffer, Size);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 256);
   }
 }
