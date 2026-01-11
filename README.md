@@ -1,19 +1,6 @@
 # RM26_H7
-PnX26赛季电控H7开发板通用仓库，只需要做小幅度修改，即可改为F4仓库，根据需要会再开一个F4专用仓库。
-## ToolChain
-使用的工具链为CubeMX+CLion+Ozone，可以实现全平台开发、调试，在合适的系统支持下可以实现快速编译。
-### CubeMX
-用于配置各个外设，生成初始化代码，导出时勾选`STM32CubeIDE`选项，生成的代码可以直接导入CLion。
+PnX26赛季电控H7开发板通用仓库。
 
-在配置时，注意`CmakeLists_template.txt`的更新与书写。
-### CLion
-用于代码编写，代码管理，代码编译，只需配置`arm-none-gebi`编译，可以选择STM32CLT，也可以安装原版，请自行搜索。
-
-在Ubuntu下，`sudo`即可完成安装，无需CLT。
-### Ozone
-用于代码调试，烧录。拥有在线变量观看、曲线图可视化功能，需要搭配jlink使用（特定版本可能支持daplink）
-### 教程
-具体参照 `飞书-电控知识库`。
 ## ThreadX
 ### Intro
 ThreadX 类似freeRTOS, 提供一款线程切换的操作系统API。他的产品涵盖了各种领域，
@@ -125,15 +112,11 @@ for(;;){
 
 ## Structure Design
 用户开发的代码存放在`User`文件夹下，与系统代码分离，方便管理。
-```angular2html
-User
+```bash
 ├─BSP
 │  ├─Inc
 │  └─Src
 ├─Module
-│  ├─AHRS
-│  │  ├─Inc
-│  │  └─Src
 │  ├─DJIMotor
 │  │  ├─Inc
 │  │  └─Src
@@ -152,11 +135,8 @@ User
 │  │  ├─app
 │  │  ├─comp
 │  │  └─core
-│  ├─Referee
-│  ├─RemoteControl
-│  │  ├─Inc
-│  │  └─Src
-│  └─SuperCap
+│  ├─SuperCap
+│  └─UI
 ├─Service
 │  ├─Inc
 │  └─Src
@@ -164,16 +144,18 @@ User
 │  ├─Inc
 │  └─Src
 └─Utils
-├─Inc
-└─Src
+    ├─Inc
+    └─Src
 ```
 对不同分支下主要需要开发的应当只有`Service`和`Task`。
 ### Service
-在该文件夹下，开发Motor、IMU、遥控器等较为底层的模块，为上层控制提供运行基础。在不同分支下，除了Motor部分，基本不需要进行其它修改。
+在Service文件夹下，开发IMU、遥控器、裁判系统等较为底层的模块，为上层控制提供运行基础。在不同分支下基本不需要进行其它修改。
 
 如果有优化一般均为通用优化。
 ### Task
-在该文件夹下，需在不同分支下独立开发，包含对本机器人的所有控制任务。
+在Task文件夹下，需在不同分支下独立开发，包含对本机器人的所有控制任务。
+### Rule
+对于Module开发，只有通用、复杂类需要放到Module，包含成对的.hpp和.cpp文件，保证可读性与易用性。对于单个Service或Task需要的类，即只需要在单线程中创建实例的，请将类.hpp放在Task/Service下的Inc文件夹，实例只在线程中局部使用。
 
 ## Workflow
 在搭建架构的同时，工作流上采用规范注释和单仓库多分支开发的方式，方便协作、版本管理并提高代码可读性、可移植性。
