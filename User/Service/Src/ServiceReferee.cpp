@@ -11,6 +11,12 @@ uint8_t RefereeThreadStack[2048] = {0};
 
 RefereeRingBuffer referee_fifo;
 
+float crc_ok_count;
+float crc_error_count;
+float data_len_error;
+
+GameRobotStatus_t debug_gamerobot;
+
 [[noreturn]] void RefereeThreadFun(ULONG initial_input)
 {
     for(;;)
@@ -37,6 +43,8 @@ RefereeRingBuffer referee_fifo;
         DartClientCmd_t      DartClientCmd;
         RoboInteractData_t    RoboInteractData;
 
+        debug_gamerobot.robot_id = GameRobotStatus.robot_id;
+
         // 每次尽可能多地处理 FIFO 中的数据
         while (referee_fifo.pop(rx_byte))
         {
@@ -60,10 +68,11 @@ RefereeRingBuffer referee_fifo;
                     // 检查 CRC8
                     if (Verify_CRC8_Check_Sum(buffer, 5))
                     {
-                        data_len = (buffer[2] | (buffer[3] << 8)); // data_len 字段
+                        data_len = (buffer[1] | (buffer[2] << 8)); // data_len 字段
                         // 限制最大长度防止溢出
                         if(data_len > 200) 
                         { 
+                            data_len_error++;
                             state = STEP_HEADER_SOF; // 长度异常，丢弃
                         } 
                         else 
@@ -73,6 +82,7 @@ RefereeRingBuffer referee_fifo;
                     }
                     else
                     {
+                        crc_error_count++;
                         state = STEP_HEADER_SOF; // CRC8 错误，重新寻找 SOF
                     }
                 }
@@ -87,6 +97,7 @@ RefereeRingBuffer referee_fifo;
                     // 检查全包 CRC16
                     if (Verify_CRC16_Check_Sum(buffer, index)) 
                     {
+                        crc_ok_count++;
                         uint8_t* msg_ptr = &buffer[5];
                         uint16_t cmd_id = 0;
                         memcpy(&cmd_id, msg_ptr, sizeof(uint16_t));
