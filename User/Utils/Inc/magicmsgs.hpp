@@ -1,6 +1,9 @@
 #pragma once
 
-#include <cstdint>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     Relax = 2,
     Spin = 1,
@@ -145,3 +148,44 @@ struct msg_cmd_t
     bool ifjump;
     bool ifflip;
 };
+
+struct msg_visionrx_t
+{
+    uint8_t header;       // 发送数据包的头
+    uint8_t tracking : 1; // 跟踪的颜色
+    uint8_t fire : 1;     // 是否开火
+    uint8_t id : 4;       // 识别的id
+    uint8_t reserved : 2; // 保留位
+
+    float pitch;
+    float pitch_vel;
+    float pitch_acc;
+    float yaw;
+    float yaw_vel;
+    float yaw_acc;
+
+    float project_x;
+    float project_y;
+
+    uint16_t checksum; // 校验和
+}__attribute__((packed));
+
+struct msg_visiontx_t
+{
+    uint8_t header;           // 发送数据包的头
+    uint8_t detect_color : 1; // 检测到的颜色
+    bool reset_tracker : 1;   // 是否重置追踪
+    uint8_t set_target : 4;   // 设置目标
+    uint8_t reserved : 2;     // 保留位
+    float q1;                 // 四元数
+    float q2;
+    float q3;
+    float q4;
+    float gyro_yaw;
+    float gyro_pitch;
+    uint16_t checksum; // 校验和
+} __attribute__((packed));
+
+#ifdef __cplusplus
+}
+#endif
