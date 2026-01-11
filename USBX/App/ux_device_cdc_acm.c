@@ -27,7 +27,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "om.h"
+#include "crc.hpp"
+#include "magicmsgs.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -179,6 +181,9 @@ VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance)
 
 /* USER CODE BEGIN 2 */
 uint32_t new_data_ = 0;
+
+struct msg_visionrx_t msg_visionrx;
+struct msg_visionrx_t debug_visionrx;
 /**
   * @brief  Function implementing USBX_DEVICE_CDC_ACM_Read_TASK.
   * @param  thread_input: Not used.
@@ -190,6 +195,8 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   UX_PARAMETER_NOT_USED(thread_input);
+
+  om_topic_t *visionrx_topic = om_config_topic(NULL, "ca", "visionrx", sizeof(msg_visionrx));
   // tx_thread_sleep(TX_WAIT_FOREVER);
   while (1)
   {
@@ -199,11 +206,23 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
       ux_device_class_cdc_acm_read(cdc_acm,
                                            (UCHAR *)UserRxBufferFS,
                                            64, &actual_length);
-      new_data_ = actual_length;
+
+      if (actual_length >= sizeof(msg_visionrx))
+      {
+      memcpy(&msg_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
+      }
+      memcpy(&debug_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
       tx_thread_sleep(1);
     }
+    om_publish(visionrx_topic, &msg_visionrx, sizeof(msg_visionrx), true, false);
+    tx_thread_sleep(2);
+
   }
 }
+
+
+struct msg_visiontx_t msg_visiontx;
+struct msg_visiontx_t debug_visiontx;
 
 /**
   * @brief  Function implementing usbx_cdc_acm_write_thread_entry.
@@ -215,22 +234,30 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
   ULONG actual_length, buffsize, buffptr;
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
+  om_suber_t *visiontx_suber = om_subscribe(om_find_topic("visiontx",UINT32_MAX));
+
   UX_PARAMETER_NOT_USED(thread_input);
   tx_thread_sleep(10);
   while (1)
   {
+    om_suber_export(visiontx_suber, &msg_visiontx, sizeof(msg_visiontx));
     tx_thread_sleep(1);
     if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
     {
+      Append_CRC16_Check_Sum((uint8_t *)&msg_visiontx, sizeof(msg_visiontx));
+
+      memcpy(&debug_visiontx, &msg_visiontx, sizeof(msg_visiontx));
+
+      ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_visiontx , sizeof(msg_visiontx) , &actual_length);
       // new_data_ = 10;
-      if (new_data_) {
-        ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , new_data_ , &actual_length);
-        new_data_ = 0;
-      }
-      else {
-        uint8_t test_data_ = 10;
-        ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , test_data_ , &actual_length);
-      }
+      // if (new_data_) {
+      //   ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , new_data_ , &actual_length);
+      //   new_data_ = 0;
+      // }
+      // else {
+      //   uint8_t test_data_ = 10;
+      //   ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , test_data_ , &actual_length);
+      // }
     }
   }
 }
