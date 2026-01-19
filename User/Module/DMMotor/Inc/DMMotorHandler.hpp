@@ -2,6 +2,7 @@
 #define DMMOTORHANDLER_HPP
 
 #include "main.h"
+#include "tx_api.h"
 #include "bsp_can.hpp"
 #include "DMMotor.hpp"
 #include "Math.hpp"

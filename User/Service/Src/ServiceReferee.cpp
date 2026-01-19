@@ -166,5 +166,6 @@ RefereeRingBuffer referee_fifo;
                 break;
             }
         }
+        tx_thread_sleep(1);
     }
 }
