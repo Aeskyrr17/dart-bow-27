@@ -236,12 +236,13 @@ struct msg_motor_ctrl_t {
     float yaw_speed;
     float yaw_torque;
     CTRL_MODE yaw_mode;
-    // float shoot_speed;
-    // float shoot_torque;
-    // CTRL_MODE shoot_mode;
-    // float push_speed;
-    // float push_torque;
-    // CTRL_MODE push_mode;
+
+    float trigger_open;//todo:考虑发角度还是直接硬编码用bool
+    float trigger_lock;
+    
+    float Coil_speed;
+    float Coil_torque;
+    CTRL_MODE Coil_mode;
 };
 
 struct tof_data_t

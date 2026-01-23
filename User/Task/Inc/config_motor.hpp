@@ -9,6 +9,8 @@
 #include "DJIMotorHandler.hpp"
 #include "M3508.hpp"
 
+#include "bsp_pwm.hpp"
+
 #define JH_CMD_SET_MODE    0x23
 #define JH_CMD_SPEED_MODE  0x33
 #define JH_CMD_SET_SPEED   0x33
@@ -56,7 +58,7 @@ public:
     /**
      * @brief 设置电机模式--本工程中使用速度模式
      */
-    void Set_Mode()//设置电机模式--使用速度模式
+    void Set_Mode()//设置电机模式--使用速度模式 //todo:可能不调用，直接提前写入电机驱动板，不知道是否安全
     {
         memset(tx_data,0,8);
         this->tx_data[0] = JH_CMD_SET_MODE;
@@ -66,7 +68,7 @@ public:
     /**
     * @brief 打包速度指令到this->tx_data中
     */
-    void Pack_Target_Speed()//打包速度指令
+    void Pack_Target_Speed()//打包速度指令,封装在SendControlData中
     {
         memset(this->tx_data, 0, 8);
         this->tx_data[0] = JH_CMD_SET_SPEED;
@@ -96,28 +98,56 @@ public:
      * @brief 发送控制数据
      * @param hcan CAN句柄
      */
-    void sendControlData()
+    void SendControlData()
     {
+        Pack_Target_Speed();
         if (this->hcan != nullptr)
-        {
             CAN_Transmit(this->hcan, this->can_id, this->tx_data, 8);
-        }
     }
-
 };
 
 
 //todo:记得重新看PWM，不会写
-struct ServoMotors
+class ServoMotors
 {
-    TIM_HandleTypeDef* htim; // 挂载的定时器
-    uint32_t channel;        // PWM 通道
-    uint16_t open_pwm;       // 开锁 PWM 值
-    uint16_t lock_pwm;       // 关锁 PWM 值
-    void Init()
+    public:
+    TIM_HandleTypeDef* htim; 
+    uint32_t channel;
+
+    float target_angle; //目标角度
+    float open_angle; //打开时的角度
+    float lock_angle; //锁定时的角度
+
+    ServoMotors()
     {
-        //todo:初始化
+        this->htim = nullptr;
+        this->channel = 0;
+        this->open_angle = 0;
+        this->lock_angle = 0;
     }
+
+    void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
+    {
+        this->htim = htim;
+        this->channel = channel;
+        PWM_Start(this->htim, this->channel);
+    }
+
+    void Set_Angle(float angle)
+    {
+        if (this->htim == nullptr) return;
+
+        // 简单限幅?
+        if (angle < 0.0f) angle = 0.0f;
+        if (angle > 180.0f) angle = 180.0f;
+
+        float pulse_ms = 0.5f + (angle / 180.0f) * 2.0f; //角度转脉宽，500us ~ 2500us
+
+        float duty = pulse_ms / 20.0f;
+
+        PWM_SetDutyRatio(this->htim, duty, this->channel);
+    }
+    
 };
 
 
