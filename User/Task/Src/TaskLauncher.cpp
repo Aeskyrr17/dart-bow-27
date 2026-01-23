@@ -27,6 +27,7 @@ uint8_t LauncherThreadStack[2048] = {0};
         om_suber_export(cmd_suber, &cmd, false);
 
         om_publish(motorctrl_topic, &motorctrl, sizeof(msg_motor_ctrl_t), true, false);
+        tx_thread_sleep(1);
     }
 
 }

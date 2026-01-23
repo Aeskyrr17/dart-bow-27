@@ -76,6 +76,7 @@ void Run_Auto_Control();
             cmd.launcher_action = DART_RELAX;
         }
         om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
+        tx_thread_sleep(1);
     }
 }
 

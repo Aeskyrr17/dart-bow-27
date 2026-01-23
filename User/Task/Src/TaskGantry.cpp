@@ -13,5 +13,8 @@ uint8_t GantryThreadStack[2048] = {0};
 
     for (;;) 
     {
+        
+        
+        tx_thread_sleep(1);
     }
 }
