@@ -43,7 +43,7 @@ void TaskMotors::MotorRegister()
  * @brief Set the Mode And Pid Param object
  * @todo 设置电机模式和PID参数
  */
-void SetModeAndPidParam()
+void TaskMotors::SetModeAndPidParam()
 {
 
 }

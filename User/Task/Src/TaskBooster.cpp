@@ -13,15 +13,15 @@ extern TX_THREAD SysctrlThread;
 extern uint8_t SysctrlThreadStack[2048];    
 extern void SysctrlThreadFun(ULONG initial_input);
 
-extern TX_THREAD MotorCtrlThread;
-extern uint8_t MotorCtrlThreadStack[2048];
+extern TX_THREAD MotorThread;
+extern uint8_t MotorThreadStack[2048];
 extern void MotorThreadFun(ULONG initial_input);
 
 extern TX_THREAD GantryThread;
 extern uint8_t GantryThreadStack[2048];
 extern void GantryThreadFun(ULONG initial_input);
 
-//todo:添加其他任务
+//todo:确定优先级
 #define TX_NAME(s) const_cast<CHAR*>(s)
 extern "C" void TaskBooster(void)
 {
@@ -29,5 +29,19 @@ extern "C" void TaskBooster(void)
                      UIThreadStack, sizeof(UIThreadStack),
                      8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    
+    tx_thread_create(&LauncherThread, TX_NAME("LauncherThread"), LauncherThreadFun, 0x1234,
+                     LauncherThreadStack, sizeof(LauncherThreadStack),
+                     7, 7, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&SysctrlThread, TX_NAME("SysctrlThread"), SysctrlThreadFun, 0x1234,
+                     SysctrlThreadStack, sizeof(SysctrlThreadStack),
+                     6, 6, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&MotorThread, TX_NAME("MotorCtrlThread"), MotorThreadFun, 0x1234,
+                     MotorThreadStack, sizeof(MotorThreadStack),
+                     8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&GantryThread, TX_NAME("GantryThread"), GantryThreadFun, 0x1234,
+                     GantryThreadStack, sizeof(GantryThreadStack),
+                     9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
 }
