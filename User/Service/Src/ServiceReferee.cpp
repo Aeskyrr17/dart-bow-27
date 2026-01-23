@@ -60,7 +60,7 @@ RefereeRingBuffer referee_fifo;
                     // 检查 CRC8
                     if (Verify_CRC8_Check_Sum(buffer, 5))
                     {
-                        data_len = (buffer[2] | (buffer[3] << 8)); // data_len 字段
+                        data_len = (buffer[1] | (buffer[2] << 8)); // data_len 字段
                         // 限制最大长度防止溢出
                         if(data_len > 200) 
                         { 
