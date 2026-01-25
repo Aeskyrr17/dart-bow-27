@@ -192,11 +192,9 @@ struct msg_visiontx_t
 typedef enum
 {
     DART_RELAX = 0,     // 放松或急停
-    DART_TENSION = 1,   // 调整弓弦松紧
-    DART_RETRACT = 2,   // 调整弓弦松紧并复位
-    DART_FIRE = 3       // 发射
+    DART_PREPARE= 1,    //调整yaw角度，发射台归位，调整副弦松紧
+    DART_FIRE = 2      // 发射
 }LAUNCHER_ACTION;
-
 
 /**
  * @brief 龙门架动作指令
@@ -207,51 +205,70 @@ typedef enum
     GANRTY_IDLE = 0
 }GANTRY_ACTION;
 
-
-// /**
-//  * @brief 发射机构控制模式
-//  */
-// typedef enum
-// {
-//     AUTO_MODE = 1,
-//     HAND_CONTROL_MODE
-// }LANUCHER_CTRL_MODE;
-
 /**
- * @brief 飞镖cmd，由TaskSysctrl发送给各Task
+ * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher和TaskGantry
  */
 struct msg_cmd_t
 {
     LAUNCHER_ACTION launcher_action; // 飞镖发射指令
     GANTRY_ACTION gantry_action;     // 龙门架动作指令
-    float tension_value;                 //弓弦松紧值，调整飞镖发射速度
+    float final_target_yaw;   //期望角度（已包含offset）
+    float final_target_tension; //拉力值
 };
+
+/**
+ * @brief 由TaskLauncher发送给TaskSysctrl
+ * 
+ */
+ struct msg_launcher_status_t
+ {
+    uint8_t current_state;
+    bool is_fire_finished; //发射是否完成,需要用传感器判断
+ };
+
 
 
 /**
- * @brief 电机控制消息结构
+ * @brief 电机控制消息结构，由Tasklauncher和TaskGantry发送给Taskmotors
  * yaw轴步进电机
  */
 struct msg_motor_ctrl_t {
     float yaw_speed;
     float yaw_torque;
+    float target_yaw;
     CTRL_MODE yaw_mode;
 
-    float trigger_open;//todo:考虑发角度还是直接硬编码用bool
-    float trigger_lock;
-    
+    bool trigger_lock;
+
     float Coil_speed;
     float Coil_torque;
     CTRL_MODE Coil_mode;
+
+    float String_target_force;
 };
 
-struct tof_data_t
+
+// struct tof_data_t
+// {
+//     uint8_t header[2];
+//     uint16_t distance;
+//     uint16_t strength;
+//     uint16_t temp_raw;
+//     uint8_t check_sum;
+// };
+
+
+/**
+ * @brief 储存各传感器的状态
+ * 
+ */
+struct msg_sensors_t
 {
-    uint8_t header[2];
-    uint16_t distance;
-    uint16_t strength;
-    uint16_t temp_raw;
-    uint8_t check_sum;
+    bool is_coil_reset;//卷簧是否归位
+    bool is_door_open;//舱门是否打开
+    bool is_string_tight;//弦是否拉紧
+    float string_force;//副弦力矩
+    bool fire_done; //是否发射完成
 };
 
 
