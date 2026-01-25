@@ -114,16 +114,15 @@ class ServoMotors
     TIM_HandleTypeDef* htim; 
     uint32_t channel;
 
-    float target_angle; //目标角度
-    float open_angle; //打开时的角度
-    float lock_angle; //锁定时的角度
+    float open_pulse; //打开时脉冲
+    float lock_pulse; //锁定时的脉冲
 
     ServoMotors()
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_angle = 0;
-        this->lock_angle = 0;
+        this->open_pulse = 750;
+        this->lock_pulse = 1750;
     }
 
     void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
@@ -131,23 +130,18 @@ class ServoMotors
         this->htim = htim;
         this->channel = channel;
         PWM_Start(this->htim, this->channel);
+        PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
     }
 
-    void Set_Angle(float angle)
+    void Trigger_Open()
     {
-        if (this->htim == nullptr) return;
-
-        // 简单限幅?
-        if (angle < 0.0f) angle = 0.0f;
-        if (angle > 180.0f) angle = 180.0f;
-
-        float pulse_ms = 0.5f + (angle / 180.0f) * 2.0f; //角度转脉宽，500us ~ 2500us
-
-        float duty = pulse_ms / 20.0f;
-
-        PWM_SetDutyRatio(this->htim, duty, this->channel);
+        PWM_SetDutyRatio(this->htim, open_pulse, this->channel); //默认闭合
     }
-    
+
+    void Trigger_Lock()
+    {
+        PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
+    }
 };
 
 
