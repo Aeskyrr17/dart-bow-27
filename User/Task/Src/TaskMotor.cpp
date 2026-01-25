@@ -82,6 +82,12 @@ void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
 
+        //处理扳机
+        if ( motorctrl.trigger_lock)
+            taskmotors.TriggerMotor.Trigger_Lock();
+        else if ( !motorctrl.trigger_lock)
+            taskmotors.TriggerMotor.Trigger_Open();
+
         //计算卷簧电机PID
         if (motorctrl.Coil_mode == SPD)    
         {

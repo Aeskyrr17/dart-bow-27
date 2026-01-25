@@ -172,10 +172,3 @@ void Update_Dart_Index()
     dart_context.last_fire_status = launcher_status.is_fire_finished;//更新状态
 }
 
-
-
-void Find_Dart_Speed()
-{
-
-
-}
