@@ -37,6 +37,9 @@ msg_launcher_status_t msg_launcher_status{};
         om_suber_export(cmd_suber, &cmd, false);
         // om_suber_export(tof_suber, &tof, false);
 
+        msg_motorctrl.trigger_lock = true; //默认情况锁死扳机，只在特定状态中解锁
+        msg_launcher_status.is_fire_finished= false;
+
         //yaw轴控制
         if (dart.current_state != IDLE )
         {
@@ -46,14 +49,13 @@ msg_launcher_status_t msg_launcher_status{};
         {
             msg_motorctrl.target_yaw = 0;
         }
-        
+
         //FSM   
         switch (dart.current_state)
         {
             case IDLE:
                 msg_motorctrl.yaw_speed = 0.0f;
                 msg_motorctrl.Coil_speed = 0.0f;
-                msg_motorctrl.trigger_lock = true;
 
                 // 收到prepare
                 if (cmd.launcher_action == DART_PREPARE) 
@@ -62,7 +64,7 @@ msg_launcher_status_t msg_launcher_status{};
 
             case RETRACTING:
                 msg_motorctrl.Coil_speed = 10.0f;//todo:注意正负号
-
+                msg_motorctrl.trigger_lock = false;//扳机打开
                 if (sensors.is_coil_reset)
                     msg_motorctrl.trigger_lock = true;
                     dart.current_state = LOCKED;
@@ -77,6 +79,7 @@ msg_launcher_status_t msg_launcher_status{};
                 break;
 
             case LOADING:
+                msg_motorctrl.Coil_speed = 0.0f;
                 loading_state.ready_for_loading = true;
                 if (loading_state.load_is_done)
                 {
@@ -84,7 +87,6 @@ msg_launcher_status_t msg_launcher_status{};
                     dart.current_state = TENSIONING;
                 }
                 break;
-
 
             case TENSIONING:
                 msg_motorctrl.String_target_force = cmd.final_target_tension;
@@ -107,7 +109,7 @@ msg_launcher_status_t msg_launcher_status{};
                 break;
 
             case FIRING:
-                msg_motorctrl.trigger_lock = false;
+                msg_motorctrl.trigger_lock = false; //只有在firing阶段才解锁扳机
                 //todo:添加发射完成逻辑
                 if (sensors.fire_done)
                 {

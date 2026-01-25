@@ -25,17 +25,13 @@ PID coilSpringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION
 void TaskMotors::MotorRegister() 
 {
     //左右卷簧电机
-    DJIMotorhandler->registerMotor(&CoilSpringMotorL, &hfdcan1, 0x201); //todo:CAN ID,挂载的CAN口
+    DJIMotorhandler->registerMotor(&CoilSpringMotorL, &hfdcan1, 0x201);
     DJIMotorhandler->registerMotor(&CoilSpringMotorR, &hfdcan1, 0x202);
-    CoilSpringMotorL.controlMode = M3508::RELAX_MODE;
-    CoilSpringMotorR.controlMode = M3508::RELAX_MODE;
-    CoilSpringMotorL.setOutput();
-    CoilSpringMotorR.setOutput();
     CoilSpringMotorL.gearBox = GearBox::GearBox_M3508;
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
 
     //yaw轴电机
-    YawMotor.Init(&hfdcan1, 0x301); //todo:CAN ID,挂载的CAN口
+    YawMotor.Init(&hfdcan1, 0x301);
     //副弦步进电机
     StringMotorL.Init(&hfdcan1, 0x302); 
     StringMotorR.Init(&hfdcan1, 0x303); 
@@ -58,14 +54,14 @@ void TaskMotors::SetModeAndPidParam()
 }
 
 
-void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
-{
-    CoilSpringMotorL.setOutput();
-    CoilSpringMotorR.setOutput();
-    YawMotor.SendControlData();
-    StringMotorL.SendControlData();
-    StringMotorR.SendControlData();
-}
+// void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
+// {
+//     CoilSpringMotorL.setOutput();
+//     CoilSpringMotorR.setOutput();
+//     YawMotor.SendControlData();
+//     StringMotorL.SendControlData();
+//     StringMotorR.SendControlData();
+// }
 
 [[noreturn]] void MotorThreadFun(ULONG initial_input) 
 {
@@ -73,7 +69,6 @@ void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
 
     om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
     struct msg_motor_ctrl_t motorctrl{};
-
 
     taskmotors.MotorRegister();
     taskmotors.SetModeAndPidParam();
@@ -94,7 +89,7 @@ void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
             coilSpringMotorL_spd_pid.ref = motorctrl.Coil_speed;
             coilSpringMotorL_spd_pid.fdb = taskmotors.CoilSpringMotorL.motorFeedback.speedFdb;
             coilSpringMotorL_spd_pid.UpdateResult();
-            taskmotors.CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
+            taskmotors.CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
             coilSpringMotorR_spd_pid.ref = motorctrl.Coil_speed;
             coilSpringMotorR_spd_pid.fdb = taskmotors.CoilSpringMotorR.motorFeedback.speedFdb;
             coilSpringMotorR_spd_pid.UpdateResult();
