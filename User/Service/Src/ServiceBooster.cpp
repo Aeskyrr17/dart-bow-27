@@ -107,9 +107,9 @@ extern "C" void ServiceBooster()
 
     tx_semaphore_create(&IMUThreadSem, TX_NAME("IMUThreadSem"), 0);
 
-    tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
-        IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),
-        4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
+    // tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
+    //     IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),
+    //     4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&RefereeThread, TX_NAME("RefereeThread"),
         RefereeThreadFun, 0x1234, RefereeThreadStack, sizeof(RefereeThreadStack),

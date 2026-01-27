@@ -216,6 +216,7 @@ struct msg_cmd_t
     float final_target_tension; //拉力值
 };
 
+
 /**
  * @brief 由TaskLauncher发送给TaskSysctrl
  * 
@@ -223,7 +224,7 @@ struct msg_cmd_t
  struct msg_launcher_status_t
  {
     uint8_t current_state;
-    bool is_fire_finished; //发射是否完成,需要用传感器判断
+    bool msg_fire_finished; //发射是否完成,需要用传感器判断
  };
 
 
@@ -245,6 +246,8 @@ struct msg_motor_ctrl_t {
     CTRL_MODE Coil_mode;
 
     float String_target_force;
+
+    //todo:添加龙门架电机
 };
 
 
@@ -259,10 +262,10 @@ struct msg_motor_ctrl_t {
 
 
 /**
- * @brief 储存各传感器的状态
+ * @brief 储存各传感器发送的标志位
  * 
  */
-struct msg_sensors_t
+struct msg_sensor_t
 {
     bool is_coil_reset;//卷簧是否归位
     bool is_door_open;//舱门是否打开

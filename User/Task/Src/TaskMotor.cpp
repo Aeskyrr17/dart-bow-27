@@ -77,7 +77,7 @@ void TaskMotors::SetModeAndPidParam()
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
 
-        //处理扳机
+        //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)
             taskmotors.TriggerMotor.Trigger_Lock();
         else if ( !motorctrl.trigger_lock)
