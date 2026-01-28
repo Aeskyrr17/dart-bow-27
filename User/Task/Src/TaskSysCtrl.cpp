@@ -81,7 +81,7 @@ void Run_Hand_Control(msg_remoter_t* remoter, msg_cmd_t* cmd)
     else if (remoter->right_sw == Mid) 
     {
         cmd->launcher_action = DART_PREPARE;
-        cmd->final_target_yaw = remoter->right_x * 100 + my_offset;  //todo:确定摇杆灵敏度,不确定手控模式需不需要加上offset。
+        cmd->final_target_yaw += remoter->right_x * 100 + my_offset;  //todo:确定摇杆灵敏度,不确定手控模式需不需要加上offset。
         cmd->final_target_tension = my_tension;
 
     }
