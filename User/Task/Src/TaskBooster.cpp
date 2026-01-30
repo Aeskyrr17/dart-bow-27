@@ -17,9 +17,9 @@ extern TX_THREAD MotorThread;
 extern uint8_t MotorThreadStack[2048];
 extern void MotorThreadFun(ULONG initial_input);
 
-extern TX_THREAD GantryThread;
-extern uint8_t GantryThreadStack[2048];
-extern void GantryThreadFun(ULONG initial_input);
+extern TX_THREAD SensorThread;
+extern uint8_t SensorThreadStack[2048];
+extern void SensorThreadFun(ULONG initial_input);
 
 //todo:确定优先级
 #define TX_NAME(s) const_cast<CHAR*>(s)
@@ -41,7 +41,7 @@ extern "C" void TaskBooster(void)
                      MotorThreadStack, sizeof(MotorThreadStack),
                      8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    tx_thread_create(&GantryThread, TX_NAME("GantryThread"), GantryThreadFun, 0x1234,
-                     GantryThreadStack, sizeof(GantryThreadStack),
-                     9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
+    // tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
+    //                  SensorThreadStack, sizeof(SensorThreadStack),
+    //                  9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

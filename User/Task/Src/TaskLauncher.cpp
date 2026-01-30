@@ -130,8 +130,6 @@ void Launcher_Init()
     msg_motorctrl.Coil_speed = 0.0f;
     msg_motorctrl.yaw_speed = 0.0f;
     msg_motorctrl.trigger_lock = true;
-
-
 }
 
 /**

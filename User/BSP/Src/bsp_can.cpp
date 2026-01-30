@@ -135,16 +135,16 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     // }
 
     /*--------------------------------------------------步进电机数据--------------------------------------------------*/
-    else if (rx_header.Identifier == taskmotors.YawMotor.can_id || hfdcan == taskmotors.YawMotor.hcan)
-    {
-        taskmotors.YawMotor.UpdateFeedback(rx_data);
-    }
-    else if (rx_header.Identifier == taskmotors.StringMotorL.can_id || hfdcan == taskmotors.StringMotorL.hcan)
-    {
-        taskmotors.StringMotorL.UpdateFeedback(rx_data);
-    }
-    else if (rx_header.Identifier == taskmotors.StringMotorR.can_id || hfdcan == taskmotors.StringMotorR.hcan)
-    {
-        taskmotors.StringMotorR.UpdateFeedback(rx_data);
-    }
+//     else if (rx_header.Identifier == taskmotors.YawMotor.can_id || hfdcan == taskmotors.YawMotor.hcan)
+//     {
+//         taskmotors.YawMotor.UpdateFeedback(rx_data);
+//     }
+//     else if (rx_header.Identifier == taskmotors.StringMotorL.can_id || hfdcan == taskmotors.StringMotorL.hcan)
+//     {
+//         taskmotors.StringMotorL.UpdateFeedback(rx_data);
+//     }
+//     else if (rx_header.Identifier == taskmotors.StringMotorR.can_id || hfdcan == taskmotors.StringMotorR.hcan)
+//     {
+//         taskmotors.StringMotorR.UpdateFeedback(rx_data);
+//     }
 }
