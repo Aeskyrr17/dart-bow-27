@@ -121,6 +121,7 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM5_Init();
   MX_TIM24_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
   bsp_Init();
   /* USER CODE END 2 */
