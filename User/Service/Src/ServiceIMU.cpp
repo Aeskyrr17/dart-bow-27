@@ -57,8 +57,8 @@ TX_SEMAPHORE IMUThreadSem;
     {
         thread_start_time = tx_time_get();
 
-        if (!imu_handler->self_test.INIT_ERR) 
-        {
+        // if (!imu_handler->self_test.INIT_ERR) 
+        // {
             imu_handler->ReadAccData(&imu_handler->acc_data);
             imu_handler->ReadGyroData(&imu_handler->gyro_data);
             qekf.UpdateKalman(
@@ -67,7 +67,7 @@ TX_SEMAPHORE IMUThreadSem;
                 DWT_GetDeltaT(&INS_Count)
             );
             
-        }
+        // }
 
         tx_semaphore_put(&IMUThreadSem);
 

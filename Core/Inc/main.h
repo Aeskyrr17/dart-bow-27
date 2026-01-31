@@ -69,8 +69,8 @@ void Error_Handler(void);
 #define GYRO_INT_GPIO_Port GPIOE
 #define DIR_L_Pin GPIO_PIN_14
 #define DIR_L_GPIO_Port GPIOE
-#define TENSION_CS_Pin GPIO_PIN_1
-#define TENSION_CS_GPIO_Port GPIOE
+#define TENSION_SS_Pin GPIO_PIN_1
+#define TENSION_SS_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 
