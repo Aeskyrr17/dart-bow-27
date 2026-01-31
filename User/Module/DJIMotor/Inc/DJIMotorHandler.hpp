@@ -77,6 +77,8 @@ public:
 
     void UpdateSensorData(DJIMotor *motor, uint8_t *can_receive_data);
 
+    void ResetMotorPosFeedback(DJIMotor *motor);// 重置电机位置反馈为当前位置,消除编码器初始值偏移，在电机初始化后，更新过一次CAN消息后调用
+
     static DJIMotorHandler *Instance()
     {
         static DJIMotorHandler instance;
