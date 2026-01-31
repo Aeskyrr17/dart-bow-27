@@ -182,17 +182,41 @@ void DJIMotorHandler::UpdateSensorData(DJIMotor *motor, uint8_t *can_data)
 
     case GearBox_M2006:
         motor->motorFeedback.speedFdb = motor->motorFeedback.speed_rpm * motor->gearRatio_Rpm2Rps.M2006;
-        motor->motorFeedback.positionFdb += FloatConstrain((motor->motorFeedback.ecd - motor->motorFeedback.last_ecd) * motor->gearRatio_Pos2Rad.M2006, - motor->gearRatio_PI.M2006, motor->gearRatio_PI.M2006);
+        if( motor->motorFeedback.ecd - motor->motorFeedback.last_ecd > 4096)
+        {
+            motor->motorFeedback.ecd_cnt--;
+        }
+        else if(motor->motorFeedback.ecd - motor->motorFeedback.last_ecd < -4096)
+        {
+            motor->motorFeedback.ecd_cnt++;
+        }
+        motor->motorFeedback.positionFdb= (motor->motorFeedback.ecd + motor->motorFeedback.ecd_cnt * 8192 - motor->motorFeedback.ecd_offset) * motor->gearRatio_Pos2Rad.M2006;
         break;
 
     case GearBox_M3508:
         motor->motorFeedback.speedFdb = motor->motorFeedback.speed_rpm * motor->gearRatio_Rpm2Rps.M3508;
-        motor->motorFeedback.positionFdb += FloatConstrain((motor->motorFeedback.ecd - motor->motorFeedback.last_ecd) * motor->gearRatio_Pos2Rad.M3508, - motor->gearRatio_PI.M3508, motor->gearRatio_PI.M3508);
+        if( motor->motorFeedback.ecd - motor->motorFeedback.last_ecd > 4096)
+        {
+            motor->motorFeedback.ecd_cnt--;
+        }
+        else if(motor->motorFeedback.ecd - motor->motorFeedback.last_ecd < -4096)
+        {
+            motor->motorFeedback.ecd_cnt++;
+        }
+        motor->motorFeedback.positionFdb= (motor->motorFeedback.ecd + motor->motorFeedback.ecd_cnt * 8192 - motor->motorFeedback.ecd_offset) * motor->gearRatio_Pos2Rad.M3508;
         break;
 
     case GearBox_XRoll:
         motor->motorFeedback.speedFdb = motor->motorFeedback.speed_rpm * motor->gearRatio_Rpm2Rps.XRoll;
-        motor->motorFeedback.positionFdb += FloatConstrain((motor->motorFeedback.ecd - motor->motorFeedback.last_ecd) * motor->gearRatio_Pos2Rad.XRoll, - motor->gearRatio_PI.XRoll, motor->gearRatio_PI.XRoll);
+        if( motor->motorFeedback.ecd - motor->motorFeedback.last_ecd > 4096)
+        {
+            motor->motorFeedback.ecd_cnt--;
+        }
+        else if(motor->motorFeedback.ecd - motor->motorFeedback.last_ecd < -4096)
+        {
+            motor->motorFeedback.ecd_cnt++;
+        }
+        motor->motorFeedback.positionFdb= (motor->motorFeedback.ecd + motor->motorFeedback.ecd_cnt * 8192 - motor->motorFeedback.ecd_offset) * motor->gearRatio_Pos2Rad.XRoll;
         break;
 
     default:
@@ -234,4 +258,12 @@ void DJIMotorHandler::AllMotorBlockedCheck()
             }
         }
     }
+}
+
+void DJIMotorHandler::ResetMotorPosFeedback(DJIMotor *motor)
+{
+    motor->motorFeedback.ecd_offset = motor->motorFeedback.ecd;
+    motor->motorFeedback.ecd_cnt = 0;
+    motor->motorFeedback.total_cnt = 0;
+    motor->motorFeedback.positionFdb = 0;
 }
