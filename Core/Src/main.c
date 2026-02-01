@@ -112,7 +112,6 @@ int main(void)
   MX_SPI6_Init();
   MX_TIM12_Init();
   MX_UART7_Init();
-  MX_SPI2_Init();
   MX_TIM3_Init();
   MX_TIM2_Init();
   MX_CRC_Init();
@@ -122,6 +121,10 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM24_Init();
   MX_UART5_Init();
+  MX_SPI3_Init();
+  MX_TIM16_Init();
+  MX_TIM17_Init();
+  MX_USART10_UART_Init();
   /* USER CODE BEGIN 2 */
   bsp_Init();
   /* USER CODE END 2 */

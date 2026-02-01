@@ -66,8 +66,8 @@ void TaskMotors::SetModeAndPidParam()
 {
     UNUSED(initial_input); 
 
-    om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
-    struct msg_motor_ctrl_t motorctrl{};
+    // om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
+    // struct msg_motor_ctrl_t motorctrl{};
 
     // motors.MotorRegister();
     // motors.SetModeAndPidParam();
@@ -77,11 +77,15 @@ void TaskMotors::SetModeAndPidParam()
     bool hasStarted = false;
     bool isrev = false;
 
+    if (motors.StringMotorR.pwmTim == NULL) {
+
+        while(1); 
+    }
     
 
     for (;;)
     {
-        om_suber_export(motorctrl_suber, &motorctrl, false);
+        // om_suber_export(motorctrl_suber, &motorctrl, false);
 
         // //撒放机构处理逻辑
         // if ( motorctrl.trigger_lock)
@@ -121,17 +125,17 @@ void TaskMotors::SetModeAndPidParam()
         // motors.StringMotorR.targetSpeed =6000.0f;
         // motors.StringMotorR.SendControlData();
 
-            if (hasStarted == false)
-            {
-            for(int i =500; i <= 2000; i += 100) 
-            {
-                motors.StringMotorR.targetSpeed = (float)i;
-                motors.StringMotorR.SendControlData();
-                tx_thread_sleep(10); // 每 10ms 加速一点点
-            }
-            hasStarted = true;
-            isrev = false;
-            }
+            // if (hasStarted == false)
+            // {
+            // for(int i =500; i <= 2000; i += 100) 
+            // {
+            //     motors.StringMotorR.targetSpeed = (float)i;
+            //     motors.StringMotorR.SendControlData();
+            //     tx_thread_sleep(10); // 每 10ms 加速一点点
+            // }
+            // hasStarted = true;
+            // isrev = false;
+            // }
 
             // if (isrev == true)
             // {
@@ -147,8 +151,19 @@ void TaskMotors::SetModeAndPidParam()
         // motors.StringMotorR.targetSpeed = -2000.0f;
         // motors.StringMotorR.SendControlData();
         //         tx_thread_sleep(1000); 
-        motors.StringMotorR.targetSpeed = 2000.0f;
+                HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+        motors.StringMotorR.targetSpeed = 1000.0f;
         motors.StringMotorR.SendControlData();
+                        tx_thread_sleep(1000); 
+               motors.StringMotorR.targetSpeed = 500.0f;
+        motors.StringMotorR.SendControlData();
+                tx_thread_sleep(1000); 
+               motors.StringMotorR.targetSpeed = 2000.0f;
+        motors.StringMotorR.SendControlData();
+                tx_thread_sleep(1000); 
+               motors.StringMotorR.targetSpeed =1000.0f;
+        motors.StringMotorR.SendControlData();
+                tx_thread_sleep(1000); 
         //         tx_thread_sleep(1000); 
 
         // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
