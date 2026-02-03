@@ -24,7 +24,7 @@ void Dart_Load();
     UNUSED(initial_input); 
 
     om_topic_t *motorctrl_topic = om_config_topic(nullptr, "ca", "motorctrl", sizeof(msg_motor_ctrl_t));
-    om_topic_t *launcherstatus_topic = om_config_topic(nullptr, "ca", "launcherstatus", sizeof(msg_launcher_status_t));
+    // om_topic_t *launcherstatus_topic = om_config_topic(nullptr, "ca", "launcherstatus", sizeof(msg_launcher_status_t));
 
     om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
     om_suber_t *ins_suber = om_subscribe(om_find_topic("ins", UINT32_MAX));
@@ -58,7 +58,6 @@ void Dart_Load();
                 msg_motorctrl.yaw_speed = 0.0f;
                 msg_motorctrl.Coil_speed = 0.0f;
 
-                // 收到prepare
                 if (cmd.launcher_action == DART_PREPARE) 
                     launcher.current_state = RESETTING;
                 break;
