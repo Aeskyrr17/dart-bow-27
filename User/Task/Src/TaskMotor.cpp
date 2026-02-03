@@ -151,19 +151,14 @@ void TaskMotors::SetModeAndPidParam()
         // motors.StringMotorR.targetSpeed = -2000.0f;
         // motors.StringMotorR.SendControlData();
         //         tx_thread_sleep(1000); 
-                HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-        motors.StringMotorR.targetSpeed = 1000.0f;
-        motors.StringMotorR.SendControlData();
-                        tx_thread_sleep(1000); 
-               motors.StringMotorR.targetSpeed = 500.0f;
-        motors.StringMotorR.SendControlData();
-                tx_thread_sleep(1000); 
-               motors.StringMotorR.targetSpeed = 2000.0f;
-        motors.StringMotorR.SendControlData();
-                tx_thread_sleep(1000); 
-               motors.StringMotorR.targetSpeed =1000.0f;
-        motors.StringMotorR.SendControlData();
-                tx_thread_sleep(1000); 
+        motors.StringMotorR.SetTargetSpeed(3000);
+        tx_thread_sleep(3000); 
+        motors.StringMotorR.SetTargetSpeed(0);
+        tx_thread_sleep(3000); 
+        motors.StringMotorR.SetTargetSpeed(-3000);
+        tx_thread_sleep(3000); 
+
+
         //         tx_thread_sleep(1000); 
 
         // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
@@ -199,4 +194,15 @@ void TaskMotors::SetModeAndPidParam()
 
 
 
- 
+ /**
+ * @brief PWM中断回调函数
+ * 
+ * @param htim tim句柄
+ */
+ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim == motors.StringMotorR.pwmTim) 
+    {
+        motors.StringMotorR.HandleInterrupt();
+    }
+}

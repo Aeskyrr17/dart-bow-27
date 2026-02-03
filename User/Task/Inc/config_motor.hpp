@@ -74,12 +74,11 @@ class TaskMotors
     void Init();
 
     //todo:再检查有没有引脚冲突
-    void StringMotorL_Init()
+     void StringMotorL_Init()
     {
         this->StringMotorL.Init(
             &htim4,            
             TIM_CHANNEL_3,    
-            &htim5,          
             GPIOE,                  // 方向引脚 (L_DIR)
             GPIO_PIN_14,             // PE14 
             false                   //todo:确定方向
@@ -90,13 +89,13 @@ class TaskMotors
     {
         this->StringMotorR.Init(
             &htim2,            
-            TIM_CHANNEL_3,    
-            &htim24,          
+            TIM_CHANNEL_3,        
             GPIOA,                  // 方向引脚 (R_DIR)
             GPIO_PIN_0,              // PA0
-            false                   //todo:确定方向
+            true                   //todo:确定方向
         );
     }
+
 
 };
 
