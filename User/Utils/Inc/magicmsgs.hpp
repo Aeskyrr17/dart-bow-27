@@ -270,7 +270,8 @@ struct msg_sensor_t
     bool is_coil_reset;//卷簧是否归位
     bool is_door_open;//舱门是否打开
     bool is_string_tight;//弦是否拉紧
-    float string_force;//副弦力矩
+    float string_L_force;//左副弦力矩
+    float string_R_force;//右副弦力矩
     bool fire_done; //是否发射完成
 };
 

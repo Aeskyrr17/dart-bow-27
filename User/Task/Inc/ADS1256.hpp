@@ -81,11 +81,12 @@
 #define ADS1256_DRATE_5SPS      0x13 
 #define ADS1256_DRATE_2_5SPS    0x03
 
-signed int ADS1256ReadData(unsigned char channel);
+void ADS1256WREG(unsigned char reg_addr,unsigned char databyte);
+int32_t ADS1256ReadData(uint8_t channel);
+void ADS1256_SendCmd(uint8_t cmd);
 void ADS1256_Init(void);   //初始化ADS1256
-void Init_ADS1256_GPIO(void);
+
 
 #endif
-
 
 
