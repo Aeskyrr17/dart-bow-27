@@ -3,7 +3,7 @@
 #include "DJIMotorHandler.hpp"
 #include "LKMotorHandler.hpp"
 #include "DMMotorHandler.hpp"
-#include "config_motor.hpp"
+
 
 #include "om.h"
 #include "magicmsgs.hpp"
@@ -12,7 +12,7 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
-extern TaskMotors taskmotors;      //引用在TaskMotor.cpp中定义的taskmotors对象
+// extern TaskMotors taskmotors;      //引用在TaskMotor.cpp中定义的taskmotors对象
 
 // uint8_t xyAndRefAngleMsg[8] = {0};
 // uint8_t StateAnduiMsg[8] = {0};
