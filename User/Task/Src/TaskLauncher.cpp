@@ -108,7 +108,7 @@ void Dart_Load();
 
             case FIRING:
                 msg_motorctrl.trigger_lock = false; //解锁扳机
-                if (sensor.fire_done)
+                if (sensor.is_fire_done)
                 {
                     launcher.current_state = RESETTING;
                 }

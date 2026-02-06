@@ -41,7 +41,7 @@ extern "C" void TaskBooster(void)
                      MotorThreadStack, sizeof(MotorThreadStack),
                      8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    // tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
-    //                  SensorThreadStack, sizeof(SensorThreadStack),
-    //                  9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
+    tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
+                     SensorThreadStack, sizeof(SensorThreadStack),
+                     9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

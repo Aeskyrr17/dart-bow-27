@@ -1,23 +1,25 @@
-/*
- * ADS1120.c
- * 适配 ThreadX 与 STM32H7
+/**
+ * 此工程中将DOUT/DRDY都接到MISO,若后续需要修改，需需要修改ADS1120_init
+ * 
  */
 
 #include "ADS1120.hpp"
 #include "main.h"
 #include "tx_api.h" 
 
-//在此处修改引脚定义
-#define PORT_DRDY               GPIOE
-#define PIN_DRDY                GPIO_PIN_1
+//在此处修改引脚定义,此工程中将DOUT/DRDY都接到MISO
+#define PORT_DRDY               GPIOC
+#define PIN_DRDY                GPIO_PIN_11
+
+//此工程中CS直接接GND，所以此处引脚填一个没有使用的
 #define PORT_CS                 GPIOE
-#define PIN_CS                  GPIO_PIN_0
+#define PIN_CS                  GPIO_PIN_5
 
 extern SPI_HandleTypeDef hspi3; 
 
 #define ADS_SPI_HANDLER         &hspi3
 
-extern TX_SEMAPHORE ads_drdy_sem;
+// extern TX_SEMAPHORE ads_drdy_sem;
 
 
 
@@ -44,16 +46,15 @@ uint8_t ADS1120_init(ADS1120_params *adsParam){
     adsParam->convMode = ADS1120_SINGLE_SHOT;
 
     ADS1120_reset(adsParam);
-    
-    // 配置默认寄存器状态
-    // 这里我们可以根据需要修改，比如默认不做任何事
-    
-    // 检查芯片是否在线 (通过写 PGA Bypass 位并回读验证)
+
+    ADS1120_writeRegister(adsParam, ADS1120_CONF_REG_3, 0x02);//若需要修改DRDY引脚则需要修改
+    tx_thread_sleep(1);
+
+    // 检查芯片是否在线
     uint8_t ctrlVal = 0;
     ADS1120_bypassPGA(adsParam, true); 
     ctrlVal = ADS1120_readRegister(adsParam, ADS1120_CONF_REG_0);
     
-    // 如果读回来的最低位是 1，说明写进去了，芯片活着
     bool isConnected = (ctrlVal & 0x01);
     
     ADS1120_bypassPGA(adsParam, false); // 恢复默认
@@ -260,14 +261,14 @@ uint16_t ADS1120_readResult(ADS1120_params *adsParam){
     }
     
     //使用信号量等待 DRDY，设置超时 200 ticks
-    if (tx_semaphore_get(&ads_drdy_sem, 200) != TX_SUCCESS) {
-        return 0; // 超时返回 0
-    }
+    // if (tx_semaphore_get(&ads_drdy_sem, 200) != TX_SUCCESS) {
+    //     return 0; // 超时返回 0
+    // }
 
     // 若不使用semaphore，可替换为while等待，直到DRDY变低（阻塞）
     // 注意：ADS1120 数据准备好时 DRDY 会拉低
 
-    // while(HAL_GPIO_ReadPin(adsParam->drdyPort, adsParam->drdyPin) == GPIO_PIN_SET);
+    while(HAL_GPIO_ReadPin(adsParam->drdyPort, adsParam->drdyPin) == GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(adsParam->csPort, adsParam->csPin, GPIO_PIN_RESET);    // ADS1120 只有 16 位，读 2 个字节
     HAL_SPI_Receive(adsParam->adsSpi, buf, 2, 100); 
@@ -350,7 +351,7 @@ void ADS1120_writeRegister(ADS1120_params *adsParam, uint8_t reg, uint8_t val){
     
     uint8_t buf[1] = { (uint8_t)(ADS1120_WREG | (reg << 2)) };
     
-    HAL_SPI_Transmit(adsParam->adsSpi, buf, 1, 100);
+    HAL_SPI_Transmit(adsParam->adsSpi, buf, 1, 100000000);
     HAL_SPI_Transmit(adsParam->adsSpi, &val, 1, 100);
 
     HAL_GPIO_WritePin(adsParam->csPort, adsParam->csPin, GPIO_PIN_SET);
@@ -361,3 +362,4 @@ void ADS1120_command(ADS1120_params *adsParam, uint8_t cmd){
     HAL_SPI_Transmit(adsParam->adsSpi, &cmd, 1, 100);
     HAL_GPIO_WritePin(adsParam->csPort, adsParam->csPin, GPIO_PIN_SET);
 }
+
