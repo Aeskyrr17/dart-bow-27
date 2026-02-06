@@ -25,6 +25,11 @@ M3508::M3508()
     motorFeedback.positionFdb = 0;
     motorFeedback.lastPositionFdb = 0;
     motorFeedback.temperatureFdb = 0;
+    motorFeedback.ecd_cnt = 0;
+    motorFeedback.total_cnt = 0;
+    motorFeedback.last_ecd = 0;
+    motorFeedback.ecd = 0;
+    motorFeedback.ecd_offset = 0;
 
     // pid初始化
     speedPid.mode = PID_POSITION;

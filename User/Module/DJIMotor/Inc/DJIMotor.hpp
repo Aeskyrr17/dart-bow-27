@@ -104,10 +104,11 @@ public:
      * @brief 电机反馈数据的结构体，包括电机的各种物理量反馈。
      * 结构体中包含了电机的电流、速度、位置等信息，以及电机的温度等状态反馈。
      */
-    struct MotorFeedBack
+  struct MotorFeedBack
     {
         int16_t last_ecd;      ///< 上次电机编码器的读数
         uint16_t ecd;          ///< 当前电机编码器的读数
+        uint16_t ecd_offset;   ///< 电机编码器的初始偏移值
         int16_t speed_rpm;     ///< 电机的转速，单位rpm
         float currentFdb;    ///< 电机电流反馈
         float speedFdb;        ///< 电机当前速度反馈, 单位rad/s
@@ -115,6 +116,9 @@ public:
         float positionFdb;     ///< 电机当前位置反馈
         float lastPositionFdb; ///< 上次记录的电机位置
         float temperatureFdb;  ///< 电机温度反馈
+        int8_t ecd_cnt;    ///< 电机编码器计数圈数
+        int16_t total_cnt; /// 电机总圈数
+
     };
 
     MotorStateTypedef MotorState;
@@ -155,7 +159,7 @@ public:
     /**
      * @brief 构造函数
      */
-    DJIMotor()
+     DJIMotor()
     {
         controlMode = RELAX_MODE;
 
@@ -170,6 +174,11 @@ public:
         motorFeedback.positionFdb = 0;
         motorFeedback.lastPositionFdb = 0;
         motorFeedback.temperatureFdb = 0;
+        motorFeedback.ecd_cnt = 0;
+        motorFeedback.total_cnt = 0;
+        motorFeedback.last_ecd = 0;
+        motorFeedback.ecd = 0;
+        motorFeedback.ecd_offset = 0;
 
         MotorState = MOTOR_OFFLINE;
     }
