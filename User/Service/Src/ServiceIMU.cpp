@@ -40,11 +40,10 @@ TX_SEMAPHORE IMUThreadSem;
     imu_handler->VerifyAccChipID();     //< 验证加速度计ID
     imu_handler->VerifyGyroChipID();    //< 验证陀螺仪ID
 
-    while (imu_handler->acc_data.temperature < 45.0f) 
+    while (imu_handler->acc_data.temperature < 40.0f) 
     {
         tx_thread_sleep(100);
     }
-    // tx_thread_sleep(2000);
     imu_handler->self_test.INIT_ERR = false;
 
     imu_handler->Calibrate();          //< 标定陀螺仪
@@ -69,6 +68,8 @@ TX_SEMAPHORE IMUThreadSem;
             
         }
 
+        tx_semaphore_put(&IMUThreadSem);
+        tx_semaphore_put(&IMUThreadSem);
         tx_semaphore_put(&IMUThreadSem);
 
         memcpy(msg_ins.quaternion, qekf.q, sizeof(qekf.q));
@@ -118,11 +119,37 @@ uint8_t IMUTempThreadStack[1024] = {0};
         tx_thread_suspend(&IMUTempThread);
     }
 
+    uint32_t init_heating_count = 0;
+
     for (;;) 
     {
-
         imu_handler->ReadAccTemperature(&imu_handler->acc_data.temperature);
-        imu_handler->TemperatureControl(imu_handler->TargetTemp);
+        if (imu_handler->acc_data.temperature > 55.0f)
+        {
+            PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, 0, TIM_CHANNEL_4);
+        }
+        else 
+        {
+            if (imu_handler->acc_data.temperature < 45.0f)
+            {
+                if (init_heating_count < 2)
+                {
+                    init_heating_count++;
+                    imu_handler->TemperatureControl(imu_handler->TargetTemp); // 初始加热功率
+                }
+                else
+                {
+                    init_heating_count++;
+                    PWM_SetDutyRatio(&HEATING_RESISTANCE_TIM, 0, TIM_CHANNEL_4);
+                    if (init_heating_count == 8) 
+                    {
+                        init_heating_count = 0;
+                    }
+                }
+            }
+            else
+                imu_handler->TemperatureControl(imu_handler->TargetTemp);
+        }
         tx_thread_sleep(125);
     }
 }
