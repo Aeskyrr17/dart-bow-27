@@ -33,4 +33,11 @@ void CAN_Transmit(FDCAN_HandleTypeDef *hcan, uint32_t Id, uint8_t *msg, uint16_t
  */
 void CAN_Receive();
 
+/**
+ * @brief can发送多字节数据,用于ZDT步进电机
+ * 
+ * @param cmd 
+ * @param len 
+ */
+void can_SendCmd(FDCAN_HandleTypeDef *hfdcan, uint8_t *cmd, uint8_t len);
 #endif // BSP_CAN_HPP

@@ -3,7 +3,7 @@
 #include "DJIMotorHandler.hpp"
 #include "LKMotorHandler.hpp"
 #include "DMMotorHandler.hpp"
-
+#include "config_motor.hpp"
 
 #include "om.h"
 #include "magicmsgs.hpp"
@@ -11,8 +11,6 @@
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
-
-// extern TaskMotors taskmotors;      //引用在TaskMotor.cpp中定义的taskmotors对象
 
 // uint8_t xyAndRefAngleMsg[8] = {0};
 // uint8_t StateAnduiMsg[8] = {0};
@@ -42,6 +40,9 @@ void CAN_Init(void)
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan2, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_Start(&hfdcan2);
+
+    //can3挂载的步进电机使用拓展帧
+    FDCAN_FilterConfig.IdType = FDCAN_EXTENDED_ID; 
 
     HAL_FDCAN_ConfigFilter(&hfdcan3, &FDCAN_FilterConfig);
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan3, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
@@ -78,6 +79,22 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     FDCAN_RxHeaderTypeDef rx_header;
     uint8_t rx_data[8];
     HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data);
+
+    /*--------------------------------------------------步进电机数据--------------------------------------------------*/
+    //由于张大头步进电机的id是动态的（ID = (功能码*32) + 设备ID），先处理can3数据
+    if (hfdcan == &hfdcan3)
+    {
+       uint8_t motor_id = (uint8_t)((rx_header.Identifier >> 8) & 0xFF);
+        
+        // 手动分发给对应的实例
+        if (motor_id == TaskMotors::Instance()->StringMotorL._id) {
+            TaskMotors::Instance()->StringMotorL.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
+        }
+        else if (motor_id == TaskMotors::Instance()->StringMotorR._id) {
+            TaskMotors::Instance()->StringMotorR.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
+        }
+    }
+    
     /*-------------------------------------------------大疆电机数据-------------------------------------------------*/
     if (rx_header.Identifier >= 0x201 && rx_header.Identifier <= 0x208)
     {
@@ -92,21 +109,21 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     }
 
     /*--------------------------------------------------LK电机数据--------------------------------------------------*/
-    else if (rx_header.Identifier >= 0x140 && rx_header.Identifier <= 0x160)
-    {
-        if (hfdcan == &hfdcan1)
-        {
-            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-        }
-        else if (hfdcan == &hfdcan2) // 处理CAN2的数据
-        {
-            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-        }
-        else if (hfdcan == &hfdcan3) // 处理CAN3的数据
-        {
-            LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
-        }
-    }
+    // else if (rx_header.Identifier >= 0x140 && rx_header.Identifier <= 0x160)
+    // {
+    //     if (hfdcan == &hfdcan1)
+    //     {
+    //         LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+    //     }
+    //     else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+    //     {
+    //         LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+    //     }
+    //     else if (hfdcan == &hfdcan3) // 处理CAN3的数据
+    //     {
+    //         LKMotorHandler::Instance()->updateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x141));
+    //     }
+    // }
 
     /*--------------------------------------------------达妙电机数据--------------------------------------------------*/
     // else if (rx_header.Identifier >= 0x05 && rx_header.Identifier <= 0x08)//Master ID 数值范围，自己在上位机定义
@@ -134,17 +151,57 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     //     }
     // }
 
-    /*--------------------------------------------------步进电机数据--------------------------------------------------*/
-//     else if (rx_header.Identifier == taskmotors.YawMotor.can_id || hfdcan == taskmotors.YawMotor.hcan)
-//     {
-//         taskmotors.YawMotor.UpdateFeedback(rx_data);
-//     }
-//     else if (rx_header.Identifier == taskmotors.StringMotorL.can_id || hfdcan == taskmotors.StringMotorL.hcan)
-//     {
-//         taskmotors.StringMotorL.UpdateFeedback(rx_data);
-//     }
-//     else if (rx_header.Identifier == taskmotors.StringMotorR.can_id || hfdcan == taskmotors.StringMotorR.hcan)
-//     {
-//         taskmotors.StringMotorR.UpdateFeedback(rx_data);
-//     }
+
+}
+
+static uint32_t fdcan_len_to_dlc(uint8_t len)
+{
+    switch (len) 
+    {
+    case 0: return FDCAN_DLC_BYTES_0;
+    case 1: return FDCAN_DLC_BYTES_1;
+    case 2: return FDCAN_DLC_BYTES_2;
+    case 3: return FDCAN_DLC_BYTES_3;
+    case 4: return FDCAN_DLC_BYTES_4;
+    case 5: return FDCAN_DLC_BYTES_5;
+    case 6: return FDCAN_DLC_BYTES_6;
+    case 7: return FDCAN_DLC_BYTES_7;
+    default: return FDCAN_DLC_BYTES_8;
+    }
+}
+
+/**
+ * @brief can发送多字节数据,用于ZDT步进电机
+ * 
+ */
+void can_SendCmd(FDCAN_HandleTypeDef *hfdcan, uint8_t *cmd, uint8_t len)
+{
+    uint8_t i = 0, packNum = 0;
+    uint8_t payload_len = (len >= 2) ? (len - 2) : 0;
+    uint8_t data[8];
+
+    FDCAN_TxHeaderTypeDef tx = {0};
+    tx.IdType = FDCAN_EXTENDED_ID;      // 扩展ID
+    tx.TxFrameType = FDCAN_DATA_FRAME;
+    tx.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    tx.BitRateSwitch = FDCAN_BRS_OFF;
+    tx.FDFormat = FDCAN_CLASSIC_CAN;    // 经典CAN分包
+    tx.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    tx.MessageMarker = 0;
+
+    while (i < payload_len) {
+        uint8_t remain = payload_len - i;
+        uint8_t chunk = (remain < 7) ? remain : 7;
+
+        tx.Identifier = ((uint32_t)cmd[0] << 8) | packNum;
+        data[0] = cmd[1];
+        for (uint8_t l = 0; l < chunk; ++l) {
+            data[l + 1] = cmd[i + 2 + l];
+        }
+        tx.DataLength = fdcan_len_to_dlc((uint8_t)(chunk + 1));
+
+        while (HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &tx, data) != HAL_OK) {}  
+        ++packNum;
+        i += chunk;
+    }
 }
