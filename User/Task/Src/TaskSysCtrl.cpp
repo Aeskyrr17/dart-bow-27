@@ -1,5 +1,4 @@
 #include "main.h"
-#include "om_msg.h"
 #include "tx_api.h"
 
 #include "om.h"
@@ -15,6 +14,7 @@ void Run_Hand_Control(msg_remoter_t* remoter, msg_cmd_t* cmd);
 void Run_Auto_Control();
 
 msg_cmd_t msg_cmd{};
+msg_visiontx_t msg_vision_tx{};
 msg_remoter_t remoter{};
 msg_launcher_status_t launcher_status{};
 
@@ -25,17 +25,20 @@ DartLibrary dart_lib;
     UNUSED(initial_input); 
 
     om_topic_t *cmd_topic = om_config_topic(nullptr, "ca", "cmd", sizeof(msg_cmd_t));
+   
+    om_topic_t *visiontx_topic = om_config_topic(nullptr, "ca", "visiontx", sizeof(msg_visiontx_t));
 
     om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor",UINT32_MAX));
-    
+    msg_sensor_t sensor{};
     for (;;)
     {   
         memset(&msg_cmd, 0, sizeof(msg_cmd_t));//每次循环清空cmd
 
         om_suber_export(remoter_suber, &remoter, false);
+        om_suber_export(sensor_suber, &sensor, false);
 
-        dart_lib.Update_State(launcher_status.msg_fire_finished);
+        dart_lib.Update_State(sensor.coil_reset);//todo:不知道知否可以用这个来判断
 
         if (remoter.left_sw == Down)
         {
@@ -55,9 +58,9 @@ DartLibrary dart_lib;
             msg_cmd.launcher_action = DART_RELAX;
         }
         om_publish(cmd_topic, &msg_cmd, sizeof(msg_cmd_t), true, false);
+        om_publish(visiontx_topic, &msg_vision_tx, sizeof(msg_visiontx_t),true, false);
         tx_thread_sleep(1);
-    }
-    
+    };
 }
 
 
@@ -81,14 +84,14 @@ void Run_Hand_Control(msg_remoter_t* remoter, msg_cmd_t* cmd)
     else if (remoter->right_sw == Mid) 
     {
         cmd->launcher_action = DART_PREPARE;
-        cmd->final_target_yaw = remoter->right_x * 100 + my_offset;  //todo:确定摇杆灵敏度,不确定手控模式需不需要加上offset。
+        cmd->final_target_yaw += remoter->right_x+ my_offset;  //todo: 不确定手控模式需不需要加上offset。
         cmd->final_target_tension = my_tension;
 
     }
     else if (remoter->right_sw == Up)
     {
         cmd->launcher_action = DART_FIRE;
-        cmd->final_target_yaw = (remoter->right_x * 100.0f) + my_offset; //fire模式下yaw角度和torque都需要保持
+        cmd->final_target_yaw = (remoter->right_x) + my_offset; //fire模式下yaw角度和torque都需要保持
         cmd->final_target_tension = my_tension;
     }
     else 

@@ -17,8 +17,9 @@ typedef enum
     // TARGETING,       //正在调整yaw轴角度
     // TARGETED, 
     RESETTING,          //正在复位
-    WAIT_LOADING,             //扳机已锁定，等待装弹
-    LOADING,            //正在装弹
+    // WAIT_LOADING,             //扳机已锁定，等待装弹
+    // LOADING,            //正在装弹
+    RETRACT_AND_LOAD,
     // LOCKED,          //扳机已锁定
     TENSIONING,         //正在调整弓弦松紧
     READY,              //调整完毕->弓弦保持力矩，扳机锁定&弓弦调整完毕

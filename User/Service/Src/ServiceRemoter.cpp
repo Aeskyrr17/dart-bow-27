@@ -7,6 +7,8 @@ TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[1024] = {0};
 TX_SEMAPHORE RemoterGot;
 
+msg_remoter_t debug_remotor{};
+
 // 数组在 D1 RAM
 __attribute__((section(".RAM_D1"))) uint8_t dr16_rx[DR16_DATA_SIZE];
 
@@ -55,6 +57,7 @@ inline dr16_data_t& Dr16_Data()
         else if (msg_remoter.last_left_sw == CTRL_STATE::Up && msg_remoter.left_sw == CTRL_STATE::Mid) 
         {
             msg_remoter.left_sw = CTRL_STATE::U2M;
+        }
 
         // 摇杆 11 位 -> float [-1,1]
         msg_remoter.right_x  = (static_cast<float>(Dr16_Data().ch_0) - RC_CH_VALUE_OFFSET) / RC_CH_OFFSET_MAX;
@@ -75,7 +78,9 @@ inline dr16_data_t& Dr16_Data()
         msg_remoter.last_left_sw = msg_remoter.left_sw;
         msg_remoter.last_right_sw = msg_remoter.right_sw;
         memcpy(&msg_remoter.last_key, &msg_remoter.key, sizeof(msg_remoter.key));
+
+        memcpy(&debug_remotor, &msg_remoter, sizeof(msg_remoter));
+
         tx_thread_sleep(1);
-        }   
     }
 }
