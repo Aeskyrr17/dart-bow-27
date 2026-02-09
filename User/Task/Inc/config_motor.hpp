@@ -35,8 +35,8 @@ class ServoMotors
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 750;
-        this->lock_pulse = 1750;
+        this->open_pulse = 750 / 20000.0f;
+        this->lock_pulse = 1750 / 20000.0f;//50Hz
     }
 
     void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
@@ -46,6 +46,8 @@ class ServoMotors
         PWM_Start(this->htim, this->channel);
         PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
     }
+
+
 
     void Trigger_Open()
     {

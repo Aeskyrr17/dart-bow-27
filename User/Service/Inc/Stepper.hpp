@@ -8,9 +8,9 @@
 #include <cstdint>
 
 // 宏定义
-#define ACCEL_STEP          3.0f          //<每次中断增加的频率(Hz)，值越大加速越快
+#define ACCEL_STEP          4.0f          //<每次中断增加的频率(Hz)，值越大加速越快
 #define TIM_CLOCK_FREQ      1000000.0f    //<定时器计数频率,APB1主频192MHz，PSC为192-1
-#define SYSTEM_MAX_FREQ     10000.0f      // TODO: 这里需要根据电机实际调整。最好与实际最大制频率相近
+#define SYSTEM_MAX_FREQ     10000.0f      //最大频率
 #define MIN_START_FREQ      500.0f         //<最小启动频率
 
 class Stepper
