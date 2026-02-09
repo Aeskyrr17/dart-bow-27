@@ -1,5 +1,5 @@
 /**
- * 此工程中将DOUT/DRDY都接到MISO,若后续需要修改，需需要修改ADS1120_init
+ * 此工程中将DOUT/DRDY都接到MISO,若后续需要修改接法，需修改ADS1120_init
  * 
  */
 

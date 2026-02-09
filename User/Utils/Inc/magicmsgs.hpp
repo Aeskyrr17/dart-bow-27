@@ -245,7 +245,7 @@ struct msg_motor_ctrl_t {
     float Coil_torque;
     CTRL_MODE Coil_mode;
 
-    float String_target_force;
+    float String_target_tension;
 
     //todo:添加龙门架电机
 };
@@ -267,15 +267,23 @@ struct msg_motor_ctrl_t {
  */
 struct msg_sensor_t
 {
-    bool is_coil_reset;//卷簧是否归位
-    bool is_door_open;//舱门是否打开
-    bool is_string_tight;//弦是否拉紧,可能不需要
-    bool is_launchplat_return; //发射台是否归位
+    bool coil_reset;//卷簧是否归位(上方)
+    bool door_open;//舱门是否打开
+    bool string_tight;//弦是否拉紧,可能不需要
+    bool launchplat_return; //发射台是否归位
     float string_L_force;//左副弦力矩
     float string_R_force;//右副弦力矩
-    bool is_fire_done; //是否发射完成，可能不需要
+    bool fire_done; //是否发射完成，可能不需要
+    bool dart_loaded;//飞镖装填完毕
 };
 
+struct debug_motor_t
+{
+    float speed;
+    float position;
+    float current;
+    float torque;
+};
 
 #ifdef __cplusplus
 }

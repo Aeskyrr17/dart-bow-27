@@ -22,12 +22,21 @@ TX_THREAD MotorThread;
 uint8_t MotorThreadStack[2048] = {0};
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
-TaskMotors motors;
+TaskMotors* motors = TaskMotors::Instance();
 
 PID coilSpringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID coilSpringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-void TaskMotors::MotorRegister() 
+PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
+debug_motor_t coil_L_debug{};
+debug_motor_t coil_R_debug{};
+debug_motor_t String_L_debug{};
+debug_motor_t String_R_debug{};
+msg_motor_ctrl_t debug_motorctrl{};
+
+void TaskMotors::MotorInit() 
 {
     //左右卷簧电机
     DJIMotorhandler->registerMotor(&CoilSpringMotorL, &hfdcan1, 0x201);
@@ -35,10 +44,13 @@ void TaskMotors::MotorRegister()
     CoilSpringMotorL.gearBox = GearBox::GearBox_M3508;
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
 
-
-
     //扳机电机
     TriggerMotor.Init(&htim1, TIM_CHANNEL_3);
+
+    motors->YawMotor_Init();
+
+    motors->StringMotorL.Init(&hfdcan3, 2);
+    motors->StringMotorR.Init(&hfdcan3, 1);
 }
 
 /**
@@ -49,9 +61,7 @@ void TaskMotors::SetModeAndPidParam()
 {
     CoilSpringMotorL.controlMode = M3508::SPD_MODE;
     CoilSpringMotorR.controlMode = M3508::SPD_MODE;
-
 }
-
 
 // void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
 // {
@@ -66,128 +76,74 @@ void TaskMotors::SetModeAndPidParam()
 {
     UNUSED(initial_input); 
 
-    // om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
-    // struct msg_motor_ctrl_t motorctrl{};
+    om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
+    msg_motor_ctrl_t motorctrl{};
 
-    // motors.MotorRegister();
-    // motors.SetModeAndPidParam();
+    motors->MotorInit();
+    motors->SetModeAndPidParam();
+    motors->YawMotor.SetTargetSpeed(0);
 
-     motors.StringMotorR_Init();
-
-    bool hasStarted = false;
-    bool isrev = false;
-
-    if (motors.StringMotorR.pwmTim == NULL) {
-
-        while(1); 
-    }
-    
-
+    float yaw_target_hz ;
+    motors->TriggerMotor.Trigger_Lock();
     for (;;)
     {
-        // om_suber_export(motorctrl_suber, &motorctrl, false);
+        om_suber_export(motorctrl_suber, &motorctrl, false);
 
         // //撒放机构处理逻辑
-        // if ( motorctrl.trigger_lock)
-        //     motors.TriggerMotor.Trigger_Lock();
-        // else if ( !motorctrl.trigger_lock)
-        //     motors.TriggerMotor.Trigger_Open();
+        // // if ( motorctrl.trigger_lock)
+        // //     motors->TriggerMotor.Trigger_Lock();
+        // // else if ( !motorctrl.trigger_lock)
+        // //     motors->TriggerMotor.Trigger_Open();
+
+        // motorctrl.Coil_speed = 10.0f;
+
 
         // //计算卷簧电机PID
         // if (motorctrl.Coil_mode == SPD)    
         // {
         //     coilSpringMotorL_spd_pid.ref = motorctrl.Coil_speed;
-        //     coilSpringMotorL_spd_pid.fdb = motors.CoilSpringMotorL.motorFeedback.speedFdb;
+        //     coilSpringMotorL_spd_pid.fdb = motors->CoilSpringMotorL.motorFeedback.speedFdb;
         //     coilSpringMotorL_spd_pid.UpdateResult();
-        //     motors.CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
+        //     motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
+
         //     coilSpringMotorR_spd_pid.ref = motorctrl.Coil_speed;
-        //     coilSpringMotorR_spd_pid.fdb = motors.CoilSpringMotorR.motorFeedback.speedFdb;
+        //     coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
         //     coilSpringMotorR_spd_pid.UpdateResult();
-        //     motors.CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
+        //     motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
         // }
         // else
         // {
-        //     motors.CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
-        //     motors.CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
+        //     motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
+        //     motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
         // }
-
-        // //发送控制指令给电机
-        // DJIMotorhandler->sendControlData();
-
-#define StepperTest
-#ifdef StepperTest
-
-        // motors.StringMotorR.targetSpeed = 3000.0f;
-        // motors.StringMotorR.SendControlData();
-
-
-        // tx_thread_sleep(5000);
-        // motors.StringMotorR.targetSpeed =6000.0f;
-        // motors.StringMotorR.SendControlData();
-
-            // if (hasStarted == false)
-            // {
-            // for(int i =500; i <= 2000; i += 100) 
-            // {
-            //     motors.StringMotorR.targetSpeed = (float)i;
-            //     motors.StringMotorR.SendControlData();
-            //     tx_thread_sleep(10); // 每 10ms 加速一点点
-            // }
-            // hasStarted = true;
-            // isrev = false;
-            // }
-
-            // if (isrev == true)
-            // {
-            //     for (int i = -4000; i <= 4000; i += 100)
-            //     {
-            //     motors.StringMotorR.targetSpeed = float(i);
-            //     motors.StringMotorR.SendControlData();
-            //     tx_thread_sleep(10);
-            //     }
-            //     isrev = false;
-            // }   
-
-        // motors.StringMotorR.targetSpeed = -2000.0f;
-        // motors.StringMotorR.SendControlData();
-        //         tx_thread_sleep(1000); 
-        motors.StringMotorR.SetTargetSpeed(3000);
-        tx_thread_sleep(3000); 
-        motors.StringMotorR.SetTargetSpeed(0);
-        tx_thread_sleep(3000); 
-        motors.StringMotorR.SetTargetSpeed(-3000);
-        tx_thread_sleep(3000); 
-
-
-        //         tx_thread_sleep(1000); 
-
-        // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-        // tx_thread_sleep(1000);
-        // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-        // tx_thread_sleep(1000); 
-        // tx_thread_sleep(3000);
-    
-        // motors.StringMotorR.targetSpeed =-3000.0f;
-        // motors.StringMotorR.SendControlData();
-        // tx_thread_sleep(3000);
         
+        // DJIMotorhandler->sendControlData();//发送控制指令给电机
 
-        //     if (isrev == false)
-        //     {
-        //         for (int i = 4000; i >= -4000; i -= 100)
-        //         {
-        //         motors.StringMotorR.targetSpeed = float(i);
-        //         motors.StringMotorR.SendControlData();
-        //         tx_thread_sleep(10);
-        //         }
-        //         isrev = true;
-        //     }   
-        // motors.StringMotorR.targetSpeed = -4000.0f;
-        // motors.StringMotorR.SendControlData();
-        // tx_thread_sleep(5000);
 
-#endif
+        // if (motorctrl.target_yaw > 0.03)
+        //     yaw_target_hz = 1000;
+        // else if (motorctrl.target_yaw < -0.03)
+        //     yaw_target_hz = -1000;
+        // else 
+        //     yaw_target_hz = 0;     
 
+        // motors->YawMotor.SetTargetSpeed(yaw_target_hz);
+
+        //副弦步进电机
+        // motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, 1, 200, 500.0f , false, 3000);
+        // motors->StringMotorL.X_V2_Read_Sys_Params(2, S_VEL);
+        // motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, 0, 200, 500.0f , false, 3000);
+        // motors->StringMotorR.X_V2_Read_Sys_Params(1, S_VEL);
+
+
+        motors->TriggerMotor.Trigger_Lock();
+        tx_thread_sleep(2000);
+            motors->TriggerMotor.Trigger_Open();
+        tx_thread_sleep(2000);
+        // motors->YawMotor.SetTargetSpeed(1000);
+
+
+        memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
         tx_thread_sleep(1);
     }
 }
@@ -201,8 +157,8 @@ void TaskMotors::SetModeAndPidParam()
  */
  void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim == motors.StringMotorR.pwmTim) 
+    if (htim == motors->YawMotor.pwmTim) 
     {
-        motors.StringMotorR.HandleInterrupt();
+        motors->YawMotor.HandleInterrupt();
     }
 }
