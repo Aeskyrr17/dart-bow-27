@@ -5,20 +5,20 @@ extern "C" {
 #endif
 
 typedef enum {
-    Relax = 2,
-    Spin = 1,
-    Normal = 3,
-    R2N = 4,
-    N2R = 5,
-    N2S = 6,
-    S2N = 7
+    Down = 2, //Relax
+    Mid = 3,  //Normal
+    Up = 1,   //Spin
+    D2M = 4,  //R2N
+    M2D = 5,  //N2R
+    M2U = 6,  //N2S
+    U2M = 7   //S2N
 }CTRL_STATE;
 
-typedef enum {
-    Closed = 2,
-    Warm = 3,
-    Fire = 1
-}SHOOT_STATE;
+// typedef enum {
+//     Closed = 2,
+//     Warm = 3,
+//     Fire = 1
+// }SHOOT_STATE;
 
 typedef enum {
     SPD,
@@ -31,10 +31,10 @@ typedef enum {
  */
 struct msg_remoter_t 
 {
-    CTRL_STATE ctrl_sw;
-    SHOOT_STATE shoot_sw;
-    CTRL_STATE last_ctrl_sw;
-    SHOOT_STATE last_shoot_sw;
+    CTRL_STATE left_sw;
+    CTRL_STATE right_sw;
+    CTRL_STATE last_left_sw;
+    CTRL_STATE last_right_sw;
     float left_x;
     float left_y;
     float right_x;
@@ -101,53 +101,53 @@ struct msg_ins_t {
     float accel[3];
 };
 
-struct msg_solver_t
-{
-    float llen;
-    float llen_dot;
-    float rlen;
-    float rlen_dot;
+// struct msg_solver_t
+// {
+//     float llen;
+//     float llen_dot;
+//     float rlen;
+//     float rlen_dot;
 
-    float lphi;
-    float lphi_dot;
-    float rphi;
-    float rphi_dot;
+//     float lphi;
+//     float lphi_dot;
+//     float rphi;
+//     float rphi_dot;
 
-    float lalpha;
-    float lalpha_dot;
-    float ralpha;
-    float ralpha_dot;
+//     float lalpha;
+//     float lalpha_dot;
+//     float ralpha;
+//     float ralpha_dot;
     
-    float N;
-};
+//     float N;
+// };
 
-struct msg_ctrl_t
-{
-    float Tl[2];
-    float Tr[2];
-    float Twl;
-    float Twr;
-};
+// struct msg_ctrl_t
+// {
+//     float Tl[2];
+//     float Tr[2];
+//     float Twl;
+//     float Twr;
+// };
 
-struct msg_odometry_t
-{
-    float x;
-    float v;
-    float a_z;
-};
+// struct msg_odometry_t
+// {
+//     float x;
+//     float v;
+//     float a_z;
+// };
 
-struct msg_cmd_t
-{
-    float x;
-    float v;
-    float w;
-    float dyaw;
-    float dlen;
-    float roll;
-    bool move;
-    bool ifjump;
-    bool ifflip;
-};
+// struct msg_cmd_t
+// {
+//     float x;
+//     float v;
+//     float w;
+//     float dyaw;
+//     float dlen;
+//     float roll;
+//     bool move;
+//     bool ifjump;
+//     bool ifflip;
+// };
 
 struct msg_visionrx_t
 {
@@ -185,6 +185,105 @@ struct msg_visiontx_t
     float gyro_pitch;
     uint16_t checksum; // 校验和
 } __attribute__((packed));
+
+/**
+ * @brief 飞镖发射指令
+ */
+typedef enum
+{
+    DART_RELAX = 0,     // 放松或急停
+    DART_PREPARE= 1,    //调整yaw角度，发射台归位，调整副弦松紧
+    DART_FIRE = 2      // 发射
+}LAUNCHER_ACTION;
+
+/**
+ * @brief 龙门架动作指令
+ */
+//todo:补充龙门架指令
+typedef enum
+{
+    GANRTY_IDLE = 0
+}GANTRY_ACTION;
+
+/**
+ * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher和TaskGantry
+ */
+struct msg_cmd_t
+{
+    LAUNCHER_ACTION launcher_action; // 飞镖发射指令
+    GANTRY_ACTION gantry_action;     // 龙门架动作指令
+    float final_target_yaw;   //期望角度（已包含offset）
+    float final_target_tension; //拉力值
+};
+
+
+/**
+ * @brief 由TaskLauncher发送给TaskSysctrl
+ * 
+ */
+ struct msg_launcher_status_t
+ {
+    uint8_t current_state;
+    bool msg_fire_finished; //发射是否完成,需要用传感器判断
+ };
+
+
+
+/**
+ * @brief 电机控制消息结构，由Tasklauncher和TaskGantry发送给Taskmotors
+ * yaw轴步进电机
+ */
+struct msg_motor_ctrl_t {
+    float yaw_speed;
+    float yaw_torque;
+    float target_yaw;
+    CTRL_MODE yaw_mode;
+
+    bool trigger_lock;
+
+    float Coil_speed;
+    float Coil_torque;
+    CTRL_MODE Coil_mode;
+
+    float String_target_tension;
+
+    //todo:添加龙门架电机
+};
+
+
+// struct tof_data_t
+// {
+//     uint8_t header[2];
+//     uint16_t distance;
+//     uint16_t strength;
+//     uint16_t temp_raw;
+//     uint8_t check_sum;
+// };
+
+
+/**
+ * @brief 储存各传感器发送的标志位
+ * 
+ */
+struct msg_sensor_t
+{
+    bool coil_reset;//卷簧是否归位(上方)
+    bool door_open;//舱门是否打开
+    bool string_tight;//弦是否拉紧,可能不需要
+    bool launchplat_return; //发射台是否归位
+    float string_L_force;//左副弦力矩
+    float string_R_force;//右副弦力矩
+    bool fire_done; //是否发射完成，可能不需要
+    bool dart_loaded;//飞镖装填完毕
+};
+
+struct debug_motor_t
+{
+    float speed;
+    float position;
+    float current;
+    float torque;
+};
 
 #ifdef __cplusplus
 }

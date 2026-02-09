@@ -3,6 +3,7 @@
 #include "bsp_can.hpp"
 #include "bsp_usart.hpp"
 #include "bsp_dwt.hpp"
+#include "bsp_pwm.hpp"
 
 uint16_t test;
 

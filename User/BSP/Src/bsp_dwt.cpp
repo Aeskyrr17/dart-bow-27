@@ -128,6 +128,23 @@ void DWT_Delay(float Delay)
     uint32_t tickstart = DWT->CYCCNT;
     float wait = Delay;
 
-    while ((DWT->CYCCNT - tickstart) < wait * (float)CPU_FREQ_Hz)
-        ;
+    while ((DWT->CYCCNT - tickstart) < wait * (float)CPU_FREQ_Hz);
+}
+
+void DWT_Delay_ms(float ms)
+{
+    /* 将毫秒转换为对应的 CPU 时钟周期数 */
+    uint32_t tickstart = DWT->CYCCNT;
+    uint32_t wait = (uint32_t)(ms * (float)CPU_FREQ_Hz_ms);
+
+    while ((DWT->CYCCNT - tickstart) < wait);
+}
+
+void DWT_Delay_us(float us)
+{
+    /* 将微秒转换为对应的 CPU 时钟周期数 */
+    uint32_t tickstart = DWT->CYCCNT;
+    uint32_t wait = (uint32_t)(us * (float)CPU_FREQ_Hz_us);
+
+    while ((DWT->CYCCNT - tickstart) < wait);
 }

@@ -7,6 +7,8 @@ TX_THREAD RemoterThread;
 uint8_t RemoterThreadStack[1024] = {0};
 TX_SEMAPHORE RemoterGot;
 
+msg_remoter_t debug_remotor{};
+
 // 数组在 D1 RAM
 __attribute__((section(".RAM_D1"))) uint8_t dr16_rx[DR16_DATA_SIZE];
 
@@ -37,24 +39,24 @@ inline dr16_data_t& Dr16_Data()
 
         msg_remoter.offline = false;
         // 开关
-        msg_remoter.ctrl_sw  = static_cast<CTRL_STATE>(Dr16_Data().s2);
-        msg_remoter.shoot_sw = static_cast<SHOOT_STATE>(Dr16_Data().s1);
+        msg_remoter.left_sw  = static_cast<CTRL_STATE>(Dr16_Data().s2);
+        msg_remoter.right_sw = static_cast<CTRL_STATE>(Dr16_Data().s1);
 
-        if (msg_remoter.last_ctrl_sw == CTRL_STATE::Relax && msg_remoter.ctrl_sw == CTRL_STATE::Normal) 
+        if (msg_remoter.last_left_sw == CTRL_STATE::Down && msg_remoter.left_sw == CTRL_STATE::Mid) 
         {
-            msg_remoter.ctrl_sw = CTRL_STATE::R2N;
+            msg_remoter.left_sw = CTRL_STATE::D2M;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Relax) 
+        else if (msg_remoter.last_left_sw == CTRL_STATE::Mid && msg_remoter.left_sw == CTRL_STATE::Down) 
         {
-            msg_remoter.ctrl_sw = CTRL_STATE::N2R;
+            msg_remoter.left_sw = CTRL_STATE::M2D;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Normal && msg_remoter.ctrl_sw == CTRL_STATE::Spin) 
+        else if (msg_remoter.last_left_sw == CTRL_STATE::Mid && msg_remoter.left_sw == CTRL_STATE::Up) 
         {
-            msg_remoter.ctrl_sw = CTRL_STATE::N2S;
+            msg_remoter.left_sw = CTRL_STATE::M2U;
         }
-        else if (msg_remoter.last_ctrl_sw == CTRL_STATE::Spin && msg_remoter.ctrl_sw == CTRL_STATE::Normal) 
+        else if (msg_remoter.last_left_sw == CTRL_STATE::Up && msg_remoter.left_sw == CTRL_STATE::Mid) 
         {
-            msg_remoter.ctrl_sw = CTRL_STATE::S2N;
+            msg_remoter.left_sw = CTRL_STATE::U2M;
         }
 
         // 摇杆 11 位 -> float [-1,1]
@@ -73,9 +75,12 @@ inline dr16_data_t& Dr16_Data()
         // 键盘位域可以直接 memcpy
         memcpy(&msg_remoter.key, &Dr16_Data().key, sizeof(msg_remoter.key));
         om_publish(remoter_topic, &msg_remoter, sizeof(msg_remoter), true, false);
-        msg_remoter.last_ctrl_sw = msg_remoter.ctrl_sw;
-        msg_remoter.last_shoot_sw = msg_remoter.shoot_sw;
+        msg_remoter.last_left_sw = msg_remoter.left_sw;
+        msg_remoter.last_right_sw = msg_remoter.right_sw;
         memcpy(&msg_remoter.last_key, &msg_remoter.key, sizeof(msg_remoter.key));
+
+        memcpy(&debug_remotor, &msg_remoter, sizeof(msg_remoter));
+
         tx_thread_sleep(1);
     }
 }
