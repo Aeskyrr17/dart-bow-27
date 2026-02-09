@@ -41,7 +41,7 @@ void CAN_Init(void)
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_Start(&hfdcan2);
 
-    //can3挂载的步进电机使用拓展帧
+    //can3挂载的ZDT步进电机使用拓展帧
     FDCAN_FilterConfig.IdType = FDCAN_EXTENDED_ID; 
 
     HAL_FDCAN_ConfigFilter(&hfdcan3, &FDCAN_FilterConfig);
@@ -85,8 +85,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     if (hfdcan == &hfdcan3)
     {
        uint8_t motor_id = (uint8_t)((rx_header.Identifier >> 8) & 0xFF);
-        
-        // 手动分发给对应的实例
+
+
         if (motor_id == TaskMotors::Instance()->StringMotorL._id) {
             TaskMotors::Instance()->StringMotorL.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
         }
@@ -200,8 +200,8 @@ void can_SendCmd(FDCAN_HandleTypeDef *hfdcan, uint8_t *cmd, uint8_t len)
         }
         tx.DataLength = fdcan_len_to_dlc((uint8_t)(chunk + 1));
 
-        while (HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &tx, data) != HAL_OK) {}  
+        HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &tx, data);
         ++packNum;
         i += chunk;
     }
-}
+}   
