@@ -24,8 +24,8 @@ DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
 TaskMotors* motors = TaskMotors::Instance();
 
-PID coilSpringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID coilSpringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID coilSpringMotorL_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -84,63 +84,109 @@ void TaskMotors::SetModeAndPidParam()
     motors->YawMotor.SetTargetSpeed(0);
 
     float yaw_target_hz ;
+
     motors->TriggerMotor.Trigger_Lock();
+
+    float string_L_spd;
+    uint8_t string_L_dir;
+    float string_R_spd;
+    uint8_t string_R_dir;
+
+    float coil_L_spd;
+    float coil_R_spd;
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
 
-        // //撒放机构处理逻辑
-        // // if ( motorctrl.trigger_lock)
-        // //     motors->TriggerMotor.Trigger_Lock();
-        // // else if ( !motorctrl.trigger_lock)
-        // //     motors->TriggerMotor.Trigger_Open();
+        //撒放机构处理逻辑
+        if ( motorctrl.trigger_lock)
+            motors->TriggerMotor.Trigger_Lock();
+        else if ( !motorctrl.trigger_lock)
+            motors->TriggerMotor.Trigger_Open();
+        // motorctrl.Coil_speed = 20.0f;
 
-        // motorctrl.Coil_speed = 10.0f;
-
-
-        // //计算卷簧电机PID
-        // if (motorctrl.Coil_mode == SPD)    
-        // {
-        //     coilSpringMotorL_spd_pid.ref = motorctrl.Coil_speed;
-        //     coilSpringMotorL_spd_pid.fdb = motors->CoilSpringMotorL.motorFeedback.speedFdb;
-        //     coilSpringMotorL_spd_pid.UpdateResult();
-        //     motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
-
-        //     coilSpringMotorR_spd_pid.ref = motorctrl.Coil_speed;
-        //     coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
-        //     coilSpringMotorR_spd_pid.UpdateResult();
-        //     motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
-        // }
-        // else
-        // {
-        //     motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
-        //     motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
-        // }
-        
-        // DJIMotorhandler->sendControlData();//发送控制指令给电机
-
-
-        // if (motorctrl.target_yaw > 0.03)
-        //     yaw_target_hz = 1000;
-        // else if (motorctrl.target_yaw < -0.03)
-        //     yaw_target_hz = -1000;
+        // if (motorctrl.Coil_L_speed > 0.03)
+        //     coil_L_spd = 15.0f;
+        // else if (motorctrl.Coil_L_speed < -0.03)
+        //     coil_L_spd = -15.0f;
         // else 
-        //     yaw_target_hz = 0;     
+        //     coil_L_spd = 0;     
 
-        // motors->YawMotor.SetTargetSpeed(yaw_target_hz);
+        // if (motorctrl.Coil_R_speed > 0.03)
+        //     coil_R_spd = 15.0f;
+        // else if (motorctrl.Coil_R_speed < -0.03)
+        //     coil_R_spd = -15.0f;
+        // else 
+        //     coil_R_spd = 0;        
+
+
+        
+        //计算卷簧电机PID
+        if (motorctrl.Coil_mode == SPD)    
+        {
+            coilSpringMotorL_spd_pid.ref = motorctrl.Coil_L_speed;
+            coilSpringMotorL_spd_pid.fdb = motors->CoilSpringMotorL.motorFeedback.speedFdb;
+            coilSpringMotorL_spd_pid.UpdateResult();
+            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
+
+            coilSpringMotorR_spd_pid.ref = motorctrl.Coil_R_speed;;
+            coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
+            coilSpringMotorR_spd_pid.UpdateResult();
+            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
+        }
+        else
+        {
+            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
+            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
+        }
+        
+        DJIMotorhandler->sendControlData();//发送控制指令给电机
+
+        //yaw轴步进电机简单控制逻辑
+        if (motorctrl.target_yaw > 0.03)
+            yaw_target_hz = 1000;
+        else if (motorctrl.target_yaw < -0.03)
+            yaw_target_hz = -1000;
+        else 
+            yaw_target_hz = 0;     
+
+        motors->YawMotor.SetTargetSpeed(yaw_target_hz);
 
         //副弦步进电机
         // motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, 1, 200, 500.0f , false, 3000);
         // motors->StringMotorL.X_V2_Read_Sys_Params(2, S_VEL);
         // motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, 0, 200, 500.0f , false, 3000);
         // motors->StringMotorR.X_V2_Read_Sys_Params(1, S_VEL);
+        if (motorctrl.String_L_speed > 0.03)
+        {
+            string_L_dir = 0;
+            string_L_spd = 500.0f;
+        }
+        else if (motorctrl.String_L_speed < -0.03)
+        {
+            string_L_dir = 1;
+            string_L_spd = 500.0f;
+        }
+        else 
+            string_L_spd = 0.0f;     
 
 
-        motors->TriggerMotor.Trigger_Lock();
-        tx_thread_sleep(2000);
-            motors->TriggerMotor.Trigger_Open();
-        tx_thread_sleep(2000);
-        // motors->YawMotor.SetTargetSpeed(1000);
+        if (motorctrl.String_R_speed > 0.03)
+        {
+            string_R_dir = 1;
+            string_R_spd = 500.0f;
+        }
+        else if (motorctrl.String_R_speed < -0.03)
+        {
+            string_R_dir = 0;
+            string_R_spd = 500.0f;
+        }
+        else 
+            string_R_spd = 0.0f;     
+
+        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 500, string_L_spd , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 500 , string_R_spd , false, 3000);
+
 
 
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));

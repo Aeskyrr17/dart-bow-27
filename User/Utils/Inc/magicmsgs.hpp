@@ -192,8 +192,10 @@ struct msg_visiontx_t
 typedef enum
 {
     DART_RELAX = 0,     // 放松或急停
-    DART_PREPARE= 1,    //调整yaw角度，发射台归位，调整副弦松紧
-    DART_FIRE = 2      // 发射
+    DART_PREPARE= 1,    //调整yaw角度，
+    DART_COIL_ADJUST = 2,    //调整coil
+    DART_STRING_ADJUST = 3, //调整副弦
+    DART_FIRE = 4  // 发射
 }LAUNCHER_ACTION;
 
 /**
@@ -214,6 +216,10 @@ struct msg_cmd_t
     GANTRY_ACTION gantry_action;     // 龙门架动作指令
     float final_target_yaw;   //期望角度（已包含offset）
     float final_target_tension; //拉力值
+    float Coil_L_spd;
+    float Coil_R_spd;
+    float String_L_spd;
+    float String_R_spd;
 };
 
 
@@ -244,6 +250,12 @@ struct msg_motor_ctrl_t {
     float Coil_speed;
     float Coil_torque;
     CTRL_MODE Coil_mode;
+
+    float Coil_L_speed;
+    float Coil_R_speed;
+
+    float String_L_speed;
+    float String_R_speed;
 
     float String_target_tension;
 

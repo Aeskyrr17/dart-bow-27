@@ -65,13 +65,19 @@ void Error_Handler(void);
 #define DIR_YAW_GPIO_Port GPIOA
 #define ACC_INT_Pin GPIO_PIN_10
 #define ACC_INT_GPIO_Port GPIOE
+#define ACC_INT_EXTI_IRQn EXTI15_10_IRQn
 #define GYRO_INT_Pin GPIO_PIN_12
 #define GYRO_INT_GPIO_Port GPIOE
-#define ADS_DRDY_Pin GPIO_PIN_0
-#define ADS_DRDY_GPIO_Port GPIOE
-#define ADS_DRDY_EXTI_IRQn EXTI0_IRQn
-#define SPI3_CS_Pin GPIO_PIN_1
-#define SPI3_CS_GPIO_Port GPIOE
+#define GYRO_INT_EXTI_IRQn EXTI15_10_IRQn
+#define LIGHT_Pin GPIO_PIN_14
+#define LIGHT_GPIO_Port GPIOE
+#define LIGHT_EXTI_IRQn EXTI15_10_IRQn
+#define HALL_L_Pin GPIO_PIN_0
+#define HALL_L_GPIO_Port GPIOE
+#define HALL_L_EXTI_IRQn EXTI0_IRQn
+#define HALL_R_Pin GPIO_PIN_1
+#define HALL_R_GPIO_Port GPIOE
+#define HALL_R_EXTI_IRQn EXTI1_IRQn
 
 /* USER CODE BEGIN Private defines */
 

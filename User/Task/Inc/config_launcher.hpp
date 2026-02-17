@@ -24,7 +24,9 @@ typedef enum
     TENSIONING,         //正在调整弓弦松紧
     READY,              //调整完毕->弓弦保持力矩，扳机锁定&弓弦调整完毕
 
-    FIRING//正在发射
+    FIRING,//正在发射
+
+    HAND_CONTROL //!手动调试模式，不管霍尔的数据
 }LAUNCHER_FSM_STATE;
 
 

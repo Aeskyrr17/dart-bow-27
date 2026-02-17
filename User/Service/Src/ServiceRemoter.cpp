@@ -35,6 +35,8 @@ inline dr16_data_t& Dr16_Data()
             om_publish(remoter_topic, &msg_remoter, sizeof(msg_remoter), true, false);
             tx_thread_sleep(3);
             HAL_UARTEx_ReceiveToIdle_DMA(&huart5, dr16_rx, DR16_DATA_SIZE);
+
+            memset(&msg_remoter, 0, sizeof(msg_remoter));
         }
 
         msg_remoter.offline = false;

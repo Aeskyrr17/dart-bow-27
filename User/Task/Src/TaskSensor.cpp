@@ -56,12 +56,12 @@ float debug111;
     {
 
         //传感器数据
-        if (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN))
+        if (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET)
             hall.R_reset = true;
         else 
             hall.R_reset = false;
 
-        if (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN))
+        if (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET)
             hall.L_reset = true;
         else 
             hall.L_reset = false;
