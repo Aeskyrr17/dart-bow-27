@@ -1,18 +1,13 @@
-#include "DJIMotorHandler.hpp"
 #include "main.h"
-#include "pid.hpp"
-#include "stm32h723xx.h"
-#include "stm32h7xx_hal_gpio.h"
-#include "stm32h7xx_hal_tim.h"
 #include "tx_api.h"
-#include "bsp_can.hpp"
-
 #include "om.h"
-#include "config_motor.hpp"
-#include "magicmsgs.hpp"
-#include <cstdint>
 
-#include "gpio.h"
+#include "DJIMotorHandler.hpp"
+#include "bsp_can.hpp"
+#include "pid.hpp"
+#include "magicmsgs.hpp"
+
+#include "config_motor.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -26,6 +21,9 @@ TaskMotors* motors = TaskMotors::Instance();
 
 PID coilSpringMotorL_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
+PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -44,6 +42,9 @@ void TaskMotors::MotorInit()
     CoilSpringMotorL.gearBox = GearBox::GearBox_M3508;
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
 
+    //龙门架装填电机
+    DJIMotorhandler->registerMotor(&GantryMotor, &hfdcan1, 0x203);
+    GantryMotor.gearBox = GearBox::GearBox_M2006;
     //扳机电机
     TriggerMotor.Init(&htim1, TIM_CHANNEL_3);
 
@@ -61,6 +62,7 @@ void TaskMotors::SetModeAndPidParam()
 {
     CoilSpringMotorL.controlMode = M3508::SPD_MODE;
     CoilSpringMotorR.controlMode = M3508::SPD_MODE;
+    GantryMotor.controlMode = M2006::SPD_MODE;
 }
 
 // void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
@@ -82,18 +84,17 @@ void TaskMotors::SetModeAndPidParam()
     motors->MotorInit();
     motors->SetModeAndPidParam();
     motors->YawMotor.SetTargetSpeed(0);
-
-    float yaw_target_hz ;
-
     motors->TriggerMotor.Trigger_Lock();
 
-    float string_L_spd;
+    float gantry_target_pos = 0.0f;
+
+    float yaw_target_hz = 0.0f;
+
+    float string_L_spd = 0.0f;
     uint8_t string_L_dir;
-    float string_R_spd;
+    float string_R_spd = 0.0f;
     uint8_t string_R_dir;
 
-    float coil_L_spd;
-    float coil_R_spd;
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
@@ -103,49 +104,74 @@ void TaskMotors::SetModeAndPidParam()
             motors->TriggerMotor.Trigger_Lock();
         else if ( !motorctrl.trigger_lock)
             motors->TriggerMotor.Trigger_Open();
-        // motorctrl.Coil_speed = 20.0f;
+        // motorctrl.Coil_spd = 20.0f;
 
-        // if (motorctrl.Coil_L_speed > 0.03)
+        //卷簧电机摇杆控制死区模式
+        // if (motorctrl.Coil_L_spd > 0.03)
         //     coil_L_spd = 15.0f;
-        // else if (motorctrl.Coil_L_speed < -0.03)
+        // else if (motorctrl.Coil_L_spd < -0.03)
         //     coil_L_spd = -15.0f;
         // else 
         //     coil_L_spd = 0;     
 
-        // if (motorctrl.Coil_R_speed > 0.03)
+        // if (motorctrl.Coil_R_spd > 0.03)
         //     coil_R_spd = 15.0f;
-        // else if (motorctrl.Coil_R_speed < -0.03)
+        // else if (motorctrl.Coil_R_spd < -0.03)
         //     coil_R_spd = -15.0f;
         // else 
         //     coil_R_spd = 0;        
 
 
+                
+        if (motorctrl.gantry_reset)
+        {
+            gantry_target_pos = motors->gantry_pos.reset;
+        }
+        else if (motorctrl.gantry_open)
+        {
+            gantry_target_pos = motors->gantry_pos.open;
+        }
+        else if (motorctrl.gantry_lock)
+        {
+            gantry_target_pos = motors->gantry_pos.lock;
+        }
+        //龙门架电机PID
+        GantryMotor_pos_pid.ref = gantry_target_pos;
+        GantryMotor_pos_pid.fdb = motors->GantryMotor.motorFeedback.positionFdb;
+        GantryMotor_pos_pid.UpdateResult();
+
+        GantryMotor_spd_pid.ref = GantryMotor_pos_pid.result;
+        GantryMotor_spd_pid.fdb = motors->GantryMotor.motorFeedback.speedFdb;
+        GantryMotor_spd_pid.UpdateResult();
+        motors->GantryMotor.currentSet = static_cast<int16_t>(GantryMotor_spd_pid.result);
         
-        //计算卷簧电机PID
+        //卷簧电机PID
         if (motorctrl.Coil_mode == SPD)    
         {
-            coilSpringMotorL_spd_pid.ref = motorctrl.Coil_L_speed;
+            coilSpringMotorL_spd_pid.ref = motorctrl.Coil_L_spd;
             coilSpringMotorL_spd_pid.fdb = motors->CoilSpringMotorL.motorFeedback.speedFdb;
             coilSpringMotorL_spd_pid.UpdateResult();
             motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
 
-            coilSpringMotorR_spd_pid.ref = motorctrl.Coil_R_speed;;
+            coilSpringMotorR_spd_pid.ref = motorctrl.Coil_R_spd;
             coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
             coilSpringMotorR_spd_pid.UpdateResult();
             motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
         }
         else
         {
-            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
-            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_torque*100);
+            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_L_tq*100);
+            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_R_tq*100);
         }
-        
+
         DJIMotorhandler->sendControlData();//发送控制指令给电机
 
+
+
         //yaw轴步进电机简单控制逻辑
-        if (motorctrl.target_yaw > 0.03)
+        if (motorctrl.yaw_spd > 0.03)
             yaw_target_hz = 1000;
-        else if (motorctrl.target_yaw < -0.03)
+        else if (motorctrl.yaw_spd < -0.03)
             yaw_target_hz = -1000;
         else 
             yaw_target_hz = 0;     
@@ -157,29 +183,29 @@ void TaskMotors::SetModeAndPidParam()
         // motors->StringMotorL.X_V2_Read_Sys_Params(2, S_VEL);
         // motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, 0, 200, 500.0f , false, 3000);
         // motors->StringMotorR.X_V2_Read_Sys_Params(1, S_VEL);
-        if (motorctrl.String_L_speed > 0.03)
+        if (motorctrl.String_L_spd > 0.03)
         {
             string_L_dir = 0;
-            string_L_spd = 500.0f;
+            string_L_spd = 600.0f;
         }
-        else if (motorctrl.String_L_speed < -0.03)
+        else if (motorctrl.String_L_spd < -0.03)
         {
             string_L_dir = 1;
-            string_L_spd = 500.0f;
+            string_L_spd = 600.0f;
         }
         else 
             string_L_spd = 0.0f;     
 
 
-        if (motorctrl.String_R_speed > 0.03)
+        if (motorctrl.String_R_spd > 0.03)
         {
             string_R_dir = 1;
-            string_R_spd = 500.0f;
+            string_R_spd = 600.0f;
         }
-        else if (motorctrl.String_R_speed < -0.03)
+        else if (motorctrl.String_R_spd < -0.03)
         {
             string_R_dir = 0;
-            string_R_spd = 500.0f;
+            string_R_spd = 600.0f;
         }
         else 
             string_R_spd = 0.0f;     

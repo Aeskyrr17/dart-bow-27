@@ -13,6 +13,7 @@
 
 #include "DJIMotorHandler.hpp"
 #include "M3508.hpp"
+#include "M2006.hpp"
 
 #include "Stepper.hpp"
 #include "X_V2.hpp"
@@ -311,6 +312,7 @@ class ZDTStepper
 };
 
 
+
 class TaskMotors
 {
     public:
@@ -324,8 +326,17 @@ class TaskMotors
     ZDTStepper StringMotorL;
     ZDTStepper StringMotorR;
 
-
     ServoMotors TriggerMotor;       //扳机电机
+
+    M2006 GantryMotor;              //龙门架装填电机
+
+    struct GantryMotorPosition
+    {
+        float open = 0.0f;
+        float reset; //待测试
+        float lock;
+    };
+    GantryMotorPosition gantry_pos;
 
     void MotorInit();           //DJI电机注册与初始化
     void SetModeAndPidParam();

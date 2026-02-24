@@ -7,13 +7,22 @@ struct Dart_Config_t
 {
     int id;                     //飞镖编号
     float yaw_offset;           //yaw轴偏移量
-    float tension_torque;       //需要的力矩
+    float tension_tq;       //需要的力矩
 };
 
 class DartLibrary
 {
 
 public:
+
+    Dart_Config_t dart[10];                 //储存各飞镖参数 
+    int sequence[4];                        //装填与发射顺序
+
+    int current_index;                      //装填seq中的index
+    int current_dart_id;                    //当前飞镖id
+
+    bool last_fire_finished;                //true表示上一次为fire状态，用于边缘检测
+    int fired_count_this_open;              // 当前开门周期已发射的飞镖数
 
     DartLibrary()
     {
@@ -26,11 +35,10 @@ public:
         dart[7] = {7, 0.0f,0.0f};
         dart[8] = {8, 0.0f,0.0f};
         dart[9] = {9, 0.0f,0.0f};
-        dart[10] = {10, 0.0f,0.0f};
 
         sequence[0] = 1;//装填顺序
-    sequence[1] = 2;
-    sequence[2] = 3;
+        sequence[1] = 2;
+        sequence[2] = 3;
         sequence[3] = 4;
 
         current_index = 0;
@@ -47,34 +55,27 @@ public:
         this->current_dart_id = this->sequence[this->current_index];
     }
 
-    /**
-     * @brief 在循环中一直调用，检测是否发射完成,同时处理current_index的增加
-     * 
-     * @param msg_fire_finished TaskLauncher发送的msg
-     */
-    void Update_State(bool msg_fire_finished)
-    {
+    //todo:增加一个函数，更新current_index和last_fire_finished
+//     /**
+//      * @brief 在循环中一直调用，检测是否发射完成,同时处理current_index的增加
+//      * 
+//      * @param msg_fire_finished TaskLauncher发送的msg
+//      */
+//     void Update_State(bool msg_fire_finished)
+//     {
 
-        if (msg_fire_finished && !this->last_fire_finished)
-        {
-            this->current_index++;
-            if (this->current_index >= 4) 
-            {
-            this->current_index = 0;
-            }
+//         if (msg_fire_finished && !this->last_fire_finished)
+//         {
+//             this->current_index++;
+//             if (this->current_index >= 4) 
+//             {
+//             this->current_index = 0;
+//             }
 
-        }
-        this->last_fire_finished = msg_fire_finished;    // 更新历史记录
-    }
+//         }
+//         this->last_fire_finished = msg_fire_finished;    // 更新历史记录
+//     }
 
 
-    Dart_Config_t dart[10];                 //储存各飞镖参数 
-    int sequence[4];                        //装填与发射顺序
-
-    int current_index;                      //装填seq中的index
-    int current_dart_id;                    //当前飞镖id
-
-    bool last_fire_finished;                //true表示上一次为fire状态，用于边缘检测
-    int fired_count_this_open;              // 当前开门周期已发射的飞镖数
 
 };

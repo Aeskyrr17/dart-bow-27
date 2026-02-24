@@ -1,3 +1,10 @@
+/**
+ * @file TaskLauncher.cpp
+ * @author Aeskyrr17
+ * @brief 发射状态机和控制逻辑
+ * @todo void Dart_Load(msg_sensor_t* sensor);
+ * @todo launcher_status_t的使用（暂未确定）
+ */
 #include "main.h"
 #include "tx_api.h"
 
@@ -10,213 +17,196 @@
 TX_THREAD LauncherThread;
 uint8_t LauncherThreadStack[2048] = {0};
 
-Launcher_Context_t launcher{};
-msg_cmd_t cmd{};
-msg_motor_ctrl_t msg_motorctrl{};
-msg_sensor_t sensor{};
+Launcher_Cxt_t launcher{};
 
-
-// msg_launcher_status_t msg_launcher_status{};
-// tof_data_t tof{};
-
-void Dart_Load();
+void Dart_Load_Test(msg_sensor_t* sensor);
 
 [[nonreturn]] void LauncherThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
-
     om_topic_t *motorctrl_topic = om_config_topic(nullptr, "ca", "motorctrl", sizeof(msg_motor_ctrl_t));
-    // om_topic_t *launcherstatus_topic = om_config_topic(nullptr, "ca", "launcherstatus", sizeof(msg_launcher_status_t));
+    msg_motor_ctrl_t motorctrl{};
 
     om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
+    msg_cmd_t cmd{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
-    // om_suber_t *tof_suber = om_subscribe(om_find_topic("tof", UINT32_MAX));
+    msg_sensor_t sensor{};
 
-    float Coil_target_speed = 7.0f;
+    float Coil_target_spd = 10.0f;
 
-    msg_motorctrl.Coil_L_speed = 0.0f;
-    msg_motorctrl.Coil_R_speed = 0.0f;
-    //初始化
-    Launcher_Init();
+    motorctrl.Coil_L_spd = 0.0f;
+    motorctrl.Coil_R_spd = 0.0f;
 
     //! 测试用
-    launcher.current_state = HAND_CONTROL;
-    sensor.string_tight = true;
+    sensor.is_string_tight = true;
+    sensor.is_door_open = true;
 
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
         om_suber_export(sensor_suber, &sensor, false);
-        // om_suber_export(tof_suber, &tof, false);
 
-        msg_motorctrl.trigger_lock = false; //!默认情况锁死扳机，只在特定状态中解锁
-        // msg_motorctrl.Coil_speed = 0.0f;
-
-        msg_motorctrl.Coil_L_speed = 0.0f;
-        msg_motorctrl.Coil_R_speed = 0.0f;
-        msg_motorctrl.String_L_speed = 0.0f;
-        msg_motorctrl.String_R_speed = 0.0f;
+        motorctrl.Coil_L_spd = 0.0f;
+        motorctrl.Coil_R_spd = 0.0f;
+        motorctrl.String_L_spd = 0.0f;
+        motorctrl.String_R_spd = 0.0f;
+        motorctrl.trigger_lock = true;
 
         //yaw轴控制,独立于发射逻辑
-        if (launcher.current_state != IDLE )
+        if (launcher.fsm_state != IDLE )
         {
-            msg_motorctrl.target_yaw = cmd.final_target_yaw;
+            motorctrl.yaw_spd = cmd.yaw;
         }
         else 
         {
-            msg_motorctrl.target_yaw = 0.0f;
-            msg_motorctrl.Coil_speed = 0.0f;
+            motorctrl.yaw_spd = 0.0f;
+            motorctrl.Coil_L_spd = 0.0f;
+            motorctrl.Coil_R_spd = 0.0f;
         }
 
-        if (cmd.launcher_action == DART_RELAX) 
+        if (cmd.action == DART_RELAX) 
         {
-            // 如果遥控器打到了 RELAX 档位，强行打断当前任务，回 IDLE
-            // 或者根据需求决定是否允许随时打断
-            launcher.current_state = IDLE; 
+            launcher.fsm_state = IDLE; 
         }
-        else if (cmd.launcher_action == DART_COIL_ADJUST || cmd.launcher_action == DART_STRING_ADJUST)
+        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
-            launcher.current_state = HAND_CONTROL;
+            launcher.fsm_state = HAND_CONTROL;
         }
 
-        //FSM   
-        switch (launcher.current_state)
+
+        //FSM具体实现逻辑   
+        switch (launcher.fsm_state)
         {
             case HAND_CONTROL:
-                if (cmd.launcher_action == DART_COIL_ADJUST)
+                if (cmd.action == DART_COIL_ADJUST)
                 {
-                    msg_motorctrl.Coil_L_speed = cmd.Coil_L_spd;
-                    msg_motorctrl.Coil_R_speed = cmd.Coil_R_spd;
+                    motorctrl.Coil_L_spd = cmd.Coil_L_spd;
+                    motorctrl.Coil_R_spd = cmd.Coil_R_spd;
                 }
-                else if (cmd.launcher_action == DART_STRING_ADJUST)
+                else if (cmd.action == DART_STRING_ADJUST)
                 {
-                    msg_motorctrl.String_L_speed = cmd.String_L_spd;
-                    msg_motorctrl.String_R_speed = cmd.String_R_spd;
+                    motorctrl.String_L_spd = cmd.String_L_spd;
+                    motorctrl.String_R_spd = cmd.String_R_spd;
                 }
-                else if (cmd.launcher_action == DART_FIRE)
+                else if (cmd.action == DART_FIRE)
                 {
-                    launcher.current_state = FIRING;
+                    launcher.fsm_state = FIRING;
                     break;
                 }
-                else if (cmd.launcher_action == DART_PREPARE)
-                    launcher.current_state = RESETTING;
+                else if (cmd.action == DART_PREPARE)
+                    launcher.fsm_state = RESETTING;
 
                 break;
                 
             case IDLE:
-                msg_motorctrl.yaw_speed = 0.0f;
-                msg_motorctrl.Coil_speed = 0.0f;
+                motorctrl.yaw_spd = 0.0f;
+                motorctrl.Coil_L_spd = 0.0f;
+                motorctrl.Coil_R_spd = 0.0f;
+                motorctrl.trigger_lock = true;
 
-                if (cmd.launcher_action == DART_PREPARE) 
-                    launcher.current_state = RESETTING;
+                if (cmd.action == DART_PREPARE) 
+                    launcher.fsm_state = RESETTING;
                 break;
 
             case RESETTING:
-                msg_motorctrl.trigger_lock = false;//扳机打开
+                motorctrl.trigger_lock = false;//扳机打开
 
-                msg_motorctrl.Coil_L_speed = Coil_target_speed; 
-                msg_motorctrl.Coil_R_speed = Coil_target_speed;//todo:注意正负号
+                motorctrl.Coil_L_spd = Coil_target_spd; 
+                motorctrl.Coil_R_spd = Coil_target_spd;//todo:注意正负号
 
-                if (sensor.launchplat_return)
+                if (sensor.is_launchplat_return)
                 {
                     tx_thread_sleep(200);//!要改！！！！！！！！！
-                    msg_motorctrl.trigger_lock = true;
-                    msg_motorctrl.Coil_speed = 0.0f;
-                    launcher.current_state = RETRACT_AND_LOAD;
+                    motorctrl.trigger_lock = true;
+                    motorctrl.Coil_L_spd = 0.0f;
+                    motorctrl.Coil_R_spd = 0.0f;
+                    launcher.fsm_state = RETRACT_AND_LOAD;
                 }
 
                 break;
 
             case RETRACT_AND_LOAD:
-                msg_motorctrl.trigger_lock = true; 
+                motorctrl.trigger_lock = true; 
                 
-                if (!sensor.coil_reset) 
+                if (!sensor.is_coil_reset) 
                 {
-                    msg_motorctrl.Coil_L_speed = -Coil_target_speed; 
-                    msg_motorctrl.Coil_R_speed = -Coil_target_speed; // 注意方向
+                    motorctrl.Coil_L_spd = -Coil_target_spd; 
+                    motorctrl.Coil_R_spd = -Coil_target_spd; // 注意方向
                 }
                 else 
                 {
-                    msg_motorctrl.Coil_L_speed = 0.0f;
-                    msg_motorctrl.Coil_R_speed = 0.0f;
+                    motorctrl.Coil_L_spd = 0.0f;
+                    motorctrl.Coil_R_spd = 0.0f;
                 }
 
-                Dart_Load(); 
+                Dart_Load_Test(&sensor); 
                 
                 //todo:飞镖装填
 
                 // 两个任务都完成了，才能进入READY
-                if (sensor.coil_reset && sensor.dart_loaded)
+                if (sensor.is_coil_reset && sensor.is_dart_loaded)
                 {
-                    launcher.current_state = READY;
+                    launcher.fsm_state = READY;
                 };
                 break;  
 
             case READY:
-                msg_motorctrl.trigger_lock = true;
-                msg_motorctrl.String_target_tension = cmd.final_target_tension;//保持力矩
+                motorctrl.trigger_lock = true;
+                motorctrl.String_target_tension = cmd.tension;//保持力矩
 
-                if (!sensor.string_tight)
+                if (!sensor.is_string_tight)
                 {
-                    launcher.current_state = TENSIONING;
+                    launcher.fsm_state = TENSIONING;
                 }
-                if (cmd.launcher_action == DART_FIRE)
+                if (cmd.action == DART_FIRE)
                 {
-                    if (sensor.door_open)
-                        launcher.current_state = FIRING;
+                    if (sensor.is_door_open)
+                        launcher.fsm_state = FIRING;
                 }
                 break;
 
             case TENSIONING:
-                msg_motorctrl.String_target_tension = cmd.final_target_tension;
-                if (sensor.string_tight)
-                    launcher.current_state = READY;
+                motorctrl.String_target_tension = cmd.tension;
+                if (sensor.is_string_tight)
+                    launcher.fsm_state = READY;
                 break;
 
 
             case FIRING:
-                msg_motorctrl.trigger_lock = false; //解锁扳机
-                if (sensor.fire_done)
+                motorctrl.trigger_lock = false; //解锁扳机
+                if (sensor.is_fire_done)
                 {
-                    // launcher.current_state = RESETTING;
+                    // launcher.fsm_state = RESETTING;
                     //! 测试逻辑
-                    launcher.current_state = IDLE;
+                    launcher.fsm_state = IDLE;
                 }
                 break;
         }
 
 
-        om_publish(motorctrl_topic, &msg_motorctrl, sizeof(msg_motor_ctrl_t), true, false);
+        om_publish(motorctrl_topic, &motorctrl, sizeof(msg_motor_ctrl_t), true, false);
         tx_thread_sleep(1);
     }
 
 }
-//todo:完善init
-void Launcher_Init()
-{
-    msg_motorctrl.yaw_mode = SPD;
-    msg_motorctrl.Coil_mode = SPD;
-    msg_motorctrl.Coil_speed = 0.0f;
-    msg_motorctrl.yaw_speed = 0.0f;
-    msg_motorctrl.trigger_lock = false;
-}
+
 
 /**
  * @brief 龙门架逻辑，手动装填测试版本
  * 
  */
-void Dart_Load()
+void Dart_Load_Test(msg_sensor_t* sensor)
 {
     // 定义静态变量来记录时间，static变量在函数退出后值依然保留
     static uint32_t start_time = 0;
     static bool is_loading = false;
 
     // 如果不在装填状态，重置标志位，直接返回
-    if (launcher.current_state != RETRACT_AND_LOAD)
+    if (launcher.fsm_state != RETRACT_AND_LOAD)
     {
         is_loading = false;
-        sensor.dart_loaded = false; // 确保非装填状态下标志位为假
+        sensor->is_dart_loaded = false; // 确保非装填状态下标志位为假
         return;
     }
 
@@ -234,11 +224,27 @@ void Dart_Load()
     if (current_time - start_time > 10000) 
     {
         // 3秒时间到，假装装填完毕
-        sensor.dart_loaded = true;
+        sensor->is_dart_loaded = true;
     }
     else
     {
         // 时间没到，还在装填中
-        sensor.dart_loaded = false;
+        sensor->is_dart_loaded = false;
     }
-}
+};
+
+void Dart_Load(msg_motor_ctrl_t* motorctrl)
+{
+    // 正式装填逻辑
+    motorctrl->gantry_open = true; // 打开龙门架
+    //todo:延时逻辑
+    motorctrl->gantry_open = false;
+    // if ()//todo:不知道是否要保留，可能使用延时处理
+    // {
+    //     sensor->is_dart_loaded = true;
+    // }
+    // else 
+    // {
+    //     sensor->is_dart_loaded = false;
+    // }
+};

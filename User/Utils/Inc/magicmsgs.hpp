@@ -204,23 +204,24 @@ typedef enum
 //todo:补充龙门架指令
 typedef enum
 {
-    GANRTY_IDLE = 0
-}GANTRY_ACTION;
+    GANTRY_IDLE = 0
+} GANTRY_ACTION;
 
 /**
  * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher和TaskGantry
  */
 struct msg_cmd_t
 {
-    LAUNCHER_ACTION launcher_action; // 飞镖发射指令
-    GANTRY_ACTION gantry_action;     // 龙门架动作指令
-    float final_target_yaw;   //期望角度（已包含offset）
-    float final_target_tension; //拉力值
+    LAUNCHER_ACTION action;
+    GANTRY_ACTION gantry_action;
+    float yaw;
+    float tension;
     float Coil_L_spd;
     float Coil_R_spd;
     float String_L_spd;
     float String_R_spd;
 };
+
 
 
 /**
@@ -230,7 +231,7 @@ struct msg_cmd_t
  struct msg_launcher_status_t
  {
     uint8_t current_state;
-    bool msg_fire_finished; //发射是否完成,需要用传感器判断
+    bool is_fire_finished; //发射是否完成,需要用传感器判断
  };
 
 
@@ -240,26 +241,29 @@ struct msg_cmd_t
  * yaw轴步进电机
  */
 struct msg_motor_ctrl_t {
-    float yaw_speed;
-    float yaw_torque;
-    float target_yaw;
+    float yaw_spd;
+    float yaw_tq;
     CTRL_MODE yaw_mode;
 
     bool trigger_lock;
 
-    float Coil_speed;
-    float Coil_torque;
     CTRL_MODE Coil_mode;
 
-    float Coil_L_speed;
-    float Coil_R_speed;
+    float Coil_L_spd;
+    float Coil_R_spd;
 
-    float String_L_speed;
-    float String_R_speed;
+    float Coil_L_tq;
+    float Coil_R_tq;
+
+    float String_L_spd;
+    float String_R_spd;
 
     float String_target_tension;
 
-    //todo:添加龙门架电机
+    bool gantry_reset;
+    bool gantry_open;
+    bool gantry_lock;
+
 };
 
 
@@ -279,14 +283,14 @@ struct msg_motor_ctrl_t {
  */
 struct msg_sensor_t
 {
-    bool coil_reset;//卷簧是否归位(上方)
-    bool door_open;//舱门是否打开
-    bool string_tight;//弦是否拉紧,可能不需要
-    bool launchplat_return; //发射台是否归位
+    bool is_coil_reset;//卷簧是否归位(上方)
+    bool is_door_open;//舱门是否打开
+    bool is_string_tight;//暂保留，后续可能删除
+    bool is_launchplat_return; //发射台是否归位
+    bool is_fire_done; //是否发射完成，可能不需要
+    bool is_dart_loaded;//飞镖装填完毕
     float string_L_force;//左副弦力矩
     float string_R_force;//右副弦力矩
-    bool fire_done; //是否发射完成，可能不需要
-    bool dart_loaded;//飞镖装填完毕
 };
 
 struct debug_motor_t
