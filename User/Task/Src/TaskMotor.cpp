@@ -34,6 +34,8 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
+// #define Gantrymotor_test
+
 void TaskMotors::MotorInit() 
 {
     //左右卷簧电机
@@ -98,6 +100,10 @@ void TaskMotors::SetModeAndPidParam()
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
+
+#ifdef Gantrymotor_test
+
+#endif
 
         //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)

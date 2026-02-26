@@ -89,11 +89,11 @@ extern "C" void ServiceBooster()
     /* Create my_thread! */
     tx_thread_create(&my_thread1, TX_NAME("my_thread1"),
         my_thread_entry, 0x1234, my_thread_stack1, sizeof(my_thread_stack1),
-        10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
+        12, 12, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&my_thread2, TX_NAME("my_thread2"),
         my_thread_entry2, 0x1234, my_thread_stack2, sizeof(my_thread_stack2),
-        10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
+        12, 12, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&RemoterThread, TX_NAME("RemoterThread"),
         RemoterThreadFun, 0x1234, RemoterThreadStack, sizeof(RemoterThreadStack),
@@ -113,5 +113,5 @@ extern "C" void ServiceBooster()
 
     tx_thread_create(&RefereeThread, TX_NAME("RefereeThread"),
         RefereeThreadFun, 0x1234, RefereeThreadStack, sizeof(RefereeThreadStack),
-        8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
+        10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

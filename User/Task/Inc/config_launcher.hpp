@@ -25,12 +25,17 @@ typedef enum
 }LAUNCHER_FSM_STATE;
 
 
-struct Launcher_Cxt_t
+struct Launcher_Cxt_t //todo:不知道需不需要
 {
     LAUNCHER_FSM_STATE fsm_state;
-    uint32_t state_start_tick; //暂未使用，用于处理FSM的延时/超时
 
     bool is_fire_done;
     bool is_load_done; //todo:
 };
 
+typedef struct 
+{ 
+    bool started; 
+    ULONG start_tick; 
+
+} delay_t;

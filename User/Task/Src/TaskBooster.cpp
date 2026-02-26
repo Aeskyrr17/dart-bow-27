@@ -31,15 +31,15 @@ extern "C" void TaskBooster(void)
 
     tx_thread_create(&LauncherThread, TX_NAME("LauncherThread"), LauncherThreadFun, 0x1234,
                      LauncherThreadStack, sizeof(LauncherThreadStack),
-                     7, 7, TX_NO_TIME_SLICE, TX_AUTO_START);
+                     6, 6, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&SysctrlThread, TX_NAME("SysctrlThread"), SysctrlThreadFun, 0x1234,
                      SysctrlThreadStack, sizeof(SysctrlThreadStack),
-                     6, 6, TX_NO_TIME_SLICE, TX_AUTO_START);
+                     5, 5, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&MotorThread, TX_NAME("MotorCtrlThread"), MotorThreadFun, 0x1234,
                      MotorThreadStack, sizeof(MotorThreadStack),
-                     8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
+                     7, 7, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
                      SensorThreadStack, sizeof(SensorThreadStack),

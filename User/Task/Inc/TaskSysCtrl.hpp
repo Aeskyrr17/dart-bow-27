@@ -3,6 +3,7 @@
  * @brief 飞镖参数设置
  * 
  */
+#include "magicmsgs.hpp"
 struct Dart_Config_t
 {
     int id;                     //飞镖编号
@@ -44,7 +45,7 @@ public:
         current_index = 0;
 
         last_fire_finished = false; //上电时应该为未发出状态
-        fired_count_this_open = 0;
+        fired_count_this_open = 0; //todo:未限制
     }
 
     /**
@@ -55,26 +56,31 @@ public:
         this->current_dart_id = this->sequence[this->current_index];
     }
 
-    //todo:增加一个函数，更新current_index和last_fire_finished
-//     /**
-//      * @brief 在循环中一直调用，检测是否发射完成,同时处理current_index的增加
-//      * 
-//      * @param msg_fire_finished TaskLauncher发送的msg
-//      */
-//     void Update_State(bool msg_fire_finished)
-//     {
 
-//         if (msg_fire_finished && !this->last_fire_finished)
-//         {
-//             this->current_index++;
-//             if (this->current_index >= 4) 
-//             {
-//             this->current_index = 0;
-//             }
+    /**
+     * @brief 在循环中一直调用，检测是否发射完成,同时处理current_index的增加
+     * 
+     * @param msg_fire_finished TaskLauncher发送的msg
+     * @todo 未测试
+     */
+    void Update_State(msg_launcher2sysctrl_t* msg)
+    {
 
-//         }
-//         this->last_fire_finished = msg_fire_finished;    // 更新历史记录
-//     }
+        if (msg->is_fire_finished && !this->last_fire_finished)
+        {
+            this->last_fire_finished = true;
+            if (msg->is_fire_finished && !this->last_fire_finished)
+            {
+                this->current_index++;
+                if (this->current_index >= 4) 
+                {
+                this->current_index = 0;
+                }
+
+            }       
+            this->last_fire_finished = msg->is_fire_finished;    // 更新历史记录
+        }   
+    }
 
 
 

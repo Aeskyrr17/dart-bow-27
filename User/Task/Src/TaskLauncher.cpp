@@ -20,37 +20,44 @@ uint8_t LauncherThreadStack[2048] = {0};
 Launcher_Cxt_t launcher{};
 
 void Dart_Load_Test(msg_sensor_t* sensor);
+bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
 [[nonreturn]] void LauncherThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
     om_topic_t *motorctrl_topic = om_config_topic(nullptr, "ca", "motorctrl", sizeof(msg_motor_ctrl_t));
     msg_motor_ctrl_t motorctrl{};
+    om_topic_t *lch2sys_topic = om_config_topic(nullptr, "ca", "lch2sys", sizeof(msg_launcher2sysctrl_t));
+    msg_launcher2sysctrl_t lch2sys{};
 
     om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
     msg_cmd_t cmd{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
     msg_sensor_t sensor{};
 
-    float Coil_target_spd = 10.0f;
+    delay_t trig_lock_delay{};
+    delay_t coil_delay{};
+
+    float Coil_target_spd = 15.0f; //卷簧速度
+    float Coil_retract_spd = -25.0f; //卷簧复位速度，注意方向
 
     motorctrl.Coil_L_spd = 0.0f;
     motorctrl.Coil_R_spd = 0.0f;
 
-    //! 测试用
-    sensor.is_string_tight = true;
-    sensor.is_door_open = true;
 
+    bool trigger_delay_ok = false;
+    bool coil_delay_ok = false;
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
         om_suber_export(sensor_suber, &sensor, false);
 
-        motorctrl.Coil_L_spd = 0.0f;
-        motorctrl.Coil_R_spd = 0.0f;
-        motorctrl.String_L_spd = 0.0f;
-        motorctrl.String_R_spd = 0.0f;
+        //! 测试用
+        sensor.is_string_tight = true;
+        sensor.is_door_open = true;
+
         motorctrl.trigger_lock = true;
+        lch2sys.is_fire_finished = false;
 
         //yaw轴控制,独立于发射逻辑
         if (launcher.fsm_state != IDLE )
@@ -114,16 +121,24 @@ void Dart_Load_Test(msg_sensor_t* sensor);
 
                 motorctrl.Coil_L_spd = Coil_target_spd; 
                 motorctrl.Coil_R_spd = Coil_target_spd;//todo:注意正负号
-
-                if (sensor.is_launchplat_return)
+                coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 300);
+                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 500);
+                if (coil_delay_ok)
                 {
-                    tx_thread_sleep(200);//!要改！！！！！！！！！
-                    motorctrl.trigger_lock = true;
-                    motorctrl.Coil_L_spd = 0.0f;
+                    motorctrl.Coil_L_spd = 0.0f; 
                     motorctrl.Coil_R_spd = 0.0f;
-                    launcher.fsm_state = RETRACT_AND_LOAD;
-                }
+                    coil_delay_ok = false;
+                };
 
+                if (trigger_delay_ok)
+                {
+                    motorctrl.trigger_lock = true;
+                    launcher.fsm_state = RETRACT_AND_LOAD;
+
+                    trigger_delay_ok = false;
+                }
+                
+               
                 break;
 
             case RETRACT_AND_LOAD:
@@ -131,8 +146,8 @@ void Dart_Load_Test(msg_sensor_t* sensor);
                 
                 if (!sensor.is_coil_reset) 
                 {
-                    motorctrl.Coil_L_spd = -Coil_target_spd; 
-                    motorctrl.Coil_R_spd = -Coil_target_spd; // 注意方向
+                    motorctrl.Coil_L_spd = Coil_retract_spd; 
+                    motorctrl.Coil_R_spd = Coil_retract_spd;
                 }
                 else 
                 {
@@ -175,16 +190,17 @@ void Dart_Load_Test(msg_sensor_t* sensor);
 
             case FIRING:
                 motorctrl.trigger_lock = false; //解锁扳机
-                if (sensor.is_fire_done)
+                if (sensor.is_fire_done)//todo：需修改
                 {
-                    // launcher.fsm_state = RESETTING;
+                    launcher.fsm_state = RESETTING;
                     //! 测试逻辑
-                    launcher.fsm_state = IDLE;
+                    lch2sys.is_fire_finished = true;
+                    // launcher.fsm_state = IDLE;
                 }
                 break;
         }
 
-
+        om_publish(lch2sys_topic, &lch2sys, sizeof(msg_launcher2sysctrl_t), true, false);
         om_publish(motorctrl_topic, &motorctrl, sizeof(msg_motor_ctrl_t), true, false);
         tx_thread_sleep(1);
     }
@@ -248,3 +264,30 @@ void Dart_Load(msg_motor_ctrl_t* motorctrl)
     //     sensor->is_dart_loaded = false;
     // }
 };
+
+
+
+/**
+ * @brief delay helper
+ * 
+ * @param ctx 
+ * @param delay_enable 开始延时的条件，外部控制
+ * @param delay_ticks 延时时间，单位tick
+ * 
+ */
+bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks)
+{
+    if (!delay_enable)
+    {
+        delay->started = false;
+        return false;
+    }
+    if (!delay->started)
+    {
+        delay->start_tick = tx_time_get();
+        delay->started = true;
+        return false;
+    }
+
+    return (tx_time_get() - delay->start_tick) >= delay_ticks;
+}

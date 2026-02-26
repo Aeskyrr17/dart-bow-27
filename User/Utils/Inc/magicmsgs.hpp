@@ -101,90 +101,28 @@ struct msg_ins_t {
     float accel[3];
 };
 
-// struct msg_solver_t
-// {
-//     float llen;
-//     float llen_dot;
-//     float rlen;
-//     float rlen_dot;
-
-//     float lphi;
-//     float lphi_dot;
-//     float rphi;
-//     float rphi_dot;
-
-//     float lalpha;
-//     float lalpha_dot;
-//     float ralpha;
-//     float ralpha_dot;
-    
-//     float N;
-// };
-
-// struct msg_ctrl_t
-// {
-//     float Tl[2];
-//     float Tr[2];
-//     float Twl;
-//     float Twr;
-// };
-
-// struct msg_odometry_t
-// {
-//     float x;
-//     float v;
-//     float a_z;
-// };
-
-// struct msg_cmd_t
-// {
-//     float x;
-//     float v;
-//     float w;
-//     float dyaw;
-//     float dlen;
-//     float roll;
-//     bool move;
-//     bool ifjump;
-//     bool ifflip;
-// };
 
 struct msg_visionrx_t
 {
-    uint8_t header;       // 发送数据包的头
-    uint8_t tracking : 1; // 跟踪的颜色
-    uint8_t fire : 1;     // 是否开火
-    uint8_t id : 4;       // 识别的id
-    uint8_t reserved : 2; // 保留位
-
-    float pitch;
-    float pitch_vel;
-    float pitch_acc;
-    float yaw;
-    float yaw_vel;
-    float yaw_acc;
-
-    float project_x;
-    float project_y;
-
+    uint8_t header; // 发送数据包的头
+    float distance;
+    float yaw; 
+    uint8_t stable_state;//0不稳定，1稳定
     uint16_t checksum; // 校验和
+    
 }__attribute__((packed));
+
 
 struct msg_visiontx_t
 {
-    uint8_t header;           // 发送数据包的头
-    uint8_t detect_color : 1; // 检测到的颜色
-    bool reset_tracker : 1;   // 是否重置追踪
-    uint8_t set_target : 4;   // 设置目标
-    uint8_t reserved : 2;     // 保留位
-    float q1;                 // 四元数
-    float q2;
-    float q3;
-    float q4;
-    float gyro_yaw;
-    float gyro_pitch;
-    uint16_t checksum; // 校验和
+    uint8_t header; //0x5A
+    uint8_t start_state;
+    uint8_t target_id; //0-outpost 1-base
+    uint8_t DartNumber;//1,2,3,4
+    uint8_t selected_target_id;
+    uint16_t checksum;
 } __attribute__((packed));
+
 
 /**
  * @brief 飞镖发射指令
@@ -198,22 +136,14 @@ typedef enum
     DART_FIRE = 4  // 发射
 }LAUNCHER_ACTION;
 
-/**
- * @brief 龙门架动作指令
- */
-//todo:补充龙门架指令
-typedef enum
-{
-    GANTRY_IDLE = 0
-} GANTRY_ACTION;
 
 /**
- * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher和TaskGantry
+ * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher
  */
 struct msg_cmd_t
 {
     LAUNCHER_ACTION action;
-    GANTRY_ACTION gantry_action;
+    // GANTRY_ACTION gantry_action;
     float yaw;
     float tension;
     float Coil_L_spd;
@@ -223,21 +153,8 @@ struct msg_cmd_t
 };
 
 
-
 /**
- * @brief 由TaskLauncher发送给TaskSysctrl
- * 
- */
- struct msg_launcher_status_t
- {
-    uint8_t current_state;
-    bool is_fire_finished; //发射是否完成,需要用传感器判断
- };
-
-
-
-/**
- * @brief 电机控制消息结构，由Tasklauncher和TaskGantry发送给Taskmotors
+ * @brief 电机控制消息结构，由Tasklauncher发送给Taskmotors
  * yaw轴步进电机
  */
 struct msg_motor_ctrl_t {
@@ -260,6 +177,7 @@ struct msg_motor_ctrl_t {
 
     float String_target_tension;
 
+    //龙门架电机
     bool gantry_reset;
     bool gantry_open;
     bool gantry_lock;
@@ -279,7 +197,6 @@ struct msg_motor_ctrl_t {
 
 /**
  * @brief 储存各传感器发送的标志位
- * 
  */
 struct msg_sensor_t
 {
@@ -299,6 +216,17 @@ struct debug_motor_t
     float position;
     float current;
     float torque;
+};
+
+struct msg_motor2launcher_t
+{
+    
+};
+
+struct msg_launcher2sysctrl_t
+{
+    uint8_t current_state; //保留
+    bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断
 };
 
 #ifdef __cplusplus

@@ -14,7 +14,6 @@
 TX_THREAD SysctrlThread;
 uint8_t SysctrlThreadStack[2048] = {0};
 
-void Run_Hand_Control(msg_remoter_t* remoter, msg_cmd_t* cmd);
 void Run_Auto_Control();
 
 DartLibrary dart_lib;
@@ -32,15 +31,31 @@ DartLibrary dart_lib;
     msg_remoter_t remoter{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor",UINT32_MAX));
     msg_sensor_t sensor{};
+    om_suber_t *lch2sys_suber = om_subscribe(om_find_topic("lch2sys",UINT32_MAX));
+    msg_launcher2sysctrl_t lch2sys{};
 
+    dart_lib.dart[1] = {1, 0.0f,0.0f};
+    dart_lib.dart[2] = {2, 0.0f,0.0f};
+    dart_lib.dart[3] = {3, 0.0f,0.0f};
+    dart_lib.dart[4] = {4, 0.0f,0.0f};
+    dart_lib.dart[5] = {5, 0.0f,0.0f};
+    dart_lib.dart[6] = {6, 0.0f,0.0f};
+    dart_lib.dart[7] = {7, 0.0f,0.0f};
+    dart_lib.dart[8] = {8, 0.0f,0.0f};
+    dart_lib.dart[9] = {9, 0.0f,0.0f};
+
+    dart_lib.sequence[0] = 1;
+    dart_lib.sequence[1] = 2;
+    dart_lib.sequence[2] = 3;
+    dart_lib.sequence[3] = 4;
 
     for (;;)
     {   
-        cmd = {};//每次循环清空cmd
+        memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
 
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
-
+        om_suber_export(lch2sys_suber, &lch2sys, false);
 
         dart_lib.Find_Dart_id();
         int id = dart_lib.current_dart_id;
@@ -100,6 +115,8 @@ DartLibrary dart_lib;
         {
             cmd.action = DART_RELAX;
         }
+
+        dart_lib.Update_State(&lch2sys);
 
         om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
         om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t),true, false);
