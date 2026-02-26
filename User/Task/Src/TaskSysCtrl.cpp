@@ -109,7 +109,7 @@ DartLibrary dart_lib;
         else if (remoter.left_sw == Up && remoter.right_sw == Up)
         {
             Run_Auto_Control();
-            cmd.action = DART_RELAX; //todo:默认不发射，还未确定auto逻辑
+            cmd.action = DART_RELAX; //todo:默认不发射，auto逻辑待定
         }
         else 
         {

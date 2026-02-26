@@ -38,12 +38,12 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
     delay_t trig_lock_delay{};
     delay_t coil_delay{};
 
-    float Coil_target_spd = 15.0f; //卷簧速度
-    float Coil_retract_spd = -25.0f; //卷簧复位速度，注意方向
+    float Coil_pull_spd = 15.0f; //卷簧速度
+    float Coil_retern_spd = -25.0f; //卷簧复位速度，注意方向
+
 
     motorctrl.Coil_L_spd = 0.0f;
     motorctrl.Coil_R_spd = 0.0f;
-
 
     bool trigger_delay_ok = false;
     bool coil_delay_ok = false;
@@ -59,17 +59,18 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
         motorctrl.trigger_lock = true;
         lch2sys.is_fire_finished = false;
 
-        //yaw轴控制,独立于发射逻辑
-        if (launcher.fsm_state != IDLE )
-        {
-            motorctrl.yaw_spd = cmd.yaw;
-        }
-        else 
-        {
-            motorctrl.yaw_spd = 0.0f;
-            motorctrl.Coil_L_spd = 0.0f;
-            motorctrl.Coil_R_spd = 0.0f;
-        }
+        // //yaw轴控制,独立于发射逻辑
+        // if (launcher.fsm_state != IDLE )
+        // {
+        //     motorctrl.yaw_spd = cmd.yaw;
+        // }
+        // else 
+        // {
+        //     motorctrl.yaw_spd = 0.0f;
+        //     motorctrl.Coil_L_spd = 0.0f;
+        //     motorctrl.Coil_R_spd = 0.0f;
+        // }
+        motorctrl.yaw_spd = cmd.yaw;//yaw轴控制,独立于发射逻辑,在relax状态下也可动//todo:考虑是否需要在IDLE状态下强制关闭yaw轴
 
         if (cmd.action == DART_RELAX) 
         {
@@ -107,7 +108,7 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 break;
                 
             case IDLE:
-                motorctrl.yaw_spd = 0.0f;
+                // motorctrl.yaw_spd = 0.0f;
                 motorctrl.Coil_L_spd = 0.0f;
                 motorctrl.Coil_R_spd = 0.0f;
                 motorctrl.trigger_lock = true;
@@ -119,8 +120,10 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
             case RESETTING:
                 motorctrl.trigger_lock = false;//扳机打开
 
-                motorctrl.Coil_L_spd = Coil_target_spd; 
-                motorctrl.Coil_R_spd = Coil_target_spd;//todo:注意正负号
+                motorctrl.Coil_L_spd = Coil_pull_spd; 
+                motorctrl.Coil_R_spd = Coil_pull_spd;
+
+                //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
                 coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 300);
                 trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 500);
                 if (coil_delay_ok)
@@ -146,8 +149,8 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 
                 if (!sensor.is_coil_reset) 
                 {
-                    motorctrl.Coil_L_spd = Coil_retract_spd; 
-                    motorctrl.Coil_R_spd = Coil_retract_spd;
+                    motorctrl.Coil_L_spd = Coil_retern_spd; 
+                    motorctrl.Coil_R_spd = Coil_retern_spd;
                 }
                 else 
                 {

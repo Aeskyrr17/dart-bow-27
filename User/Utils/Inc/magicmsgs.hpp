@@ -143,7 +143,7 @@ typedef enum
 struct msg_cmd_t
 {
     LAUNCHER_ACTION action;
-    // GANTRY_ACTION gantry_action;
+
     float yaw;
     float tension;
     float Coil_L_spd;
@@ -200,14 +200,14 @@ struct msg_motor_ctrl_t {
  */
 struct msg_sensor_t
 {
-    bool is_coil_reset;//卷簧是否归位(上方)
-    bool is_door_open;//舱门是否打开
-    bool is_string_tight;//暂保留，后续可能删除
-    bool is_launchplat_return; //发射台是否归位
-    bool is_fire_done; //是否发射完成，可能不需要
-    bool is_dart_loaded;//飞镖装填完毕
-    float string_L_force;//左副弦力矩
-    float string_R_force;//右副弦力矩
+    bool is_coil_reset;         //卷簧是否归位(上方)
+    bool is_door_open;          //舱门是否打开
+    bool is_string_tight;       //暂保留，后续可能删除
+    bool is_launchplat_return;  //发射台是否归位
+    bool is_fire_done;          //是否发射完成，可能不需要
+    bool is_dart_loaded;        //飞镖装填完毕
+    float string_L_force;       //左副弦力矩
+    float string_R_force;       //右副弦力矩
 };
 
 struct debug_motor_t
