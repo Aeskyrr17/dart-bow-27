@@ -90,6 +90,62 @@ void Append_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
   pchMessage[dwLength - 1] = (uint8_t)((w_crc >> 8) & 0x00ff);
 }
 
+// Modbus CRC16 (poly: 0xA001, init: 0xFFFF)
+const uint16_t CRC16_MODBUS_INIT = 0xFFFF;
+
+uint16_t Get_CRC16_Modbus_Check_Sum(const uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC)
+{
+  uint8_t bit = 0;
+
+  if (pchMessage == nullptr)
+    return 0xFFFF;
+
+  while (dwLength--)
+  {
+    wCRC ^= (uint16_t)(*pchMessage++);
+
+    for (bit = 0; bit < 8; bit++)
+    {
+      if ((wCRC & 0x0001) != 0)
+      {
+        wCRC = (wCRC >> 1) ^ 0xA001;
+      }
+      else
+      {
+        wCRC = (wCRC >> 1);
+      }
+    }
+  }
+
+  return wCRC;
+}
+
+uint32_t Verify_CRC16_Modbus_Check_Sum(const uint8_t *pchMessage, uint32_t dwLength)
+{
+  uint16_t w_expected = 0;
+
+  if ((pchMessage == nullptr) || (dwLength <= 2))
+    return false;
+
+  w_expected = Get_CRC16_Modbus_Check_Sum(pchMessage, dwLength - 2, CRC16_MODBUS_INIT);
+  return (
+      (w_expected & 0xff) == pchMessage[dwLength - 2] &&
+      ((w_expected >> 8) & 0xff) == pchMessage[dwLength - 1]);
+}
+
+void Append_CRC16_Modbus_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
+{
+  uint16_t w_crc = 0;
+
+  if ((pchMessage == nullptr) || (dwLength <= 2))
+    return;
+
+  w_crc = Get_CRC16_Modbus_Check_Sum(pchMessage, dwLength - 2, CRC16_MODBUS_INIT);
+
+  pchMessage[dwLength - 2] = (uint8_t)(w_crc & 0x00ff);
+  pchMessage[dwLength - 1] = (uint8_t)((w_crc >> 8) & 0x00ff);
+}
+
 // crc8
 const uint8_t CRC8_INIT = 0xff;
 const uint8_t W_CRC8_TABLE[256] = {
