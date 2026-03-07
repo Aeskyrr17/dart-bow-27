@@ -221,6 +221,46 @@ class ZDTStepper
         can_SendCmd(this->_hcan, cmd, 11);
     }
 
+/**
+  * @brief    修改PID参数
+  * @param    addr     ：电机地址
+  * @param    svF      ：是否存储标志，false为不存储，true为存储
+  * @param    pTkp 	 	 ：梯形曲线位置环比例系数，默认为126640
+	* @param    pBkp 	 	 ：直通限速位置环比例系数，默认为126640
+	* @param    vkp 	 	 ：速度环比例系数，42默认为15600
+	* @param    vki 	 	 ：速度环积分系数，42默认为26
+  * @retval   地址 + 功能码 + 命令状态 + 校验字节
+  */
+void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp, uint32_t vki)
+{
+    uint8_t cmd[32] = {0};
+  
+    // 装载命令
+    cmd[0]  =  this->_id;                 // 地址
+    cmd[1]  =  0x4A;                      // 功能码
+    cmd[2]  =  0xC3;                      // 辅助码
+    cmd[3]  =  svF;                       // 是否存储标志，false为不存储，true为存储
+    cmd[4]  =  (uint8_t)(pTkp >> 24);			// pTkp
+	cmd[5]  =  (uint8_t)(pTkp >> 16);
+	cmd[6]  =  (uint8_t)(pTkp >> 8);
+	cmd[7]  =  (uint8_t)(pTkp >> 0);
+	cmd[8]  =  (uint8_t)(pBkp >> 24);			// pBkp
+	cmd[9]  =  (uint8_t)(pBkp >> 16);
+	cmd[10] =  (uint8_t)(pBkp >> 8);
+	cmd[11] =  (uint8_t)(pBkp >> 0);
+	cmd[12] =  (uint8_t)(vkp >> 24);			// vkp
+	cmd[13] =  (uint8_t)(vkp >> 16);
+	cmd[14] =  (uint8_t)(vkp >> 8);
+	cmd[15] =  (uint8_t)(vkp >> 0);
+	cmd[16] =  (uint8_t)(vki >> 24);			// vki
+	cmd[17] =  (uint8_t)(vki >> 16);
+	cmd[18] =  (uint8_t)(vki >> 8);
+	cmd[19] =  (uint8_t)(vki >> 0);
+    cmd[20] =  0x6B;                      // 校验字节
+  
+    // 发送命令
+    can_SendCmd(this->_hcan,cmd, 21);
+}
 
 /**
   * @brief    速度模式限电流控制（X42S/Y42）
@@ -319,8 +359,7 @@ class TaskMotors
     M3508 CoilSpringMotorL;         //卷簧电机L
     M3508 CoilSpringMotorR;         //卷簧电机R
 
-    // Stepper StringMotorL;           //弓弦调节步进电机L
-    // Stepper StringMotorR;           //弓弦调节步进电机R
+
     Stepper YawMotor;
 
     ZDTStepper StringMotorL;
