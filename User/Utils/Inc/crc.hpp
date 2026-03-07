@@ -35,6 +35,31 @@ void Append_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength);
 uint16_t Get_CRC16_Check_Sum(const uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC);
 
 /**
+ * @brief Modbus CRC16 Verify function
+ * @param[in] pchMessage : Data to Verify,
+ * @param[in] dwLength : Stream length = Data + checksum
+ * @return : True or False (CRC Verify Result)
+ */
+uint32_t Verify_CRC16_Modbus_Check_Sum(const uint8_t *pchMessage, uint32_t dwLength);
+
+/**
+ * @brief Append Modbus CRC16 value to the end of the buffer
+ * @param[in] pchMessage : Data to Verify,
+ * @param[in] dwLength : Stream length = Data + checksum
+ * @return none
+ */
+void Append_CRC16_Modbus_Check_Sum(uint8_t *pchMessage, uint32_t dwLength);
+
+/**
+ * @brief Modbus CRC16 calculation function
+ * @param[in] pchMessage : Data to Verify,
+ * @param[in] dwLength : Stream length = Data + checksum
+ * @param[in] wCRC : CRC16 init value(default : 0xFFFF)
+ * @return : CRC16 checksum
+ */
+uint16_t Get_CRC16_Modbus_Check_Sum(const uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC);
+
+/**
  * @brief CRC8 Verify function
  * @param[in] pchMessage : Data to Verify,
  * @param[in] dwLength : Stream length = Data + checksum
