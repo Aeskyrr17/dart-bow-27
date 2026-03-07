@@ -63,7 +63,23 @@ DartLibrary dart_lib;
         float my_tension = dart_lib.dart[id].tension_tq;
         float target_yaw = remoter.right_x + my_offset;
 
-        if (remoter.left_sw == Down)
+        //先判断edge判断的fire
+        if (remoter.left_sw == Mid && remoter.right_sw == M2U)
+        {
+            cmd.action = DART_FIRE;
+            cmd.yaw = target_yaw;
+            cmd.tension = my_tension;
+        }
+        //右上，手动trigger
+        else if (remoter.right_sw == Up && remoter.left_sw == M2U)
+        {
+            cmd.action = DART_TRIGGER_OPEN;
+        }
+        else if (remoter.right_sw == Up && remoter.left_sw == U2M)
+        {
+            cmd.action = DART_TRIGGER_CLOSE;
+        }
+        else if (remoter.left_sw == Down)
         {
             if (remoter.right_sw == Down)
             {
@@ -94,12 +110,6 @@ DartLibrary dart_lib;
                 cmd.yaw = target_yaw;
                 cmd.tension = my_tension;
 
-            }
-            else if (remoter.right_sw == Up)
-            {
-                cmd.action = DART_FIRE;
-                cmd.yaw = target_yaw; //fire模式下yaw角度和torque都需要保持
-                cmd.tension = my_tension;
             }
             else 
             {

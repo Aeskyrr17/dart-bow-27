@@ -133,7 +133,9 @@ typedef enum
     DART_PREPARE= 1,    //调整yaw角度，
     DART_COIL_ADJUST = 2,    //调整coil
     DART_STRING_ADJUST = 3, //调整副弦
-    DART_FIRE = 4  // 发射
+    DART_FIRE = 4,  // 发射
+    DART_TRIGGER_OPEN,
+    DART_TRIGGER_CLOSE
 }LAUNCHER_ACTION;
 
 

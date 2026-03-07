@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TaskLauncher.cpp
  * @author Aeskyrr17
  * @brief 发射状态机和控制逻辑
@@ -47,6 +47,7 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
     bool trigger_delay_ok = false;
     bool coil_delay_ok = false;
+    bool hand_trigger_lock = true;
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -74,9 +75,11 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
         if (cmd.action == DART_RELAX) 
         {
-            launcher.fsm_state = IDLE; 
+            if (launcher.fsm_state != HAND_CONTROL || hand_trigger_lock)
+                launcher.fsm_state = IDLE; 
         }
-        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST)
+        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST ||
+                 cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
             launcher.fsm_state = HAND_CONTROL;
@@ -87,6 +90,11 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
         switch (launcher.fsm_state)
         {
             case HAND_CONTROL:
+                motorctrl.trigger_lock = hand_trigger_lock;
+                motorctrl.Coil_L_spd = 0.0f;
+                motorctrl.Coil_R_spd = 0.0f;
+                motorctrl.String_L_spd = 0.0f;
+                motorctrl.String_R_spd = 0.0f;
                 if (cmd.action == DART_COIL_ADJUST)
                 {
                     motorctrl.Coil_L_spd = cmd.Coil_L_spd;
@@ -104,6 +112,16 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 }
                 else if (cmd.action == DART_PREPARE)
                     launcher.fsm_state = RESETTING;
+                else if (cmd.action == DART_TRIGGER_CLOSE)
+                {
+                    hand_trigger_lock = true;
+                    motorctrl.trigger_lock = true;
+                }
+                else if (cmd.action == DART_TRIGGER_OPEN)
+                {
+                    hand_trigger_lock = false;
+                    motorctrl.trigger_lock = false;
+                }
 
                 break;
                 
