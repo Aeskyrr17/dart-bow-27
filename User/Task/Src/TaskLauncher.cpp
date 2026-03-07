@@ -79,7 +79,8 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 launcher.fsm_state = IDLE; 
         }
         else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST ||
-                 cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE)
+                 cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
+                 cmd.action == DART_YAW_ADJUST)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
             launcher.fsm_state = HAND_CONTROL;

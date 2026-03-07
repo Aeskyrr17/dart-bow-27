@@ -102,7 +102,8 @@ DartLibrary dart_lib;
         {
             if (remoter.right_sw == Down)
             {
-                cmd.action = DART_RELAX;
+                cmd.action = DART_YAW_ADJUST;
+                cmd.yaw = remoter.right_x;
             }
             else if (remoter.right_sw == Mid) 
             {
