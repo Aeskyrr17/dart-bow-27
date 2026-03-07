@@ -38,8 +38,8 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
     delay_t trig_lock_delay{};
     delay_t coil_delay{};
 
-    float Coil_pull_spd = 15.0f; //卷簧速度
-    float Coil_retern_spd = -25.0f; //卷簧复位速度，注意方向
+    float Coil_pull_spd = 20.0f; //卷簧速度
+    float Coil_retern_spd = -40.0f; //卷簧复位速度，注意方向
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -143,10 +143,12 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 motorctrl.Coil_R_spd = Coil_pull_spd;
 
                 //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
-                coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 300);
-                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 500);
+                coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 0);
+                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 1000);
                 if (coil_delay_ok)
                 {
+                    motorctrl.trigger_lock = true;
+
                     motorctrl.Coil_L_spd = 0.0f; 
                     motorctrl.Coil_R_spd = 0.0f;
                     coil_delay_ok = false;
@@ -154,7 +156,6 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
                 if (trigger_delay_ok)
                 {
-                    motorctrl.trigger_lock = true;
                     launcher.fsm_state = RETRACT_AND_LOAD;
 
                     trigger_delay_ok = false;

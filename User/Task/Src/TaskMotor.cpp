@@ -1,11 +1,23 @@
+/**
+ * @file TaskMotor.cpp
+ * @author Aeskyrr17
+ * @brief 
+ * @version 0.1
+ * @date 2026-02-27
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
+#include "om.h"
+#include "X_V2.hpp"
 #include "main.h"
 #include "tx_api.h"
-#include "om.h"
 
 #include "DJIMotorHandler.hpp"
 #include "bsp_can.hpp"
 #include "pid.hpp"
 #include "magicmsgs.hpp"
+#include "math.hpp"
 
 #include "config_motor.hpp"
 
@@ -25,8 +37,12 @@ PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITI
 PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorL_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorR_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
+#define STRING_HAND_CONTROL                                                                                                                                                                                           
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -34,7 +50,7 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
-// #define Gantrymotor_test
+
 
 void TaskMotors::MotorInit() 
 {
@@ -45,7 +61,7 @@ void TaskMotors::MotorInit()
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
 
     //龙门架装填电机
-    DJIMotorhandler->registerMotor(&GantryMotor, &hfdcan1, 0x203);
+    DJIMotorhandler->registerMotor(&GantryMotor, &hfdcan1, 0x204);
     GantryMotor.gearBox = GearBox::GearBox_M2006;
     //扳机电机
     TriggerMotor.Init(&htim1, TIM_CHANNEL_3);
@@ -64,7 +80,10 @@ void TaskMotors::SetModeAndPidParam()
 {
     CoilSpringMotorL.controlMode = M3508::SPD_MODE;
     CoilSpringMotorR.controlMode = M3508::SPD_MODE;
-    GantryMotor.controlMode = M2006::SPD_MODE;
+    GantryMotor.controlMode = M2006::POS_MODE;
+
+    StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 1);
+    StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
 }
 
 // void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
@@ -82,13 +101,16 @@ void TaskMotors::SetModeAndPidParam()
 
     om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
     msg_motor_ctrl_t motorctrl{};
+    om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
+    msg_sensor_t sensor{};
 
     motors->MotorInit();
     motors->SetModeAndPidParam();
     motors->YawMotor.SetTargetSpeed(0);
     motors->TriggerMotor.Trigger_Lock();
 
-    float gantry_target_pos = 0.0f;
+    //todo:后续考虑整理局部变量
+    float gantry_target_pos = 0.52f; //30度
 
     float yaw_target_hz = 0.0f;
 
@@ -100,10 +122,9 @@ void TaskMotors::SetModeAndPidParam()
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
+        om_suber_export(sensor_suber, &sensor, false);
 
-#ifdef Gantrymotor_test
 
-#endif
 
         //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)
@@ -128,19 +149,12 @@ void TaskMotors::SetModeAndPidParam()
         //     coil_R_spd = 0;        
 
 
+
                 
-        if (motorctrl.gantry_reset)
-        {
-            gantry_target_pos = motors->gantry_pos.reset;
-        }
-        else if (motorctrl.gantry_open)
-        {
-            gantry_target_pos = motors->gantry_pos.open;
-        }
-        else if (motorctrl.gantry_lock)
-        {
-            gantry_target_pos = motors->gantry_pos.lock;
-        }
+        if      (motorctrl.gantry_reset)    {gantry_target_pos = motors->gantry_pos.reset;}
+        else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
+        else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
+
         //龙门架电机PID
         GantryMotor_pos_pid.ref = gantry_target_pos;
         GantryMotor_pos_pid.fdb = motors->GantryMotor.motorFeedback.positionFdb;
@@ -150,7 +164,7 @@ void TaskMotors::SetModeAndPidParam()
         GantryMotor_spd_pid.fdb = motors->GantryMotor.motorFeedback.speedFdb;
         GantryMotor_spd_pid.UpdateResult();
         motors->GantryMotor.currentSet = static_cast<int16_t>(GantryMotor_spd_pid.result);
-        
+
         //卷簧电机PID
         if (motorctrl.Coil_mode == SPD)    
         {
@@ -172,7 +186,10 @@ void TaskMotors::SetModeAndPidParam()
 
         DJIMotorhandler->sendControlData();//发送控制指令给电机
 
+        coil_L_debug.position = motors->CoilSpringMotorL.motorFeedback.positionFdb;
+        coil_R_debug.position = motors->CoilSpringMotorR.motorFeedback.positionFdb;
 
+#ifdef STRING_HAND_CONTROL
 
         //yaw轴步进电机简单控制逻辑
         if (motorctrl.yaw_spd > 0.03)
@@ -192,12 +209,12 @@ void TaskMotors::SetModeAndPidParam()
         if (motorctrl.String_L_spd > 0.03)
         {
             string_L_dir = 0;
-            string_L_spd = 600.0f;
+            string_L_spd = 1000.0f;
         }
         else if (motorctrl.String_L_spd < -0.03)
         {
             string_L_dir = 1;
-            string_L_spd = 600.0f;
+            string_L_spd = 1000.0f;
         }
         else 
             string_L_spd = 0.0f;     
@@ -206,19 +223,57 @@ void TaskMotors::SetModeAndPidParam()
         if (motorctrl.String_R_spd > 0.03)
         {
             string_R_dir = 1;
-            string_R_spd = 600.0f;
+            string_R_spd = 1000.0f;
         }
         else if (motorctrl.String_R_spd < -0.03)
         {
             string_R_dir = 0;
-            string_R_spd = 600.0f;
+            string_R_spd = 1000.0f;
         }
         else 
             string_R_spd = 0.0f;     
 
-        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 500, string_L_spd , false, 3000);
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 500 , string_R_spd , false, 3000);
+        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, string_L_spd , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000 , string_R_spd , false, 3000);
+#else 
 
+//! for test
+        motorctrl.Coil_L_tq = 130000;
+        motorctrl.Coil_R_tq = 130000;
+        StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
+        StringMotorL_tq_pid.fdb = sensor.string_L_force;
+        StringMotorL_tq_pid.UpdateResult();
+
+        string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
+
+        float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
+        if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
+
+        StringMotorR_tq_pid.ref = motorctrl.Coil_R_tq;
+        StringMotorR_tq_pid.fdb = sensor.string_R_force;
+        StringMotorR_tq_pid.UpdateResult();
+
+        string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
+
+        float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
+        if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
+
+        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 65535, cmd_spd_L , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 65535, cmd_spd_R , false, 3000);
+
+        // motors->StringMotorL.X_V2_Torque_Control(motors->StringMotorL._id, string_L_dir, uint16_t t_ramp, uint16_t torque, bool snF)
+
+#endif
+//111debug
+        // motors->TriggerMotor.Trigger_Lock();
+        // tx_thread_sleep(5000);
+        // motors->TriggerMotor.Trigger_Lock();
+        // tx_thread_sleep(5000);
+        // // motors->TriggerMotor.Trigger_Open();
+
+
+        // motors->TriggerMotor.Trigger_Lock();
+        // motors->TriggerMotor.Trigger_1();
 
 
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
