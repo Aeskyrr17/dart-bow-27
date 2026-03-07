@@ -37,6 +37,7 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
     delay_t trig_lock_delay{};
     delay_t coil_delay{};
+    delay_t coil_reset_delay{};
 
     float Coil_pull_spd = 15.0f; //卷簧速度
     float Coil_retern_spd = -25.0f; //卷簧复位速度，注意方向
@@ -47,6 +48,7 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
     bool trigger_delay_ok = false;
     bool coil_delay_ok = false;
+    bool coil_reset_delay_ok = false;
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -59,24 +61,13 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
         motorctrl.trigger_lock = true;
         lch2sys.is_fire_finished = false;
 
-        // //yaw轴控制,独立于发射逻辑
-        // if (launcher.fsm_state != IDLE )
-        // {
-        //     motorctrl.yaw_spd = cmd.yaw;
-        // }
-        // else 
-        // {
-        //     motorctrl.yaw_spd = 0.0f;
-        //     motorctrl.Coil_L_spd = 0.0f;
-        //     motorctrl.Coil_R_spd = 0.0f;
-        // }
-        motorctrl.yaw_spd = cmd.yaw;//yaw轴控制,独立于发射逻辑,在relax状态下也可动//todo:考虑是否需要在IDLE状态下强制关闭yaw轴
 
+        
         if (cmd.action == DART_RELAX) 
         {
             launcher.fsm_state = IDLE; 
         }
-        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST)
+        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST || cmd.action == DART_YAW_ADJUST)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
             launcher.fsm_state = HAND_CONTROL;
@@ -96,6 +87,10 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 {
                     motorctrl.String_L_spd = cmd.String_L_spd;
                     motorctrl.String_R_spd = cmd.String_R_spd;
+                }
+                else if (cmd.action == DART_YAW_ADJUST)
+                {
+                    motorctrl.yaw_spd = cmd.yaw;
                 }
                 else if (cmd.action == DART_FIRE)
                 {
@@ -124,18 +119,23 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 motorctrl.Coil_R_spd = Coil_pull_spd;
 
                 //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
-                coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 300);
-                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 500);
+                coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 0);
+                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 700);
+                // coil_reset_delay_ok = DelayReached(&coil_reset_delay, sensor.is_coil_reset, 10);
                 if (coil_delay_ok)
                 {
                     motorctrl.Coil_L_spd = 0.0f; 
                     motorctrl.Coil_R_spd = 0.0f;
+                    motorctrl.trigger_lock = true;
+
                     coil_delay_ok = false;
                 };
 
                 if (trigger_delay_ok)
                 {
                     motorctrl.trigger_lock = true;
+                    motorctrl.Coil_L_spd = Coil_retern_spd;
+                    motorctrl.Coil_R_spd = Coil_retern_spd;
                     launcher.fsm_state = RETRACT_AND_LOAD;
 
                     trigger_delay_ok = false;
