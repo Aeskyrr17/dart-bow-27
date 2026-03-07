@@ -36,8 +36,8 @@ class ServoMotors
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 750 / 20000.0f;
-        this->lock_pulse = 1750 / 20000.0f;//50Hz
+        this->open_pulse = 1100  / 20000.0f;
+        this->lock_pulse = 1630 / 20000.0f;//50Hz //1750
     }
 
     void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
@@ -48,7 +48,10 @@ class ServoMotors
         PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
     }
 
-
+    void Trigger_1()
+    {
+         PWM_SetDutyRatio(this->htim, 1500 / 20000.0f, this->channel); //默认闭合
+    }
 
     void Trigger_Open()
     {
@@ -78,6 +81,7 @@ class ZDTStepper
 
     uint8_t _id;
     FDCAN_HandleTypeDef* _hcan;
+    uint8_t dir;
 
     void Init(FDCAN_HandleTypeDef* hcan, uint8_t id)
     {
@@ -332,9 +336,9 @@ class TaskMotors
 
     struct GantryMotorPosition
     {
-        float open = 0.0f;
-        float reset; //待测试
-        float lock;
+        float open = 0.52f;
+        float reset = 0; //待测试
+        float lock = -0.52; 
     };
     GantryMotorPosition gantry_pos;
 
