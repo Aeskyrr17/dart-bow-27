@@ -72,8 +72,8 @@ DartLibrary dart_lib;
             else if (remoter.right_sw == Mid)
             {
                 cmd.action = DART_COIL_ADJUST;
-                cmd.Coil_L_spd =  - remoter.left_y * 10;
-                cmd.Coil_R_spd =  - remoter.right_y * 10;
+                cmd.Coil_L_spd =  - remoter.left_y * 20;
+                cmd.Coil_R_spd =  - remoter.right_y * 20;
             }
             else if (remoter.right_sw == Up)
             {
@@ -86,7 +86,8 @@ DartLibrary dart_lib;
         {
             if (remoter.right_sw == Down)
             {
-                cmd.action = DART_RELAX;
+                cmd.action = DART_YAW_ADJUST;
+                cmd.yaw = target_yaw;
             }
             else if (remoter.right_sw == Mid) 
             {
