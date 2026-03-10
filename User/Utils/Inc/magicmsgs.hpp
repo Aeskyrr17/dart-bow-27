@@ -130,11 +130,13 @@ struct msg_visiontx_t
 typedef enum
 {
     DART_RELAX = 0,     // 放松或急停
-    DART_PREPARE= 1,    //自动上弦下弦
-    DART_YAW_ADJUST = 2,
-    DART_COIL_ADJUST = 3,    //调整coil
-    DART_STRING_ADJUST = 4, //调整副弦
-    DART_FIRE = 5  // 发射
+    DART_PREPARE= 1,    //调整yaw角度，
+    DART_COIL_ADJUST = 2,    //调整coil
+    DART_STRING_ADJUST = 3, //调整副弦
+    DART_FIRE = 4,  // 发射
+    DART_TRIGGER_OPEN,
+    DART_TRIGGER_CLOSE,
+    DART_YAW_ADJUST
 }LAUNCHER_ACTION;
 
 

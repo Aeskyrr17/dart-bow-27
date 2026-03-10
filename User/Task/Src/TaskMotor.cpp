@@ -37,9 +37,7 @@ PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITI
 PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-// PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorL_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-// PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorR_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 #define STRING_HAND_CONTROL                                                                                                                                                                                           
@@ -49,7 +47,6 @@ debug_motor_t coil_R_debug{};
 debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
-
 
 
 void TaskMotors::MotorInit() 
@@ -86,14 +83,6 @@ void TaskMotors::SetModeAndPidParam()
     StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
 }
 
-// void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
-// {
-//     CoilSpringMotorL.setOutput();
-//     CoilSpringMotorR.setOutput();
-//     YawMotor.SendControlData();
-//     StringMotorL.SendControlData();
-//     StringMotorR.SendControlData();
-// }
 
 [[noreturn]] void MotorThreadFun(ULONG initial_input) 
 {
@@ -124,33 +113,14 @@ void TaskMotors::SetModeAndPidParam()
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
 
-
-
         //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)
             motors->TriggerMotor.Trigger_Lock();
         else if ( !motorctrl.trigger_lock)
             motors->TriggerMotor.Trigger_Open();
-        // motorctrl.Coil_spd = 20.0f;
+        
 
-        //卷簧电机摇杆控制死区模式
-        // if (motorctrl.Coil_L_spd > 0.03)
-        //     coil_L_spd = 15.0f;
-        // else if (motorctrl.Coil_L_spd < -0.03)
-        //     coil_L_spd = -15.0f;
-        // else 
-        //     coil_L_spd = 0;     
-
-        // if (motorctrl.Coil_R_spd > 0.03)
-        //     coil_R_spd = 15.0f;
-        // else if (motorctrl.Coil_R_spd < -0.03)
-        //     coil_R_spd = -15.0f;
-        // else 
-        //     coil_R_spd = 0;        
-
-
-
-                
+        //龙门架电机        
         if      (motorctrl.gantry_reset)    {gantry_target_pos = motors->gantry_pos.reset;}
         else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
         else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
@@ -189,8 +159,6 @@ void TaskMotors::SetModeAndPidParam()
         coil_L_debug.position = motors->CoilSpringMotorL.motorFeedback.positionFdb;
         coil_R_debug.position = motors->CoilSpringMotorR.motorFeedback.positionFdb;
 
-#ifdef STRING_HAND_CONTROL
-
         //yaw轴步进电机简单控制逻辑
         if (motorctrl.yaw_spd > 0.03)
             yaw_target_hz = 1000;
@@ -201,11 +169,8 @@ void TaskMotors::SetModeAndPidParam()
 
         motors->YawMotor.SetTargetSpeed(yaw_target_hz);
 
-        //副弦步进电机
-        // motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, 1, 200, 500.0f , false, 3000);
-        // motors->StringMotorL.X_V2_Read_Sys_Params(2, S_VEL);
-        // motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, 0, 200, 500.0f , false, 3000);
-        // motors->StringMotorR.X_V2_Read_Sys_Params(1, S_VEL);
+#ifdef STRING_HAND_CONTROL
+
         if (motorctrl.String_L_spd > 0.03)
         {
             string_L_dir = 0;
@@ -234,7 +199,7 @@ void TaskMotors::SetModeAndPidParam()
             string_R_spd = 0.0f;     
 
         motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, string_L_spd , false, 3000);
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000 , string_R_spd , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, string_R_spd , false, 3000);
 #else 
 
 //! for test
@@ -261,22 +226,10 @@ void TaskMotors::SetModeAndPidParam()
         motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 65535, cmd_spd_L , false, 3000);
         motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 65535, cmd_spd_R , false, 3000);
 
-        // motors->StringMotorL.X_V2_Torque_Control(motors->StringMotorL._id, string_L_dir, uint16_t t_ramp, uint16_t torque, bool snF)
-
 #endif
-//111debug
-        // motors->TriggerMotor.Trigger_Lock();
-        // tx_thread_sleep(5000);
-        // motors->TriggerMotor.Trigger_Lock();
-        // tx_thread_sleep(5000);
-        // // motors->TriggerMotor.Trigger_Open();
-
-
-        // motors->TriggerMotor.Trigger_Lock();
-        // motors->TriggerMotor.Trigger_1();
-
-
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
+        String_L_debug.speed = motors->StringMotorL.speed;
+        String_R_debug.speed = motors->StringMotorR.speed;
         tx_thread_sleep(1);
     }
 }

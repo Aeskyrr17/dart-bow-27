@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TaskLauncher.cpp
  * @author Aeskyrr17
  * @brief 发射状态机和控制逻辑
@@ -37,10 +37,9 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
     delay_t trig_lock_delay{};
     delay_t coil_delay{};
-    delay_t coil_reset_delay{};
 
-    float Coil_pull_spd = 15.0f; //卷簧速度
-    float Coil_retern_spd = -25.0f; //卷簧复位速度，注意方向
+    float Coil_pull_spd = 17.0f; //卷簧速度
+    float Coil_retern_spd = -30.0f; //卷簧复位速度，注意方向
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -48,7 +47,7 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
 
     bool trigger_delay_ok = false;
     bool coil_delay_ok = false;
-    bool coil_reset_delay_ok = false;
+    bool hand_trigger_lock = true;
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -61,13 +60,27 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
         motorctrl.trigger_lock = true;
         lch2sys.is_fire_finished = false;
 
+        // //yaw轴控制,独立于发射逻辑
+        // if (launcher.fsm_state != IDLE )
+        // {
+        //     motorctrl.yaw_spd = cmd.yaw;
+        // }
+        // else 
+        // {
+        //     motorctrl.yaw_spd = 0.0f;
+        //     motorctrl.Coil_L_spd = 0.0f;
+        //     motorctrl.Coil_R_spd = 0.0f;
+        // }
+        motorctrl.yaw_spd = cmd.yaw;//yaw轴控制,独立于发射逻辑,在relax状态下也可动//todo:考虑是否需要在IDLE状态下强制关闭yaw轴
 
-        
         if (cmd.action == DART_RELAX) 
         {
-            launcher.fsm_state = IDLE; 
+            if (launcher.fsm_state != HAND_CONTROL || hand_trigger_lock)
+                launcher.fsm_state = IDLE; 
         }
-        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST || cmd.action == DART_YAW_ADJUST)
+        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST ||
+                 cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
+                 cmd.action == DART_YAW_ADJUST)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
             launcher.fsm_state = HAND_CONTROL;
@@ -78,6 +91,11 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
         switch (launcher.fsm_state)
         {
             case HAND_CONTROL:
+                motorctrl.trigger_lock = hand_trigger_lock;
+                motorctrl.Coil_L_spd = 0.0f;
+                motorctrl.Coil_R_spd = 0.0f;
+                motorctrl.String_L_spd = 0.0f;
+                motorctrl.String_R_spd = 0.0f;
                 if (cmd.action == DART_COIL_ADJUST)
                 {
                     motorctrl.Coil_L_spd = cmd.Coil_L_spd;
@@ -88,10 +106,6 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                     motorctrl.String_L_spd = cmd.String_L_spd;
                     motorctrl.String_R_spd = cmd.String_R_spd;
                 }
-                else if (cmd.action == DART_YAW_ADJUST)
-                {
-                    motorctrl.yaw_spd = cmd.yaw;
-                }
                 else if (cmd.action == DART_FIRE)
                 {
                     launcher.fsm_state = FIRING;
@@ -99,6 +113,16 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 }
                 else if (cmd.action == DART_PREPARE)
                     launcher.fsm_state = RESETTING;
+                else if (cmd.action == DART_TRIGGER_CLOSE)
+                {
+                    hand_trigger_lock = true;
+                    motorctrl.trigger_lock = true;
+                }
+                else if (cmd.action == DART_TRIGGER_OPEN)
+                {
+                    hand_trigger_lock = false;
+                    motorctrl.trigger_lock = false;
+                }
 
                 break;
                 
@@ -118,24 +142,23 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 motorctrl.Coil_L_spd = Coil_pull_spd; 
                 motorctrl.Coil_R_spd = Coil_pull_spd;
 
+                //!测试：：：
+                sensor.is_launchplat_return = true;
+
                 //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
                 coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 0);
-                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 700);
-                // coil_reset_delay_ok = DelayReached(&coil_reset_delay, sensor.is_coil_reset, 10);
+                trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 1000);
                 if (coil_delay_ok)
                 {
-                    motorctrl.Coil_L_spd = 0.0f; 
-                    motorctrl.Coil_R_spd = 0.0f;
                     motorctrl.trigger_lock = true;
 
+                    motorctrl.Coil_L_spd = 0.0f; 
+                    motorctrl.Coil_R_spd = 0.0f;
                     coil_delay_ok = false;
                 };
 
                 if (trigger_delay_ok)
                 {
-                    motorctrl.trigger_lock = true;
-                    motorctrl.Coil_L_spd = Coil_retern_spd;
-                    motorctrl.Coil_R_spd = Coil_retern_spd;
                     launcher.fsm_state = RETRACT_AND_LOAD;
 
                     trigger_delay_ok = false;
@@ -161,6 +184,9 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 Dart_Load_Test(&sensor); 
                 
                 //todo:飞镖装填
+
+                //!测试！！！
+                sensor.is_coil_reset = true;
 
                 // 两个任务都完成了，才能进入READY
                 if (sensor.is_coil_reset && sensor.is_dart_loaded)
