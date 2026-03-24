@@ -106,6 +106,10 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                     motorctrl.String_L_spd = cmd.String_L_spd;
                     motorctrl.String_R_spd = cmd.String_R_spd;
                 }
+                else if (cmd.action == DART_YAW_ADJUST)
+                {
+                    motorctrl.yaw_spd = cmd.yaw;
+                }
                 else if (cmd.action == DART_FIRE)
                 {
                     launcher.fsm_state = FIRING;
@@ -157,11 +161,9 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
                 if (trigger_delay_ok)
                 {
                     launcher.fsm_state = RETRACT_AND_LOAD;
-
+                    
                     trigger_delay_ok = false;
                 }
-                
-               
                 break;
 
             case RETRACT_AND_LOAD:

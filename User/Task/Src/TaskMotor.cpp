@@ -38,11 +38,11 @@ PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PI
 PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorL_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorL_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorR_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorR_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-#define STRING_HAND_CONTROL                                                                                                                                                                                           
+// #define STRING_HAND_CONTROL                                                                                                                                                                                           
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -50,7 +50,8 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
-
+float kp = 1000;
+float ki = 26;
 
 void TaskMotors::MotorInit() 
 {
@@ -84,6 +85,7 @@ void TaskMotors::SetModeAndPidParam()
 
     StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 1);
     StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
+
 }
 
 // void TaskMotors::AllMotorSetOutput() //todo:不一定使用，可以直接发
@@ -118,6 +120,11 @@ void TaskMotors::SetModeAndPidParam()
     uint8_t string_L_dir;
     float string_R_spd = 0.0f;
     uint8_t string_R_dir;
+
+            //! 测试，调整pid参数,暂时不储存
+    // motors->StringMotorL.X_V2_Modify_PID_Params(false, 1000, 1000, kp, ki);
+    // motors->StringMotorR.X_V2_Modify_PID_Params(false, 1000, 1000,kp , ki);
+
 
     for (;;)
     {
@@ -238,28 +245,40 @@ void TaskMotors::SetModeAndPidParam()
 #else 
 
 //! for test
-        motorctrl.Coil_L_tq = 130000;
-        motorctrl.Coil_R_tq = 130000;
+
+        motorctrl.Coil_L_tq = 50000;
+        motorctrl.Coil_R_tq = 50000;
+
+
+
         StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
         StringMotorL_tq_pid.fdb = sensor.string_L_force;
+        // if (Numeric::abs(StringMotorL_tq_pid.ref - StringMotorL_tq_pid.fdb) <= 50.0f) 
+        // {
+        //     StringMotorL_tq_pid.fdb = StringMotorL_tq_pid.ref;
+        // }
         StringMotorL_tq_pid.UpdateResult();
 
         string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
 
         float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
-        if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
+        // if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
 
         StringMotorR_tq_pid.ref = motorctrl.Coil_R_tq;
         StringMotorR_tq_pid.fdb = sensor.string_R_force;
+        // if (Numeric::abs(StringMotorR_tq_pid.ref - StringMotorR_tq_pid.fdb) <= 50.0f) 
+        // {
+        //     StringMotorR_tq_pid.fdb = StringMotorR_tq_pid.ref;
+        // }
         StringMotorR_tq_pid.UpdateResult();
 
         string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
 
         float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
-        if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
+        // if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
 
-        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 65535, cmd_spd_L , false, 3000);
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 65535, cmd_spd_R , false, 3000);
+        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, cmd_spd_L , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, cmd_spd_R , false, 3000);
 
         // motors->StringMotorL.X_V2_Torque_Control(motors->StringMotorL._id, string_L_dir, uint16_t t_ramp, uint16_t torque, bool snF)
 
