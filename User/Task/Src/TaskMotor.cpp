@@ -37,10 +37,19 @@ PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITI
 PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
+<<<<<<< HEAD
 PID StringMotorL_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorR_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 #define STRING_HAND_CONTROL                                                                                                                                                                                           
+=======
+// PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorL_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorR_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
+// #define STRING_HAND_CONTROL                                                                                                                                                                                           
+>>>>>>> Dart_new_temp
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -48,6 +57,11 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
+<<<<<<< HEAD
+=======
+float kp = 1000;
+float ki = 26;
+>>>>>>> Dart_new_temp
 
 void TaskMotors::MotorInit() 
 {
@@ -81,6 +95,10 @@ void TaskMotors::SetModeAndPidParam()
 
     StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 1);
     StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
+<<<<<<< HEAD
+=======
+
+>>>>>>> Dart_new_temp
 }
 
 
@@ -108,10 +126,20 @@ void TaskMotors::SetModeAndPidParam()
     float string_R_spd = 0.0f;
     uint8_t string_R_dir;
 
+            //! 测试，调整pid参数,暂时不储存
+    // motors->StringMotorL.X_V2_Modify_PID_Params(false, 1000, 1000, kp, ki);
+    // motors->StringMotorR.X_V2_Modify_PID_Params(false, 1000, 1000,kp , ki);
+
+
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> Dart_new_temp
 
         //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)
@@ -125,6 +153,23 @@ void TaskMotors::SetModeAndPidParam()
         else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
         else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
 
+<<<<<<< HEAD
+=======
+        // if (motorctrl.Coil_R_spd > 0.03)
+        //     coil_R_spd = 15.0f;
+        // else if (motorctrl.Coil_R_spd < -0.03)
+        //     coil_R_spd = -15.0f;
+        // else 
+        //     coil_R_spd = 0;        
+
+
+
+                
+        if      (motorctrl.gantry_reset)    {gantry_target_pos = motors->gantry_pos.reset;}
+        else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
+        else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
+
+>>>>>>> Dart_new_temp
         //龙门架电机PID
         GantryMotor_pos_pid.ref = gantry_target_pos;
         GantryMotor_pos_pid.fdb = motors->GantryMotor.motorFeedback.positionFdb;
@@ -158,6 +203,11 @@ void TaskMotors::SetModeAndPidParam()
 
         coil_L_debug.position = motors->CoilSpringMotorL.motorFeedback.positionFdb;
         coil_R_debug.position = motors->CoilSpringMotorR.motorFeedback.positionFdb;
+<<<<<<< HEAD
+=======
+
+#ifdef STRING_HAND_CONTROL
+>>>>>>> Dart_new_temp
 
         //yaw轴步进电机简单控制逻辑
         if (motorctrl.yaw_spd > 0.03)
@@ -199,6 +249,7 @@ void TaskMotors::SetModeAndPidParam()
             string_R_spd = 0.0f;     
 
         motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, string_L_spd , false, 3000);
+<<<<<<< HEAD
         motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, string_R_spd , false, 3000);
 #else 
 
@@ -208,6 +259,60 @@ void TaskMotors::SetModeAndPidParam()
         StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
         StringMotorL_tq_pid.fdb = sensor.string_L_force;
         StringMotorL_tq_pid.UpdateResult();
+=======
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000 , string_R_spd , false, 3000);
+#else 
+
+//! for test
+
+        motorctrl.Coil_L_tq = 50000;
+        motorctrl.Coil_R_tq = 50000;
+
+
+
+        StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
+        StringMotorL_tq_pid.fdb = sensor.string_L_force;
+        // if (Numeric::abs(StringMotorL_tq_pid.ref - StringMotorL_tq_pid.fdb) <= 50.0f) 
+        // {
+        //     StringMotorL_tq_pid.fdb = StringMotorL_tq_pid.ref;
+        // }
+        StringMotorL_tq_pid.UpdateResult();
+
+        string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
+
+        float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
+        // if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
+
+        StringMotorR_tq_pid.ref = motorctrl.Coil_R_tq;
+        StringMotorR_tq_pid.fdb = sensor.string_R_force;
+        // if (Numeric::abs(StringMotorR_tq_pid.ref - StringMotorR_tq_pid.fdb) <= 50.0f) 
+        // {
+        //     StringMotorR_tq_pid.fdb = StringMotorR_tq_pid.ref;
+        // }
+        StringMotorR_tq_pid.UpdateResult();
+
+        string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
+
+        float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
+        // if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
+
+        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, cmd_spd_L , false, 3000);
+        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, cmd_spd_R , false, 3000);
+
+        // motors->StringMotorL.X_V2_Torque_Control(motors->StringMotorL._id, string_L_dir, uint16_t t_ramp, uint16_t torque, bool snF)
+
+#endif
+//111debug
+        // motors->TriggerMotor.Trigger_Lock();
+        // tx_thread_sleep(5000);
+        // motors->TriggerMotor.Trigger_Lock();
+        // tx_thread_sleep(5000);
+        // // motors->TriggerMotor.Trigger_Open();
+
+
+        // motors->TriggerMotor.Trigger_Lock();
+        // motors->TriggerMotor.Trigger_1();
+>>>>>>> Dart_new_temp
 
         string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
 
