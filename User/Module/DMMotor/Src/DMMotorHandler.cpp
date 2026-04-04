@@ -255,7 +255,7 @@ void DMMotorHandler::SaveZeroPosition(DMMotor *motor)
         break;
     }
 
-    CAN_Transmit(&hfdcan1, CAN_ID, (uint8_t *)DMMotor::SaveZeroPosition_Frame, 8);
+    CAN_Transmit(motor->hcan, CAN_ID, (uint8_t *)DMMotor::SaveZeroPosition_Frame, 8);
 }
 
 /**
@@ -284,7 +284,7 @@ void DMMotorHandler::ClearError(DMMotor *motor)
         break;
     }
 
-    CAN_Transmit(&hfdcan1, CAN_ID, (uint8_t *)DMMotor::ClearError_Frame, 8);
+    CAN_Transmit(motor->hcan, CAN_ID, (uint8_t *)DMMotor::ClearError_Frame, 8);
 }
 
 /**

@@ -15,9 +15,9 @@ typedef enum
     RETRACT_AND_LOAD,
     TENSIONING,         //正在调整弓弦松紧
     READY,              //调整完毕->弓弦保持力矩，扳机锁定&弓弦调整完毕
-    FIRING,//正在发射
+    FIRING,             //正在发射
 
-    HAND_CONTROL //!手动调试模式，可控遥控器调整coil和弓弦
+    HAND_CONTROL        //!手动调试模式，可控遥控器调整coil和弓弦
 }LAUNCHER_FSM_STATE;
 
 
@@ -29,9 +29,9 @@ struct Launcher_Cxt_t
     bool is_load_done;  //todo:
 };
 
+
 struct delay_t
 { 
     bool started; 
     ULONG start_tick; 
-
 };

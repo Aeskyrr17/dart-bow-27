@@ -126,17 +126,17 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     // }
 
     /*--------------------------------------------------达妙电机数据--------------------------------------------------*/
-    // else if (rx_header.Identifier >= 0x05 && rx_header.Identifier <= 0x08)//Master ID 数值范围，自己在上位机定义
-    // {
-    //     if (hfdcan == &hfdcan1)
-    //     {
-    //         DMMotorHandler::Instance()->UpdateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x05));
-    //     }
-    //     else if (hfdcan == &hfdcan2) // 处理CAN2的数据
-    //     {
-    //         DMMotorHandler::Instance()->UpdateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x05));
-    //     }
-    // }
+    else if (rx_header.Identifier >= 0x05 && rx_header.Identifier <= 0x08)//Master ID 数值范围，自己在上位机定义
+    {
+        if (hfdcan == &hfdcan1)
+        {
+            DMMotorHandler::Instance()->UpdateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x05));
+        }
+        else if (hfdcan == &hfdcan2) // 处理CAN2的数据
+        {
+            DMMotorHandler::Instance()->UpdateFeedback(hfdcan, rx_data, int(rx_header.Identifier - 0x05));
+        }
+    }
     
     /*----------------------------------------------------云台数据----------------------------------------------------*/
     // else if (rx_header.Identifier >= 0xB1 && rx_header.Identifier <= 0xB4)

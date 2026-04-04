@@ -8,9 +8,11 @@
  * @copyright Copyright (c) 2026
  * 
  */
+#include "DMMotorHandler.hpp"
 #include "om.h"
 #include "X_V2.hpp"
 #include "main.h"
+#include "om_fmt.h"
 #include "tx_api.h"
 
 #include "DJIMotorHandler.hpp"
@@ -25,31 +27,52 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
+
+float gantry_pos_fdb = 0.0f;
+
+namespace
+{
+constexpr ULONG kGantrySlotSwitchPeriodMs = 3000;
+
+DART_SLOT GetGantryTestSlot()
+{
+    switch ((HAL_GetTick() / kGantrySlotSwitchPeriodMs) % 4U)
+    {
+    case 0:
+        return DART_SLOT_NONE;
+    case 1:
+        return DART_SLOT_1;
+    case 2:
+        return DART_SLOT_2;
+    default:
+        return DART_SLOT_3;
+    }
+}
+}
+
 TX_THREAD MotorThread;
 uint8_t MotorThreadStack[2048] = {0};
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
 TaskMotors* motors = TaskMotors::Instance();
 
+float Find_gantry_pos(DART_SLOT slot);
+
 PID coilSpringMotorL_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID GantryMotor_pos_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID GantryMotor_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-<<<<<<< HEAD
-PID StringMotorL_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorR_tq_pid(5.0f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-
-#define STRING_HAND_CONTROL                                                                                                                                                                                           
-=======
 // PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorL_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID StringMotorR_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
+
+float Gantry_Kp = 0.5f;
+float Gantry_Kd = 1.0f;
 // #define STRING_HAND_CONTROL                                                                                                                                                                                           
->>>>>>> Dart_new_temp
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -57,11 +80,8 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
-<<<<<<< HEAD
-=======
 float kp = 1000;
 float ki = 26;
->>>>>>> Dart_new_temp
 
 void TaskMotors::MotorInit() 
 {
@@ -72,8 +92,19 @@ void TaskMotors::MotorInit()
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
 
     //龙门架装填电机
-    DJIMotorhandler->registerMotor(&GantryMotor, &hfdcan1, 0x204);
-    GantryMotor.gearBox = GearBox::GearBox_M2006;
+    DMMotorHandler::Instance()->registerMotor(&this->GantryMotor, &hfdcan2, 0x01);
+
+    GantryMotor.controlMode = DMMotor::POS_SPD_MODE;
+    GantryMotor.torqueSet = 0.0f;
+    GantryMotor.positionSet = 0.0f;
+    GantryMotor.speedSet = 0.0f;
+    GantryMotor.KP = Gantry_Kp;
+    GantryMotor.KD = Gantry_Kd;
+
+    DMMotorHandler::Instance()->EnableMotor_Block(&this->GantryMotor);
+    // DMMotorHandler::Instance()->DisableMotor(&GantryMotor);
+
+
     //扳机电机
     TriggerMotor.Init(&htim1, TIM_CHANNEL_3);
 
@@ -91,20 +122,19 @@ void TaskMotors::SetModeAndPidParam()
 {
     CoilSpringMotorL.controlMode = M3508::SPD_MODE;
     CoilSpringMotorR.controlMode = M3508::SPD_MODE;
-    GantryMotor.controlMode = M2006::POS_MODE;
+
 
     StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 1);
     StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
-<<<<<<< HEAD
-=======
-
->>>>>>> Dart_new_temp
 }
 
 
 [[noreturn]] void MotorThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
+
+    om_topic_t *motorfdb_topic = om_config_topic(nullptr, "ca", "motorfdb", sizeof(msg_motorfdb_t));
+    msg_motorfdb_t motorfdb{};
 
     om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
     msg_motor_ctrl_t motorctrl{};
@@ -116,8 +146,9 @@ void TaskMotors::SetModeAndPidParam()
     motors->YawMotor.SetTargetSpeed(0);
     motors->TriggerMotor.Trigger_Lock();
 
+    motors->GantryMotor.positionPid = GantryMotor_pos_pid;
+
     //todo:后续考虑整理局部变量
-    float gantry_target_pos = 0.52f; //30度
 
     float yaw_target_hz = 0.0f;
 
@@ -126,20 +157,14 @@ void TaskMotors::SetModeAndPidParam()
     float string_R_spd = 0.0f;
     uint8_t string_R_dir;
 
-            //! 测试，调整pid参数,暂时不储存
-    // motors->StringMotorL.X_V2_Modify_PID_Params(false, 1000, 1000, kp, ki);
-    // motors->StringMotorR.X_V2_Modify_PID_Params(false, 1000, 1000,kp , ki);
-
-
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
-<<<<<<< HEAD
-=======
 
+    // DMMotorHandler::Instance()->SaveZeroPosition(&motors->GantryMotor);
+    //     DMMotorHandler::Instance()->sendControlData();
 
->>>>>>> Dart_new_temp
 
         //撒放机构处理逻辑
         if ( motorctrl.trigger_lock)
@@ -148,37 +173,6 @@ void TaskMotors::SetModeAndPidParam()
             motors->TriggerMotor.Trigger_Open();
         
 
-        //龙门架电机        
-        if      (motorctrl.gantry_reset)    {gantry_target_pos = motors->gantry_pos.reset;}
-        else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
-        else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
-
-<<<<<<< HEAD
-=======
-        // if (motorctrl.Coil_R_spd > 0.03)
-        //     coil_R_spd = 15.0f;
-        // else if (motorctrl.Coil_R_spd < -0.03)
-        //     coil_R_spd = -15.0f;
-        // else 
-        //     coil_R_spd = 0;        
-
-
-
-                
-        if      (motorctrl.gantry_reset)    {gantry_target_pos = motors->gantry_pos.reset;}
-        else if (motorctrl.gantry_open)     {gantry_target_pos = motors->gantry_pos.open;}
-        else if (motorctrl.gantry_lock)     {gantry_target_pos = motors->gantry_pos.lock;};
-
->>>>>>> Dart_new_temp
-        //龙门架电机PID
-        GantryMotor_pos_pid.ref = gantry_target_pos;
-        GantryMotor_pos_pid.fdb = motors->GantryMotor.motorFeedback.positionFdb;
-        GantryMotor_pos_pid.UpdateResult();
-
-        GantryMotor_spd_pid.ref = GantryMotor_pos_pid.result;
-        GantryMotor_spd_pid.fdb = motors->GantryMotor.motorFeedback.speedFdb;
-        GantryMotor_spd_pid.UpdateResult();
-        motors->GantryMotor.currentSet = static_cast<int16_t>(GantryMotor_spd_pid.result);
 
         //卷簧电机PID
         if (motorctrl.Coil_mode == SPD)    
@@ -203,11 +197,8 @@ void TaskMotors::SetModeAndPidParam()
 
         coil_L_debug.position = motors->CoilSpringMotorL.motorFeedback.positionFdb;
         coil_R_debug.position = motors->CoilSpringMotorR.motorFeedback.positionFdb;
-<<<<<<< HEAD
-=======
 
 #ifdef STRING_HAND_CONTROL
->>>>>>> Dart_new_temp
 
         //yaw轴步进电机简单控制逻辑
         if (motorctrl.yaw_spd > 0.03)
@@ -249,17 +240,6 @@ void TaskMotors::SetModeAndPidParam()
             string_R_spd = 0.0f;     
 
         motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, string_L_spd , false, 3000);
-<<<<<<< HEAD
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, string_R_spd , false, 3000);
-#else 
-
-//! for test
-        motorctrl.Coil_L_tq = 130000;
-        motorctrl.Coil_R_tq = 130000;
-        StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
-        StringMotorL_tq_pid.fdb = sensor.string_L_force;
-        StringMotorL_tq_pid.UpdateResult();
-=======
         motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000 , string_R_spd , false, 3000);
 #else 
 
@@ -312,7 +292,6 @@ void TaskMotors::SetModeAndPidParam()
 
         // motors->TriggerMotor.Trigger_Lock();
         // motors->TriggerMotor.Trigger_1();
->>>>>>> Dart_new_temp
 
         string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
 
@@ -332,6 +311,28 @@ void TaskMotors::SetModeAndPidParam()
         motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 65535, cmd_spd_R , false, 3000);
 
 #endif
+        //达妙电机
+        // 达妙电机位控测试：按固定节拍轮换四个 slot
+        
+        gantry_pos_fdb = motors->GantryMotor.motorFeedback.positionFdb;
+
+
+        // const DART_SLOT gantry_target_slot = GetGantryTestSlot();
+
+        const DART_SLOT gantry_target_slot = DART_SLOT_1;
+        const float gantry_target_pos = Find_gantry_pos(DART_SLOT_2);
+        motors->GantryMotor.offset = 0.0f;
+        motors->GantryMotor.positionSet = gantry_target_pos;
+        motors->GantryMotor.speedSet = 10.0f;
+        DMMotorHandler::Instance()->sendControlData();
+
+        motorfdb.Lcoil_pos_fdb = coil_L_debug.position;
+        motorfdb.Rcoil_pos_fbd = coil_R_debug.position;
+        motorfdb.gantry_pos_fdb = motors->GantryMotor.motorFeedback.positionFdb;
+        motorfdb.gantry_spd_fdb = motors->GantryMotor.motorFeedback.speedFdb;
+        om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
+
+
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
         String_L_debug.speed = motors->StringMotorL.speed;
         String_R_debug.speed = motors->StringMotorR.speed;
@@ -351,5 +352,37 @@ void TaskMotors::SetModeAndPidParam()
     if (htim == motors->YawMotor.pwmTim) 
     {
         motors->YawMotor.HandleInterrupt();
+    }
+}
+
+float Find_gantry_pos(DART_SLOT slot)
+{
+    // switch (slot)
+    // {
+    //     case DART_SLOT_NONE: //原点
+    //         return 0.4999237f;
+    //     case DART_SLOT_1:
+    //         return 2.060159f;
+    //     case DART_SLOT_2:
+    //         return 3.63489f - Numeric::PiX2;
+    //     case DART_SLOT_3:
+    //         return 5.205806f - Numeric::PiX2;
+    //     default:
+    //         return 0.4999237f;
+    // }
+    //-2.652972f,-2.641527f,0.4999237f,-1.82055f
+        switch (slot)
+    {
+        case DART_SLOT_NONE: //原点
+            return Numeric::Pi;
+        case DART_SLOT_1:
+            return -Numeric::Pi*0.5f;
+        case DART_SLOT_2:
+            return 0.0f;
+        case DART_SLOT_3:
+            return Numeric::Pi*0.5f;
+            // return 0;
+        default:
+            return 0.4999237f;
     }
 }

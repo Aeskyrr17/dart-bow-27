@@ -38,13 +38,8 @@ bool DelayReached(delay_t* delay, bool delay_enable, ULONG delay_ticks);
     delay_t trig_lock_delay{};
     delay_t coil_delay{};
 
-<<<<<<< HEAD
-    float Coil_pull_spd = 17.0f; //卷簧速度
-    float Coil_retern_spd = -30.0f; //卷簧复位速度，注意方向
-=======
     float Coil_pull_spd = 20.0f; //卷簧速度
     float Coil_retern_spd = -40.0f; //卷簧复位速度，注意方向
->>>>>>> Dart_new_temp
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -287,18 +282,7 @@ void Dart_Load_Test(msg_sensor_t* sensor)
 
 void Dart_Load(msg_motor_ctrl_t* motorctrl)
 {
-    // 正式装填逻辑
-    motorctrl->gantry_open = true; // 打开龙门架
-    //todo:延时逻辑
-    motorctrl->gantry_open = false;
-    // if ()//todo:不知道是否要保留，可能使用延时处理
-    // {
-    //     sensor->is_dart_loaded = true;
-    // }
-    // else 
-    // {
-    //     sensor->is_dart_loaded = false;
-    // }
+    
 };
 
 

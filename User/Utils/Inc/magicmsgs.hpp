@@ -44,7 +44,7 @@ struct msg_remoter_t
     float mouse_z;
     bool mouse_left;
     bool mouse_right;
-    
+
     struct __attribute__((packed)) {
         uint16_t W : 1;
         uint16_t S : 1;
@@ -130,15 +130,26 @@ struct msg_visiontx_t
 typedef enum
 {
     DART_RELAX = 0,     // 放松或急停
-    DART_PREPARE= 1,    //调整yaw角度，
+    DART_PREPARE= 1,            //调整yaw角度，
     DART_COIL_ADJUST = 2,    //调整coil
-    DART_STRING_ADJUST = 3, //调整副弦
-    DART_FIRE = 4,  // 发射
+    DART_STRING_ADJUST = 3,  //调整副弦
+    DART_FIRE = 4,           // 发射
     DART_TRIGGER_OPEN,
     DART_TRIGGER_CLOSE,
     DART_YAW_ADJUST
-}LAUNCHER_ACTION;
+} LAUNCHER_ACTION;
 
+/**
+ * @brief Dart slot index
+ * slot 1 is the preloaded first dart, slot 2~4 are the reload positions
+ */
+typedef enum
+{
+    DART_SLOT_NONE = 0,
+    DART_SLOT_1 = 1,
+    DART_SLOT_2 = 2,
+    DART_SLOT_3 = 3,
+} DART_SLOT;
 
 /**
  * @brief 飞镖cmd，由TaskSysctrl发送给TaskLauncher
@@ -146,6 +157,7 @@ typedef enum
 struct msg_cmd_t
 {
     LAUNCHER_ACTION action;
+    DART_SLOT next_dart_slot;
 
     float yaw;
     float tension;
@@ -155,14 +167,15 @@ struct msg_cmd_t
     float String_R_spd;
 };
 
-
 /**
  * @brief 电机控制消息结构，由Tasklauncher发送给Taskmotors
  * yaw轴步进电机
  */
-struct msg_motor_ctrl_t {
+struct msg_motor_ctrl_t
+{
     float yaw_spd;
     float yaw_tq;
+    float yaw_pos;
     CTRL_MODE yaw_mode;
 
     bool trigger_lock;
@@ -175,18 +188,25 @@ struct msg_motor_ctrl_t {
     float Coil_L_tq;
     float Coil_R_tq;
 
+    float synbelt_spd;
+    float synbelt_pos;
+    CTRL_MODE synbelt_mode;
+
     float String_L_spd;
     float String_R_spd;
 
     float String_target_tension;
 
-    //龙门架电机
-    bool gantry_reset;
-    bool gantry_open;
-    bool gantry_lock;
-
+    DART_SLOT gantry_target_slot;
 };
 
+struct msg_motorfdb_t
+{
+    float Lcoil_pos_fdb;
+    float Rcoil_pos_fbd;
+    float gantry_pos_fdb;
+    float gantry_spd_fdb;
+};
 
 // struct tof_data_t
 // {
@@ -196,7 +216,6 @@ struct msg_motor_ctrl_t {
 //     uint16_t temp_raw;
 //     uint8_t check_sum;
 // };
-
 
 /**
  * @brief 储存各传感器发送的标志位
@@ -223,13 +242,14 @@ struct debug_motor_t
 
 struct msg_motor2launcher_t
 {
-    
 };
 
 struct msg_launcher2sysctrl_t
 {
     uint8_t current_state; //保留
     bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断
+
+    DART_SLOT next_dart_slot;
 };
 
 #ifdef __cplusplus

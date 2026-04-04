@@ -12,8 +12,10 @@
 #include "tx_api.h"
 
 #include "DJIMotorHandler.hpp"
+#include "DMMotorHandler.hpp"
 #include "M3508.hpp"
 #include "M2006.hpp"
+#include "DM4310.hpp"
 
 #include "Stepper.hpp"
 #include "X_V2.hpp"
@@ -371,15 +373,7 @@ class TaskMotors
 
     ServoMotors TriggerMotor;       //扳机电机
 
-    M2006 GantryMotor;              //龙门架装填电机
-
-    struct GantryMotorPosition
-    {
-        float open = 0.52f;
-        float reset = 0; //待测试
-        float lock = -0.52; 
-    };
-    GantryMotorPosition gantry_pos;
+    DM4310 GantryMotor;              //龙门架装填电机
 
     void MotorInit();           //DJI电机注册与初始化
     void SetModeAndPidParam();
