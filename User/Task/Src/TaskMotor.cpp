@@ -61,6 +61,11 @@ float Find_gantry_pos(DART_SLOT slot);
 PID coilSpringMotorL_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID coilSpringMotorR_spd_pid(2000.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
+// PID coilSpringMotorL_spd_pid(100.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID coilSpringMotorR_spd_pid(100.0f, 10.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID coilSpringMotorL_pos_pid(3.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID coilSpringMotorR_pos_pid(3.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
 // PID GantryMotor_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID GantryMotor_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
@@ -72,6 +77,7 @@ PID StringMotorR_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_
 
 float Gantry_Kp = 0.5f;
 float Gantry_Kd = 1.0f;
+
 // #define STRING_HAND_CONTROL                                                                                                                                                                                           
 
 debug_motor_t coil_L_debug{};
@@ -90,13 +96,15 @@ void TaskMotors::MotorInit()
     DJIMotorhandler->registerMotor(&CoilSpringMotorR, &hfdcan1, 0x202);
     CoilSpringMotorL.gearBox = GearBox::GearBox_M3508;
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
+    DJIMotorhandler->ResetMotorPosFeedback(&CoilSpringMotorL);
+    DJIMotorhandler->ResetMotorPosFeedback(&CoilSpringMotorR);
 
     //龙门架装填电机
     DMMotorHandler::Instance()->registerMotor(&this->GantryMotor, &hfdcan2, 0x01);
 
     GantryMotor.controlMode = DMMotor::POS_SPD_MODE;
     GantryMotor.torqueSet = 0.0f;
-    GantryMotor.positionSet = 0.0f;
+    GantryMotor.positionSet = DART_SLOT_NONE;
     GantryMotor.speedSet = 0.0f;
     GantryMotor.KP = Gantry_Kp;
     GantryMotor.KD = Gantry_Kd;
@@ -183,6 +191,24 @@ void TaskMotors::SetModeAndPidParam()
             motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
 
             coilSpringMotorR_spd_pid.ref = motorctrl.Coil_R_spd;
+            coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
+            coilSpringMotorR_spd_pid.UpdateResult();
+            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
+        }
+        else if (motorctrl.Coil_mode == POS)
+        {
+            coilSpringMotorL_pos_pid.ref = motorctrl.Coil_L_pos;
+            coilSpringMotorL_pos_pid.fdb = motors->CoilSpringMotorL.motorFeedback.positionFdb;
+            coilSpringMotorL_pos_pid.UpdateResult();
+            coilSpringMotorL_spd_pid.ref = coilSpringMotorL_pos_pid.result;
+            coilSpringMotorL_spd_pid.fdb = motors->CoilSpringMotorL.motorFeedback.speedFdb;
+            coilSpringMotorL_spd_pid.UpdateResult();
+            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(coilSpringMotorL_spd_pid.result);
+
+            coilSpringMotorR_pos_pid.ref = motorctrl.Coil_R_pos;
+            coilSpringMotorR_pos_pid.fdb = motors->CoilSpringMotorR.motorFeedback.positionFdb;
+            coilSpringMotorR_pos_pid.UpdateResult();
+            coilSpringMotorR_spd_pid.ref = coilSpringMotorR_pos_pid.result;
             coilSpringMotorR_spd_pid.fdb = motors->CoilSpringMotorR.motorFeedback.speedFdb;
             coilSpringMotorR_spd_pid.UpdateResult();
             motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(coilSpringMotorR_spd_pid.result);
@@ -319,17 +345,19 @@ void TaskMotors::SetModeAndPidParam()
 
         // const DART_SLOT gantry_target_slot = GetGantryTestSlot();
 
-        const DART_SLOT gantry_target_slot = DART_SLOT_1;
-        const float gantry_target_pos = Find_gantry_pos(DART_SLOT_2);
+        const DART_SLOT gantry_target_slot = motorctrl.gantry_target_slot;
+        const float gantry_target_pos = Find_gantry_pos(gantry_target_slot);
         motors->GantryMotor.offset = 0.0f;
         motors->GantryMotor.positionSet = gantry_target_pos;
         motors->GantryMotor.speedSet = 10.0f;
         DMMotorHandler::Instance()->sendControlData();
 
-        motorfdb.Lcoil_pos_fdb = coil_L_debug.position;
-        motorfdb.Rcoil_pos_fbd = coil_R_debug.position;
+        motorfdb.Lcoil_pos_fdb = motors->CoilSpringMotorL.motorFeedback.positionFdb;
+        motorfdb.Rcoil_pos_fbd = motors->CoilSpringMotorR.motorFeedback.positionFdb;
         motorfdb.gantry_pos_fdb = motors->GantryMotor.motorFeedback.positionFdb;
         motorfdb.gantry_spd_fdb = motors->GantryMotor.motorFeedback.speedFdb;
+        motorfdb.gantry_pos_set = gantry_target_pos;
+        motorfdb.gantry_pos_abserr = Numeric::abs(gantry_target_pos - motors->GantryMotor.motorFeedback.positionFdb);
         om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
 
 

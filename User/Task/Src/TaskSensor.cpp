@@ -52,6 +52,8 @@ struct HALL
     bool is_R_reset;
 };
 
+
+
 void Force_L_Request080();
 void Force_R_Request080();
 
@@ -79,9 +81,11 @@ void Force_R_Request080();
 
     for (;;)
     {
-        hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
-        hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
-        sensor.is_coil_reset = (hall.is_L_reset && hall.is_R_reset);
+        // hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
+        // hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
+        // sensor.is_coil_reset = (hall.is_L_reset && hall.is_R_reset);
+        sensor.is_coil_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
+        sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
 
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
 

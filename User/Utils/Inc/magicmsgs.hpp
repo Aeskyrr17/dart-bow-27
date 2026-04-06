@@ -180,7 +180,12 @@ struct msg_motor_ctrl_t
 
     bool trigger_lock;
 
+    CTRL_MODE Coil_L_mode;
+    CTRL_MODE Coil_R_mode;
+
     CTRL_MODE Coil_mode;
+
+    CTRL_MODE String_L_mode;
 
     float Coil_L_spd;
     float Coil_R_spd;
@@ -188,9 +193,15 @@ struct msg_motor_ctrl_t
     float Coil_L_tq;
     float Coil_R_tq;
 
-    float synbelt_spd;
-    float synbelt_pos;
-    CTRL_MODE synbelt_mode;
+    float Coil_L_pos;
+    float Coil_R_pos;
+
+    float Coil_back_pos;
+    float Coil_forward_pos;
+
+    // float synbelt_spd;
+    // float synbelt_pos;
+    // CTRL_MODE synbelt_mode;
 
     float String_L_spd;
     float String_R_spd;
@@ -206,6 +217,8 @@ struct msg_motorfdb_t
     float Rcoil_pos_fbd;
     float gantry_pos_fdb;
     float gantry_spd_fdb;
+    float gantry_pos_set;
+    float gantry_pos_abserr;
 };
 
 // struct tof_data_t
@@ -222,6 +235,8 @@ struct msg_motorfdb_t
  */
 struct msg_sensor_t
 {
+    bool is_coil_L_reset;
+    bool is_coil_R_reset;
     bool is_coil_reset;         //卷簧是否归位(上方)
     bool is_door_open;          //舱门是否打开
     bool is_string_tight;       //暂保留，后续可能删除
@@ -247,7 +262,7 @@ struct msg_motor2launcher_t
 struct msg_launcher2sysctrl_t
 {
     uint8_t current_state; //保留
-    bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断
+    bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断？
 
     DART_SLOT next_dart_slot;
 };
