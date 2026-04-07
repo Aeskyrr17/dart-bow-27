@@ -190,8 +190,7 @@ struct msg_motor_ctrl_t
     float Coil_L_spd;
     float Coil_R_spd;
 
-    float Coil_L_tq;
-    float Coil_R_tq;
+
 
     float Coil_L_pos;
     float Coil_R_pos;
@@ -205,6 +204,11 @@ struct msg_motor_ctrl_t
 
     float String_L_spd;
     float String_R_spd;
+
+    float String_L_tq;
+    float String_R_tq;
+
+    bool String_able;
 
     float String_target_tension;
 

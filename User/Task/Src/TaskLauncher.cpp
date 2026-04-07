@@ -51,9 +51,9 @@ msg_motorfdb_t debug_motorfdb{};
     delay_t coil_L_zero_delay{};
     delay_t coil_R_zero_delay{};
 
-    float Coil_pull_spd = 10.0f; //卷簧速度
-    float Coil_return_spd = -10.0f; //卷簧复位速度，注意方向
-    float Coil_return_spd_slow = -5.0f;
+    float Coil_pull_spd = 15.0f; //卷簧速度
+    float Coil_return_spd = -30.0f; //卷簧复位速度，注意方向
+    float Coil_return_spd_slow = -10.0f;
 
     motorctrl.Coil_L_spd = 0.0f;
     motorctrl.Coil_R_spd = 0.0f;
@@ -62,6 +62,8 @@ msg_motorfdb_t debug_motorfdb{};
     bool coil_delay_ok = false;
 
     bool hand_trigger_lock = true;
+
+    bool is_first_dart = false; //!用于准备阶段区分第一发，第一发不需要龙门架移动
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -86,6 +88,9 @@ msg_motorfdb_t debug_motorfdb{};
         motorctrl.String_R_spd = 0.0f;
         motorctrl.String_target_tension = 0.0f;
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
+        motorctrl.String_L_tq = cmd.tension;
+        motorctrl.String_R_tq = cmd.tension;//!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
+        motorctrl.String_able = false;
 
         //处理coilposfdb零点问题
         if (!coil_L_reset.homed){
@@ -138,6 +143,7 @@ msg_motorfdb_t debug_motorfdb{};
                 motorctrl.Coil_R_spd = 0.0f;
                 motorctrl.String_L_spd = 0.0f;
                 motorctrl.String_R_spd = 0.0f;
+                motorctrl.String_able = false;
                 if (cmd.action == DART_COIL_ADJUST)
                 {
                     motorctrl.Coil_L_spd = cmd.Coil_L_spd;
@@ -182,6 +188,7 @@ msg_motorfdb_t debug_motorfdb{};
                 
                 motorctrl.trigger_lock = true;
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
+                motorctrl.String_able = false;
 
                 if (cmd.action == DART_PREPARE) 
                 {
@@ -200,6 +207,11 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.Coil_R_spd = Coil_pull_spd;
                         motorctrl.Coil_L_pos = 30.0f; //todo:后期要考虑收集这些magicnumber。。。
                         motorctrl.Coil_R_pos = 30.0f;
+                        if(is_first_dart)
+                        {
+                            launcher.prep_state = COIL_TRIGGER_READY;
+                            is_first_dart = false;
+                        }
                         if (Numeric::abs(motors->CoilSpringMotorL.motorFeedback.positionFdb - motorctrl.Coil_L_pos) <= 2.0f &&
                             Numeric::abs(motors->CoilSpringMotorR.motorFeedback.positionFdb - motorctrl.Coil_R_pos) <= 2.0f)
                         {
@@ -278,6 +290,7 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.Coil_mode = SPD;
                         motorctrl.trigger_lock = true;
                         motorctrl.String_target_tension = cmd.tension;
+                        motorctrl.String_able = true;
 
                         bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= 50.0f;
                         bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= 50.0f;
@@ -367,6 +380,7 @@ msg_motorfdb_t debug_motorfdb{};
 
             case READY:
                 motorctrl.trigger_lock = true;
+                motorctrl.String_able = true;
                 motorctrl.String_target_tension = cmd.tension;//保持力矩
 
                 // if (!sensor.is_string_tight)
@@ -389,6 +403,7 @@ msg_motorfdb_t debug_motorfdb{};
 
 
             case FIRING:
+                motorctrl.String_able = false;
                 motorctrl.trigger_lock = false; //解锁扳机
                 if (sensor.is_fire_done)//todo：需修改
                 {

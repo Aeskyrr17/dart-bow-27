@@ -34,20 +34,22 @@ DartLibrary dart_lib;
     om_suber_t *lch2sys_suber = om_subscribe(om_find_topic("lch2sys",UINT32_MAX));
     msg_launcher2sysctrl_t lch2sys{};
 
-    dart_lib.dart[1] = {1, 0.0f,0.0f};
-    dart_lib.dart[2] = {2, 0.0f,0.0f};
-    dart_lib.dart[3] = {3, 0.0f,0.0f};
-    dart_lib.dart[4] = {4, 0.0f,0.0f};
-    dart_lib.dart[5] = {5, 0.0f,0.0f};
-    dart_lib.dart[6] = {6, 0.0f,0.0f};
-    dart_lib.dart[7] = {7, 0.0f,0.0f};
-    dart_lib.dart[8] = {8, 0.0f,0.0f};
-    dart_lib.dart[9] = {9, 0.0f,0.0f};
+    dart_lib.dart[1] = {1, 0.0f,280000.0f};
+    dart_lib.dart[2] = {2, 0.0f,150000.0f};
+    dart_lib.dart[3] = {3, 0.0f,150000.0f};
+    dart_lib.dart[4] = {4, 0.0f,150000.0f};
+    dart_lib.dart[5] = {5, 0.0f,5000.0f};
+    dart_lib.dart[6] = {6, 0.0f,5000.0f};
+    dart_lib.dart[7] = {7, 0.0f,5000.0f};
+    dart_lib.dart[8] = {8, 0.0f,5000.0f};
+    dart_lib.dart[9] = {9, 0.0f,5000.0f};
 
     dart_lib.sequence[0] = 1;
     dart_lib.sequence[1] = 2;
     dart_lib.sequence[2] = 3;
     dart_lib.sequence[3] = 4;
+
+    float pre_tension = 10000.0f; //! 上电后relax模式默认的张力，后续考虑调整
 
     for (;;)
     {   
@@ -115,16 +117,19 @@ DartLibrary dart_lib;
             else 
             {
                 cmd.action = DART_RELAX;
+                cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
             }
         }
         else if (remoter.left_sw == Up && remoter.right_sw == Up)
         {
             Run_Auto_Control();
             cmd.action = DART_RELAX; //todo:默认不发射，auto逻辑待定
+            cmd.tension = pre_tension;//! todo: 这个pre_tension的逻辑可能需要调整
         }
         else 
         {
             cmd.action = DART_RELAX;
+
         }
 
         dart_lib.Update_State(&lch2sys);

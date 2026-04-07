@@ -215,8 +215,8 @@ void TaskMotors::SetModeAndPidParam()
         }
         else
         {
-            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.Coil_L_tq*100);
-            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.Coil_R_tq*100);
+            motors->CoilSpringMotorL.currentSet = static_cast<int16_t>(motorctrl.String_L_tq*100);
+            motors->CoilSpringMotorR.currentSet = static_cast<int16_t>(motorctrl.String_R_tq*100);
         }
 
         DJIMotorhandler->sendControlData();//发送控制指令给电机
@@ -224,7 +224,7 @@ void TaskMotors::SetModeAndPidParam()
         coil_L_debug.position = motors->CoilSpringMotorL.motorFeedback.positionFdb;
         coil_R_debug.position = motors->CoilSpringMotorR.motorFeedback.positionFdb;
 
-#ifdef STRING_HAND_CONTROL
+
 
         //yaw轴步进电机简单控制逻辑
         if (motorctrl.yaw_spd > 0.03)
@@ -271,40 +271,73 @@ void TaskMotors::SetModeAndPidParam()
 
 //! for test
 
-        motorctrl.Coil_L_tq = 50000;
-        motorctrl.Coil_R_tq = 50000;
+        // motorctrl.String_L_tq = 50000;
+        // motorctrl.String_R_tq = 50000;
 
 
+        if (motorctrl.String_able)
+        {
+            StringMotorL_tq_pid.ref = motorctrl.String_L_tq;
+            StringMotorL_tq_pid.fdb = sensor.string_L_force;
+            // if (Numeric::abs(StringMotorL_tq_pid.ref - StringMotorL_tq_pid.fdb) <= 50.0f) 
+            // {
+            //     StringMotorL_tq_pid.fdb = StringMotorL_tq_pid.ref;
+            // }
+            StringMotorL_tq_pid.UpdateResult();
 
-        StringMotorL_tq_pid.ref = motorctrl.Coil_L_tq;
-        StringMotorL_tq_pid.fdb = sensor.string_L_force;
-        // if (Numeric::abs(StringMotorL_tq_pid.ref - StringMotorL_tq_pid.fdb) <= 50.0f) 
-        // {
-        //     StringMotorL_tq_pid.fdb = StringMotorL_tq_pid.ref;
-        // }
-        StringMotorL_tq_pid.UpdateResult();
+            string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
 
-        string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
+            float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
+            // if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
 
-        float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
-        // if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
+            StringMotorR_tq_pid.ref = motorctrl.String_R_tq;
+            StringMotorR_tq_pid.fdb = sensor.string_R_force;
+            // if (Numeric::abs(StringMotorR_tq_pid.ref - StringMotorR_tq_pid.fdb) <= 50.0f) 
+            // {
+            //     StringMotorR_tq_pid.fdb = StringMotorR_tq_pid.ref;
+            // }
+            StringMotorR_tq_pid.UpdateResult();
 
-        StringMotorR_tq_pid.ref = motorctrl.Coil_R_tq;
-        StringMotorR_tq_pid.fdb = sensor.string_R_force;
-        // if (Numeric::abs(StringMotorR_tq_pid.ref - StringMotorR_tq_pid.fdb) <= 50.0f) 
-        // {
-        //     StringMotorR_tq_pid.fdb = StringMotorR_tq_pid.ref;
-        // }
-        StringMotorR_tq_pid.UpdateResult();
+            string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
 
-        string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
+            float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
+            // if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
 
-        float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
-        // if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
+            motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, cmd_spd_L , false, 3000);
+            motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, cmd_spd_R , false, 3000);
+        }
+        else 
+        {
+            if (motorctrl.String_L_spd > 0.03)
+            {
+                string_L_dir = 0;
+                string_L_spd = 1000.0f;
+            }
+            else if (motorctrl.String_L_spd < -0.03)
+            {
+                string_L_dir = 1;
+                string_L_spd = 1000.0f;
+            }
+            else 
+                string_L_spd = 0.0f;     
 
-        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, cmd_spd_L , false, 3000);
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, cmd_spd_R , false, 3000);
 
+            if (motorctrl.String_R_spd > 0.03)
+            {
+                string_R_dir = 1;
+                string_R_spd = 1000.0f;
+            }
+            else if (motorctrl.String_R_spd < -0.03)
+            {
+                string_R_dir = 0;
+                string_R_spd = 1000.0f;
+            }
+            else 
+                string_R_spd = 0.0f;     
+
+            motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, string_L_spd , false, 3000);
+            motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000 , string_R_spd , false, 3000);
+        }
         // motors->StringMotorL.X_V2_Torque_Control(motors->StringMotorL._id, string_L_dir, uint16_t t_ramp, uint16_t torque, bool snF)
 
 #endif
@@ -319,24 +352,7 @@ void TaskMotors::SetModeAndPidParam()
         // motors->TriggerMotor.Trigger_Lock();
         // motors->TriggerMotor.Trigger_1();
 
-        string_L_dir = (StringMotorL_tq_pid.result > 0) ? 1 : 0;
-
-        float cmd_spd_L = Numeric::abs(StringMotorL_tq_pid.result);
-        if (cmd_spd_L > 800.0f) cmd_spd_L = 800.0f; 
-
-        StringMotorR_tq_pid.ref = motorctrl.Coil_R_tq;
-        StringMotorR_tq_pid.fdb = sensor.string_R_force;
-        StringMotorR_tq_pid.UpdateResult();
-
-        string_R_dir = (StringMotorR_tq_pid.result > 0) ? 0 : 1;
-
-        float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
-        if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
-
-        motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 65535, cmd_spd_L , false, 3000);
-        motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 65535, cmd_spd_R , false, 3000);
-
-#endif
+        
         //达妙电机
         // 达妙电机位控测试：按固定节拍轮换四个 slot
         
@@ -385,20 +401,7 @@ void TaskMotors::SetModeAndPidParam()
 
 float Find_gantry_pos(DART_SLOT slot)
 {
-    // switch (slot)
-    // {
-    //     case DART_SLOT_NONE: //原点
-    //         return 0.4999237f;
-    //     case DART_SLOT_1:
-    //         return 2.060159f;
-    //     case DART_SLOT_2:
-    //         return 3.63489f - Numeric::PiX2;
-    //     case DART_SLOT_3:
-    //         return 5.205806f - Numeric::PiX2;
-    //     default:
-    //         return 0.4999237f;
-    // }
-    //-2.652972f,-2.641527f,0.4999237f,-1.82055f
+
         switch (slot)
     {
         case DART_SLOT_NONE: //原点
