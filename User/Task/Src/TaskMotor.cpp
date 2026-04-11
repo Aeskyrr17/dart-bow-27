@@ -92,15 +92,15 @@ float ki = 26;
 void TaskMotors::MotorInit() 
 {
     //左右卷簧电机
-    DJIMotorhandler->registerMotor(&CoilSpringMotorL, &hfdcan1, 0x201);
-    DJIMotorhandler->registerMotor(&CoilSpringMotorR, &hfdcan1, 0x202);
+    DJIMotorhandler->registerMotor(&CoilSpringMotorL, &hfdcan2, 0x201);
+    DJIMotorhandler->registerMotor(&CoilSpringMotorR, &hfdcan2, 0x202);
     CoilSpringMotorL.gearBox = GearBox::GearBox_M3508;
     CoilSpringMotorR.gearBox = GearBox::GearBox_M3508;
     DJIMotorhandler->ResetMotorPosFeedback(&CoilSpringMotorL);
     DJIMotorhandler->ResetMotorPosFeedback(&CoilSpringMotorR);
 
     //龙门架装填电机
-    DMMotorHandler::Instance()->registerMotor(&this->GantryMotor, &hfdcan2, 0x01);
+    DMMotorHandler::Instance()->registerMotor(&this->GantryMotor, &hfdcan1, 0x01);
 
     GantryMotor.controlMode = DMMotor::POS_SPD_MODE;
     GantryMotor.torqueSet = 0.0f;

@@ -50,7 +50,7 @@ struct HALL
 {
     bool is_L_reset;
     bool is_R_reset;
-};
+}hall;
 
 
 
@@ -64,7 +64,7 @@ void Force_R_Request080();
     om_topic_t *sensor_topic = om_config_topic(nullptr, "ca", "sensor", sizeof(msg_sensor_t));
     msg_sensor_t sensor{};
 
-    HALL hall{};
+    // HALL hall{};
 
     hall.is_L_reset = false;
     hall.is_R_reset = false;

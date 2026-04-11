@@ -267,8 +267,7 @@ struct msg_launcher2sysctrl_t
 {
     uint8_t current_state; //保留
     bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断？
-
-    DART_SLOT next_dart_slot;
+    bool last_fire_finished; //用于边缘检测
 };
 
 #ifdef __cplusplus

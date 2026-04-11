@@ -34,10 +34,10 @@ DartLibrary dart_lib;
     om_suber_t *lch2sys_suber = om_subscribe(om_find_topic("lch2sys",UINT32_MAX));
     msg_launcher2sysctrl_t lch2sys{};
 
-    dart_lib.dart[1] = {1, 0.0f,280000.0f};
-    dart_lib.dart[2] = {2, 0.0f,150000.0f};
-    dart_lib.dart[3] = {3, 0.0f,150000.0f};
-    dart_lib.dart[4] = {4, 0.0f,150000.0f};
+    dart_lib.dart[1] = {1, 0.0f,80000.0f};
+    dart_lib.dart[2] = {2, 0.0f,70000.0f};
+    dart_lib.dart[3] = {3, 0.0f,80000.0f};
+    dart_lib.dart[4] = {4, 0.0f,70000.0f};
     dart_lib.dart[5] = {5, 0.0f,5000.0f};
     dart_lib.dart[6] = {6, 0.0f,5000.0f};
     dart_lib.dart[7] = {7, 0.0f,5000.0f};
@@ -59,11 +59,32 @@ DartLibrary dart_lib;
         om_suber_export(sensor_suber, &sensor, false);
         om_suber_export(lch2sys_suber, &lch2sys, false);
 
-        dart_lib.Find_Dart_id();
+        dart_lib.Update_Current_Dart_Id();
         int id = dart_lib.current_dart_id;
         float my_offset = dart_lib.dart[id].yaw_offset;
         float my_tension = dart_lib.dart[id].tension_tq;
         float target_yaw = remoter.right_x + my_offset;
+
+        switch (dart_lib.current_shot_number)
+        {
+            case 1:
+                cmd.next_dart_slot = DART_SLOT_NONE;
+                break;
+            case 2:
+                cmd.next_dart_slot = DART_SLOT_1;
+                break;
+            case 3:
+                cmd.next_dart_slot = DART_SLOT_2;
+                break;
+            case 4:
+                cmd.next_dart_slot = DART_SLOT_3;
+                break;
+            default:
+                cmd.next_dart_slot = DART_SLOT_NONE;
+                break;
+        }
+
+
 
         //先判断edge判断的fire
         if (remoter.left_sw == Mid && remoter.right_sw == M2U)
@@ -73,14 +94,14 @@ DartLibrary dart_lib;
             cmd.tension = my_tension;
         }
         //右上，手动trigger
-        else if (remoter.right_sw == Up && remoter.left_sw == M2U)
-        {
-            cmd.action = DART_TRIGGER_OPEN;
-        }
-        else if (remoter.right_sw == Up && remoter.left_sw == U2M)
-        {
-            cmd.action = DART_TRIGGER_CLOSE;
-        }
+        // else if (remoter.right_sw == Up && remoter.left_sw == M2U)
+        // {
+        //     cmd.action = DART_TRIGGER_OPEN;
+        // }
+        // else if (remoter.right_sw == Up && remoter.left_sw == U2M)
+        // {
+        //     cmd.action = DART_TRIGGER_CLOSE;
+        // }
         else if (remoter.left_sw == Down)
         {
             if (remoter.right_sw == Down)
@@ -106,6 +127,13 @@ DartLibrary dart_lib;
             {
                 cmd.action = DART_YAW_ADJUST;
                 cmd.yaw = remoter.right_x;
+                if (remoter.left_x > 0.7f || remoter.left_x < -0.7f)
+                {
+                    cmd.action = DART_TRIGGER_OPEN;
+                }
+                else {
+                    cmd.action = DART_TRIGGER_CLOSE;
+                }
             }
             else if (remoter.right_sw == Mid) 
             {
@@ -114,10 +142,12 @@ DartLibrary dart_lib;
                 cmd.tension = my_tension;
 
             }
-            else 
+            else if (remoter.right_sw == Up)
             {
-                cmd.action = DART_RELAX;
-                cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
+                cmd.action = DART_FIRE;
+                cmd.yaw = target_yaw;
+                cmd.tension = my_tension;
+                // cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
             }
         }
         else if (remoter.left_sw == Up && remoter.right_sw == Up)

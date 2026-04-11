@@ -80,7 +80,7 @@ int main(void)
   /* Enable the CPU Cache */
 
   /* Enable I-Cache---------------------------------------------------------*/
-    SCB_EnableICache();
+  SCB_EnableICache();
 
   /* Enable D-Cache---------------------------------------------------------*/
   SCB_EnableDCache();
@@ -124,6 +124,7 @@ int main(void)
   MX_USART10_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
   bsp_Init();
   /* USER CODE END 2 */
