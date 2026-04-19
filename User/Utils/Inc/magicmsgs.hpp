@@ -132,7 +132,7 @@ typedef enum
 {
     DART_RELAX = 0,     // 放松或急停
     DART_PREPARE= 1,            //调整yaw角度，
-    DART_COIL_ADJUST = 2,    //调整coil
+    DART_SYN_ADJUST = 2,     //调整同步带
     DART_STRING_ADJUST = 3,  //调整副弦
     DART_FIRE = 4,           // 发射
     DART_TRIGGER_OPEN,
@@ -162,10 +162,9 @@ struct msg_cmd_t
 
     float yaw;              //约定为-1~1
     float tension;
-    float Coil_L_spd;
-    float Coil_R_spd;
-    float String_L_spd;
-    float String_R_spd;
+    float rc_syn;
+    float rc_string_L;
+    float rc_string_R;
 };
 
 /**
@@ -186,7 +185,7 @@ struct msg_motor_ctrl_t
 
     CTRL_MODE Coil_mode;
 
-    CTRL_MODE String_L_mode;
+    CTRL_MODE string_L_mode;
 
     float Coil_L_spd;
     float Coil_R_spd;
@@ -199,19 +198,19 @@ struct msg_motor_ctrl_t
     float Coil_back_pos;
     float Coil_forward_pos;
 
-    // float synbelt_spd;
-    // float synbelt_pos;
-    // CTRL_MODE synbelt_mode;
+    float synbelt_spd;
+    float synbelt_pos;
+    CTRL_MODE synbelt_mode;
 
-    float String_L_spd;
-    float String_R_spd;
+    float string_L_spd;
+    float string_R_spd;
 
-    float String_L_tq;
-    float String_R_tq;
+    float string_L_tq;
+    float string_R_tq;
 
-    bool String_able;
+    bool string_able;
 
-    float String_target_tension;
+    float string_target_tension;
 
     DART_SLOT gantry_target_slot;
 };
@@ -223,7 +222,8 @@ struct msg_motorfdb_t
     float gantry_pos_fdb;
     float gantry_spd_fdb;
     float gantry_pos_set;
-    float gantry_pos_abserr;
+
+    float syn_pos_fdb;
 };
 
 // struct tof_data_t

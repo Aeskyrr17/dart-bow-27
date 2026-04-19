@@ -114,15 +114,14 @@ DartLibrary dart_lib;
             }
             else if (remoter.right_sw == Mid)
             {
-                cmd.action = DART_COIL_ADJUST;
-                cmd.Coil_L_spd =  - remoter.left_y * 10;
-                cmd.Coil_R_spd =  - remoter.right_y * 10;
+                cmd.action = DART_SYN_ADJUST;
+                cmd.rc_syn =  remoter.right_y * 0.05f;
             }
             else if (remoter.right_sw == Up)
             {
                 cmd.action = DART_STRING_ADJUST;
-                cmd.String_L_spd = remoter.left_y;
-                cmd.String_R_spd = remoter.right_y;
+                cmd.rc_string_L = remoter.left_y;
+                cmd.rc_string_R = remoter.right_y;
             }
         }
         else if (remoter.left_sw == Mid)

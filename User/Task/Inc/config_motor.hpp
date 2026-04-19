@@ -50,17 +50,12 @@ class ServoMotors
         PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
     }
 
-    void Trigger_1()
-    {
-         PWM_SetDutyRatio(this->htim, 1500 / 20000.0f, this->channel); //默认闭合
-    }
-
-    void Trigger_Open()
+    void Open()
     {
         PWM_SetDutyRatio(this->htim, open_pulse, this->channel); //默认闭合
     }
 
-    void Trigger_Lock()
+    void Lock()
     {
         PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
     }
@@ -74,21 +69,50 @@ class ServoMotors
 class ZDTStepper
 {
     public:
-    ZDTStepper(){}
+    ZDTStepper()
+    {
+        this->id = 0;
+        this->dir = 0;
+        this->positive_dir = 0;
+        this->hcan = nullptr;
+    }
 
     uint16_t torque;
     uint16_t speed;
     uint32_t position;
     float current;
 
-    uint8_t _id;
-    FDCAN_HandleTypeDef* _hcan;
+    uint8_t id;
     uint8_t dir;
+    uint8_t positive_dir;//正方向定义，通过驱动板修改
+    FDCAN_HandleTypeDef* hcan;
 
-    void Init(FDCAN_HandleTypeDef* hcan, uint8_t id)
+    void Init(FDCAN_HandleTypeDef* hcan, uint8_t id, uint8_t positive_dir)
     {
-        this->_hcan = hcan;
-        this->_id = id;
+        this->hcan = hcan;
+        this->id = id;
+        this->positive_dir = positive_dir;      //在驱动板中设置的正方向
+        this->dir = positive_dir;
+    }
+
+    /**
+     * @brief 根据带符号速度解析当前方向，并返回发送给驱动板的速度绝对值
+     * @param signed_speed  正负号表示通过电机驱动板设定的方向，正负与底层0/1的对应关系由positive_dir决定
+     */
+    float ParseSpeed(float signed_speed)
+    {
+        if (signed_speed >= 0.0f)
+            this->dir = this->positive_dir;
+        else
+            this->dir = (this->positive_dir == 0) ? 1 : 0;
+
+        return ABS(signed_speed);
+    }
+
+    void SendSpd(uint16_t acc, float signed_speed, bool snF, uint16_t maxCur)
+    {
+        const float abs_speed = this->ParseSpeed(signed_speed);
+        this->X_V2_Vel_LC_Control(this->id, this->dir, acc, abs_speed, snF, maxCur);
     }
 
 /**
@@ -96,13 +120,13 @@ class ZDTStepper
  * 
  * @param hfdcan 
  * @param rx_data uint8_t[8]的rxdata
- * @param rx_id rx_header.Identifier
+ * @param rxid rx_header.Identifier
  */
-    void updateFeedback(FDCAN_HandleTypeDef *hfdcan, uint8_t *rx_data, uint32_t rx_id)
+    void updateFeedback(FDCAN_HandleTypeDef *hfdcan, uint8_t *rx_data, uint32_t rxid)
     {
-        uint8_t target_id = (uint8_t)(rx_id >> 8) & 0xFF;
+        uint8_t targetid = (uint8_t)(rxid >> 8) & 0xFF;
 
-        if (target_id != this->_id) return;
+        if (targetid != this->id) return;
 
         switch (rx_data[0])
         {
@@ -161,7 +185,7 @@ class ZDTStepper
         cmd[i] = 0x6B; ++i;                   // 校验字节
         
         // 发送命令
-        can_SendCmd(this->_hcan, cmd, i);
+        can_SendCmd(this->hcan, cmd, i);
     }
 
 /**
@@ -189,7 +213,7 @@ class ZDTStepper
         cmd[8] =  0x6B;                       // 校验字节
         
         // 发送命令
-        can_SendCmd(this->_hcan, cmd, 9);
+        can_SendCmd(this->hcan, cmd, 9);
     }
 
 
@@ -211,7 +235,7 @@ class ZDTStepper
         v = (uint16_t)ABS(maxVel * 10.0f);
         
         // 装载命令
-        cmd[0]  =  this->_id;                     // 地址
+        cmd[0]  =  this->id;                     // 地址
         cmd[1]  =  0xC5;                      // 功能码
         cmd[2]  =  sign;                      // 符号（方向）
         cmd[3]  =  (uint8_t)(t_ramp >> 8);    // 电流斜率(Ma/s)
@@ -224,7 +248,7 @@ class ZDTStepper
         cmd[10] =  0x6B;                      // 校验字节
         
         // 发送命令
-        can_SendCmd(this->_hcan, cmd, 11);
+        can_SendCmd(this->hcan, cmd, 11);
     }
 
 /**
@@ -237,36 +261,36 @@ class ZDTStepper
 	* @param    vki 	 	 ：速度环积分系数，42默认为26
   * @retval   地址 + 功能码 + 命令状态 + 校验字节
   */
-void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp, uint32_t vki)
-{
-    uint8_t cmd[32] = {0};
-  
-    // 装载命令
-    cmd[0]  =  this->_id;                 // 地址
-    cmd[1]  =  0x4A;                      // 功能码
-    cmd[2]  =  0xC3;                      // 辅助码
-    cmd[3]  =  svF;                       // 是否存储标志，false为不存储，true为存储
-    cmd[4]  =  (uint8_t)(pTkp >> 24);			// pTkp
-	cmd[5]  =  (uint8_t)(pTkp >> 16);
-	cmd[6]  =  (uint8_t)(pTkp >> 8);
-	cmd[7]  =  (uint8_t)(pTkp >> 0);
-	cmd[8]  =  (uint8_t)(pBkp >> 24);			// pBkp
-	cmd[9]  =  (uint8_t)(pBkp >> 16);
-	cmd[10] =  (uint8_t)(pBkp >> 8);
-	cmd[11] =  (uint8_t)(pBkp >> 0);
-	cmd[12] =  (uint8_t)(vkp >> 24);			// vkp
-	cmd[13] =  (uint8_t)(vkp >> 16);
-	cmd[14] =  (uint8_t)(vkp >> 8);
-	cmd[15] =  (uint8_t)(vkp >> 0);
-	cmd[16] =  (uint8_t)(vki >> 24);			// vki
-	cmd[17] =  (uint8_t)(vki >> 16);
-	cmd[18] =  (uint8_t)(vki >> 8);
-	cmd[19] =  (uint8_t)(vki >> 0);
-    cmd[20] =  0x6B;                      // 校验字节
-  
-    // 发送命令
-    can_SendCmd(this->_hcan,cmd, 21);
-}
+    void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp, uint32_t vki)
+    {
+        uint8_t cmd[32] = {0};
+    
+        // 装载命令
+        cmd[0]  =  this->id;                 // 地址
+        cmd[1]  =  0x4A;                      // 功能码
+        cmd[2]  =  0xC3;                      // 辅助码
+        cmd[3]  =  svF;                       // 是否存储标志，false为不存储，true为存储
+        cmd[4]  =  (uint8_t)(pTkp >> 24);			// pTkp
+        cmd[5]  =  (uint8_t)(pTkp >> 16);
+        cmd[6]  =  (uint8_t)(pTkp >> 8);
+        cmd[7]  =  (uint8_t)(pTkp >> 0);
+        cmd[8]  =  (uint8_t)(pBkp >> 24);			// pBkp
+        cmd[9]  =  (uint8_t)(pBkp >> 16);
+        cmd[10] =  (uint8_t)(pBkp >> 8);
+        cmd[11] =  (uint8_t)(pBkp >> 0);
+        cmd[12] =  (uint8_t)(vkp >> 24);			// vkp
+        cmd[13] =  (uint8_t)(vkp >> 16);
+        cmd[14] =  (uint8_t)(vkp >> 8);
+        cmd[15] =  (uint8_t)(vkp >> 0);
+        cmd[16] =  (uint8_t)(vki >> 24);			// vki
+        cmd[17] =  (uint8_t)(vki >> 16);
+        cmd[18] =  (uint8_t)(vki >> 8);
+        cmd[19] =  (uint8_t)(vki >> 0);
+        cmd[20] =  0x6B;                      // 校验字节
+    
+        // 发送命令
+        can_SendCmd(this->hcan,cmd, 21);
+    }
 
 /**
   * @brief    速度模式限电流控制（X42S/Y42）
@@ -286,7 +310,7 @@ void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp
         v = (uint16_t)ABS(vel * 10.0f);
 
         // 装载命令
-        cmd[0]  =  this->_id;                         // 地址
+        cmd[0]  =  this->id;                         // 地址
         cmd[1]  =  0xC6;                      // 功能码
         cmd[2]  =  dir;                       // 符号（方向）
         cmd[3]  =  (uint8_t)(acc >> 8);     	// 加速度(RPM/s)
@@ -299,7 +323,7 @@ void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp
         cmd[10] =  0x6B;                      // 校验字节
         
         // 发送命令
-        can_SendCmd(this->_hcan, cmd, 11);
+        can_SendCmd(this->hcan, cmd, 11);
     }
 
 
@@ -316,7 +340,7 @@ void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp
         uint8_t cmd[16] = {0};
     
         // 装载命令
-        cmd[i] = this->_id; ++i;                   // 地址
+        cmd[i] = this->id; ++i;                   // 地址
 
         cmd[i] = 0x11; ++i;                   // 功能码
 
@@ -351,7 +375,7 @@ void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp
         cmd[i] = 0x6B; ++i;                   	// 校验字节
         
         // 发送命令
-        can_SendCmd(this->_hcan, cmd, i);
+        can_SendCmd(this->hcan, cmd, i);
         }
 
 
@@ -362,23 +386,50 @@ void X_V2_Modify_PID_Params(bool svF, uint32_t pTkp, uint32_t pBkp, uint32_t vkp
 class TaskMotors
 {
     public:
-    M3508 CoilSpringMotorL;         //卷簧电机L
-    M3508 CoilSpringMotorR;         //卷簧电机R
-
+    DM4310 synbeltMotor;            //同步带电机
+    DM4310 gantryMotor;         
 
     Stepper YawMotor;
 
-    ZDTStepper StringMotorL;
-    ZDTStepper StringMotorR;
+    ZDTStepper stringMotorL;
+    ZDTStepper stringMotorR;
 
-    ServoMotors TriggerMotor;       //扳机电机
+    ServoMotors triggerMotor;       //扳机电机
 
-    DM4310 GantryMotor;              //龙门架装填电机
 
-    void MotorInit();           //DJI电机注册与初始化
-    void SetModeAndPidParam();
-    void AllMotorSetOutput();
-    void Init();
+    TaskMotors(){};
+
+    //gantry相关变量
+    float gantry_max_spd;
+
+    float synbelt_max_spd;
+    /**
+     * @brief 电机初始化函数，注册电机并设置初始状态
+     * 
+     */
+    void MotorsInit()
+    {
+        DMMotorHandler::Instance()->registerMotor(&this->synbeltMotor, &hfdcan1, 0x02);
+        this->synbeltMotor.controlMode = DMMotor::POS_SPD_MODE;
+        this->synbeltMotor.torqueSet = 0.0f;
+        DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
+        gantry_max_spd = 10.0f;
+
+        DMMotorHandler::Instance()->registerMotor(&this->gantryMotor, &hfdcan1, 0x01);
+        this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
+        this->gantryMotor.torqueSet = 0.0f;
+        DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
+        synbelt_max_spd = 20.0f;
+
+        this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
+        this->triggerMotor.Lock();
+
+        this->stringMotorL.Init(&hfdcan3, 2, 0);
+        this->stringMotorR.Init(&hfdcan3, 1, 1);
+
+        YawMotor_Init();
+
+    }   
 
 
     void YawMotor_Init()
@@ -390,12 +441,6 @@ class TaskMotors
             GPIO_PIN_0,              // PA0
             true                   //todo:确定方向
         );
-    }
-
-    static TaskMotors* Instance()
-    {
-        static TaskMotors instance;
-        return &instance;
     }
 
 };

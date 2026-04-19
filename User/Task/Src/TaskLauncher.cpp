@@ -5,7 +5,6 @@
  * @todo void Dart_Load(msg_sensor_t* sensor);
  * @todo launcher_status_t的使用（暂未确定）
  */
-#include "DJIMotorHandler.hpp"
 #include "main.h"
 #include "tx_api.h"
 
@@ -18,7 +17,8 @@
 TX_THREAD LauncherThread;
 uint8_t LauncherThreadStack[2048] = {0};
 
-extern DJIMotorHandler*DJIMotorhandler;extern TaskMotors* motors; //todo：之后可以重新整理到taskmotor中
+extern TaskMotors motor; //todo：之后可以重新整理到taskmotor中
+
 
 Launcher_Cxt_t launcher{};
 
@@ -31,7 +31,6 @@ msg_sensor_t sensor{};
 
 
 delay_t trig_lock_delay{};
-delay_t coil_delay{};
 delay_t ready_fire_delay{};
 delay_t firing_hold_delay{};
 
@@ -50,16 +49,22 @@ delay_t firing_hold_delay{};
     om_suber_t *motorfdb_suber = om_subscribe(om_find_topic("motorfdb", UINT32_MAX));
     msg_motorfdb_t motorfdb{};
 
-
-
-    CoilResetCxt_t coil_L_reset{};
-    CoilResetCxt_t coil_R_reset{};
     delay_t coil_L_zero_delay{};
     delay_t coil_R_zero_delay{};
 
-    float Coil_pull_spd = 17.0f; //卷簧速度
-    float Coil_return_spd = -12.0f; //卷簧复位速度，注意方向
-    float Coil_return_spd_slow = -10.0f;
+    const float Coil_pull_spd = 17.0f; //卷簧速度
+    const float Coil_return_spd = -12.0f; //卷簧复位速度，注意方向
+    const float Coil_return_spd_slow = -10.0f;
+
+    const float gantry_pos_deadzone = 0.03f;
+    const float syn_pos_deadzone = 0.05f;
+    const float string_deadzone = 500.0f;
+
+    const float syn_pos_0 = 0.0f;
+    const float syn_pos_1 = 0.0f;       //退到龙门架之后的位置
+    const float syn_pos_2 = 0.0f;
+    const float syn_pos_3 = 0.0f;
+
 
     motorctrl.Coil_L_spd = 0.0f;
     motorctrl.Coil_R_spd = 0.0f;
@@ -69,7 +74,7 @@ delay_t firing_hold_delay{};
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
     PREPARE_STSTE last_prep_state = PREPARE_STATE_INVALID;
 
-    launcher.is_first_dart = true; //!用于准备阶段区分第一发，第一发不需要龙门架移动
+    launcher.is_first_dart = true;   //!用于准备阶段区分第一发，第一发不需要龙门架移动
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -89,51 +94,26 @@ delay_t firing_hold_delay{};
         motorctrl.Coil_R_mode = SPD;
         motorctrl.Coil_L_spd = 0.0f;
         motorctrl.Coil_R_spd = 0.0f;
-        motorctrl.String_L_spd = 0.0f;
-        motorctrl.String_R_spd = 0.0f;
-        motorctrl.String_target_tension = 0.0f;
+        motorctrl.string_L_spd = 0.0f;
+        motorctrl.string_R_spd = 0.0f;
+        motorctrl.string_target_tension = 0.0f;
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
-        motorctrl.String_L_tq = cmd.tension;
-        motorctrl.String_R_tq = cmd.tension;//!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
-        motorctrl.String_able = false;
+        motorctrl.string_L_tq = cmd.tension;
+        motorctrl.string_R_tq = cmd.tension;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
+        motorctrl.string_able = false;
 
-        //处理coilposfdb零点问题
-        if (!coil_L_reset.homed){
-            if (coil_L_zero_delay.ReachStable(sensor.is_coil_L_reset, 10)){
-                motorctrl.Coil_L_mode = SPD;
-                motorctrl.Coil_L_spd = 0.0f;
-                DJIMotorhandler->ResetMotorPosFeedback(&motors->CoilSpringMotorL);
-                coil_L_reset.homed = true;
-            }
-        }
-        else {
-            motorctrl.Coil_L_mode = SPD; //? 没归零就不让动？
-            motorctrl.Coil_L_spd = 0.0f;
-        }
-        if (!coil_R_reset.homed){
-            if (coil_R_zero_delay.ReachStable(sensor.is_coil_R_reset, 10)){
-                motorctrl.Coil_R_mode = SPD;
-                motorctrl.Coil_R_spd = 0.0f;
-                DJIMotorhandler->ResetMotorPosFeedback(&motors->CoilSpringMotorR);
-                coil_R_reset.homed = true;
-            }
-        }
-        else {
-            motorctrl.Coil_R_mode = SPD; //? 没归零就不让动？
-            motorctrl.Coil_R_spd = 0.0f;
-        }
 
         //直接处理yaw
         motorctrl.yaw_spd = cmd.yaw;
 
-
+        //处理cmd
         if (cmd.action == DART_RELAX) 
         {
             if ((launcher.fsm_state != HAND_CONTROL || hand_trigger_lock) &&
                 launcher.fsm_state != FIRING)
                 launcher.fsm_state = IDLE; 
         }
-        else if (cmd.action == DART_COIL_ADJUST || cmd.action == DART_STRING_ADJUST ||
+        else if (cmd.action == DART_SYN_ADJUST || cmd.action == DART_STRING_ADJUST ||
                  cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
                  cmd.action == DART_YAW_ADJUST)
         {
@@ -158,22 +138,18 @@ delay_t firing_hold_delay{};
         {
             case HAND_CONTROL:
                 motorctrl.trigger_lock = hand_trigger_lock;
-                motorctrl.Coil_L_mode = SPD;
-                motorctrl.Coil_R_mode = SPD;
-                motorctrl.Coil_L_spd = 0.0f;
-                motorctrl.Coil_R_spd = 0.0f;
-                motorctrl.String_L_spd = 0.0f;
-                motorctrl.String_R_spd = 0.0f;
-                motorctrl.String_able = false;
-                if (cmd.action == DART_COIL_ADJUST)
+                motorctrl.synbelt_pos = motor.synbeltMotor.motorFeedback.positionFdb;
+                motorctrl.string_L_spd = 0.0f;
+                motorctrl.string_R_spd = 0.0f;
+                motorctrl.string_able = false;
+                if (cmd.action == DART_SYN_ADJUST)
                 {
-                    motorctrl.Coil_L_spd = cmd.Coil_L_spd;
-                    motorctrl.Coil_R_spd = cmd.Coil_R_spd;
+                    motorctrl.synbelt_pos += cmd.rc_syn;
                 }
                 else if (cmd.action == DART_STRING_ADJUST)
                 {
-                    motorctrl.String_L_spd = cmd.String_L_spd;
-                    motorctrl.String_R_spd = cmd.String_R_spd;
+                    motorctrl.string_L_spd = cmd.rc_string_L;
+                    motorctrl.string_R_spd = cmd.rc_string_R;
                 }
                 else if (cmd.action == DART_YAW_ADJUST)
                 {
@@ -188,7 +164,7 @@ delay_t firing_hold_delay{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
-                    launcher.prep_state = COIL_1;
+                    launcher.prep_state = SYN_1;
                 }
                 else if (cmd.action == DART_TRIGGER_CLOSE)
                 {
@@ -205,18 +181,16 @@ delay_t firing_hold_delay{};
                 
             case IDLE:
                 // motorctrl.yaw_spd = 0.0f;
-                motorctrl.Coil_L_mode = SPD;
-                motorctrl.Coil_R_mode = SPD;
                 
                 motorctrl.trigger_lock = true;
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
-                motorctrl.String_able = false;
+                motorctrl.string_able = false;
 
                 if (cmd.action == DART_PREPARE) 
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
-                    launcher.prep_state = COIL_1;
+                    launcher.prep_state = SYN_1;
                 }
                 break;
 
@@ -224,113 +198,85 @@ delay_t firing_hold_delay{};
 
                 switch (current_prep_state)
                 {
-                    case COIL_1:
+                    case SYN_1:
                         motorctrl.trigger_lock = false;
-                        motorctrl.Coil_mode = SPD;
-                        motorctrl.Coil_L_spd = Coil_pull_spd;
-                        motorctrl.Coil_R_spd = Coil_pull_spd;
-                        motorctrl.Coil_L_pos = 30.0f; //todo:后期要考虑收集这些magicnumber。。。
-                        motorctrl.Coil_R_pos = 30.0f;
+                        motorctrl.synbelt_mode = POS;
+                        motorctrl.synbelt_pos = syn_pos_1;
+
                         if (launcher.is_first_dart)
                         {
-                            launcher.prep_state = COIL_TRIGGER_READY;
+                            launcher.prep_state = SYN_TRIGGER_READY;    //第一发镖直接上膛
                             launcher.is_first_dart = false;
                             break;
                         }
-                        if (Numeric::abs(motors->CoilSpringMotorL.motorFeedback.positionFdb - motorctrl.Coil_L_pos) <= 2.0f &&
-                            Numeric::abs(motors->CoilSpringMotorR.motorFeedback.positionFdb - motorctrl.Coil_R_pos) <= 2.0f)
+                        if (Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_1) <= syn_pos_deadzone)
                         {
-                            motorctrl.Coil_L_spd = 0.0f;
-                            motorctrl.Coil_R_spd = 0.0f;
                             launcher.prep_state = GANTRY_1;
                         }
-                        else 
-                        {
-                            if (sensor.is_launchplat_return)
-                            {
-                                motorctrl.Coil_L_spd = 0.0f;
-                                motorctrl.Coil_R_spd = 0.0f;
-                            }
-                        }
                         break;
+
                     case GANTRY_1:
-                        //! ！！！！！！！！！！！还未写完，暂时先固定龙门架位置在slot1
                         motorctrl.gantry_target_slot = launcher.current_slot;
-                        if (Numeric::abs(Get_Gantry_Target_Pos(launcher.current_slot) - motors->GantryMotor.motorFeedback.positionFdb) <= 0.05f)
+                        if (Numeric::abs(Get_Gantry_Target_Pos(launcher.current_slot) - motor.gantryMotor.motorFeedback.positionFdb) <= gantry_pos_deadzone)
                         {
-                            launcher.prep_state = COIL_2;
+                            launcher.prep_state = SYN_2;
                         };
                         break;
-                    case COIL_2:
+                        
+                    case SYN_2:
                         motorctrl.gantry_target_slot = launcher.current_slot;
-                        motorctrl.Coil_mode = SPD;
-                        motorctrl.Coil_L_spd = Coil_return_spd_slow;
-                        motorctrl.Coil_R_spd = Coil_return_spd_slow;
-                        motorctrl.Coil_L_pos = 15.0f; 
-                        motorctrl.Coil_R_pos = 15.0f;
-                        if (Numeric::abs(motors->CoilSpringMotorL.motorFeedback.positionFdb - motorctrl.Coil_L_pos) <= 2.0f &&
-                            Numeric::abs(motors->CoilSpringMotorR.motorFeedback.positionFdb - motorctrl.Coil_R_pos) <= 2.0f)
+                        motorctrl.synbelt_pos = syn_pos_2;
+                        if (Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_2) <= syn_pos_deadzone)
                         {
-                            motorctrl.Coil_L_spd = 0.0f;
-                            motorctrl.Coil_R_spd = 0.0f;
                             launcher.prep_state = GANTRY_2;
                         };
                         break;
+
                     case GANTRY_2:
                         motorctrl.gantry_target_slot = DART_SLOT_NONE;
-                        if (Numeric::abs(Get_Gantry_Target_Pos(DART_SLOT_NONE) - motors->GantryMotor.motorFeedback.positionFdb) <= 0.05f)
+                        if (Numeric::abs(Get_Gantry_Target_Pos(DART_SLOT_NONE) - motor.gantryMotor.motorFeedback.positionFdb) <= gantry_pos_deadzone)
                         {
-                            launcher.prep_state = COIL_TRIGGER_READY;
+                            launcher.prep_state = SYN_TRIGGER_READY;
                         };
                         break;
-                    case COIL_TRIGGER_READY:
-                        motorctrl.Coil_mode = SPD;
-                        motorctrl.trigger_lock = coil_ready_stopped;
-                        motorctrl.Coil_L_spd = coil_ready_stopped ? 0.0f : Coil_pull_spd;
-                        motorctrl.Coil_R_spd = coil_ready_stopped ? 0.0f : Coil_pull_spd;
 
-                        //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
-                        if (coil_delay.Reach(sensor.is_launchplat_return, 50, prep_state_changed))
-                        {
-                            coil_ready_stopped = true;
-                            motorctrl.Coil_L_spd = 0.0f;
-                            motorctrl.Coil_R_spd = 0.0f;
-                            motorctrl.trigger_lock = true;
-                        };
+                    case SYN_TRIGGER_READY:
+                    {
+                        motorctrl.synbelt_pos = syn_pos_3;
+                        motorctrl.trigger_lock = true;
 
-                        if (trig_lock_delay.Reach(sensor.is_launchplat_return, 1000, prep_state_changed))
+                        bool syn_reset = Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_0) <= syn_pos_deadzone;
+
+                        if (trig_lock_delay.Reach(syn_reset, 1000, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
-                        }
+                        };
                         break;
+                    }
                     case TENSION_AND_RETRACT_AND_YAW:
                     {
-                        motorctrl.Coil_mode = SPD;
                         motorctrl.trigger_lock = true;
-                        motorctrl.String_target_tension = cmd.tension;
-                        motorctrl.String_able = true;
+                        motorctrl.string_target_tension = cmd.tension;
+                        motorctrl.string_able = true;
+
+                        motorctrl.synbelt_pos = syn_pos_0;
 
                         motorctrl.yaw_spd = cmd.yaw;
 
-                        bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= 1000.0f;
-                        bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= 1000.0f;
+                        bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= string_deadzone;
+                        bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= string_deadzone;
+                        bool syn_reset = Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_0 <= syn_pos_deadzone);
 
 
-                        if (string_L_ok && string_R_ok && sensor.is_coil_reset)
+                        if (string_L_ok && string_R_ok && syn_reset)
                         {
                             launcher.fsm_state = READY;
                         }
                         else
                         {
-                            if (!sensor.is_coil_reset) 
-                            {
-                                motorctrl.Coil_L_spd = Coil_return_spd; 
-                                motorctrl.Coil_R_spd = Coil_return_spd;
-                            }
-
                             if (!string_L_ok || !string_R_ok)
                             {
-                                motorctrl.String_target_tension = cmd.tension;
+                                motorctrl.string_target_tension = cmd.tension;
                             }
                         }                           
                         break;
@@ -341,73 +287,12 @@ delay_t firing_hold_delay{};
                 }
                 break;
 
-            // case RESETTING:
-            //     motorctrl.trigger_lock = false;//扳机打开
-
-            //     motorctrl.Coil_L_spd = Coil_pull_spd; 
-            //     motorctrl.Coil_R_spd = Coil_pull_spd;
-
-            //     //!测试：：：
-            //     sensor.is_launchplat_return = true;
-
-            //     //根据sensor.is_launchplat_return判断发射台是否已经回位，进入延时保证卷簧完全停止后再锁定扳机
-            //     coil_delay_ok = DelayReached(&coil_delay, sensor.is_launchplat_return, 0);
-            //     trigger_delay_ok = DelayReached(&trig_lock_delay, sensor.is_launchplat_return, 1000);
-            //     if (coil_delay_ok)
-            //     {
-            //         motorctrl.trigger_lock = true;
-
-            //         motorctrl.Coil_L_spd = 0.0f; 
-            //         motorctrl.Coil_R_spd = 0.0f;
-            //         coil_delay_ok = false;
-            //     };
-
-            //     if (trigger_delay_ok)
-            //     {
-            //         launcher.fsm_state = RETRACT_AND_LOAD;
-                    
-            //         trigger_delay_ok = false;
-            //     }
-            //     break;
-
-            // case RETRACT_AND_LOAD:
-            //     motorctrl.trigger_lock = true; 
-                
-            //     if (!sensor.is_coil_reset) 
-            //     {
-            //         motorctrl.Coil_L_spd = Coil_return_spd; 
-            //         motorctrl.Coil_R_spd = Coil_return_spd;
-            //     }
-            //     else 
-            //     {
-            //         motorctrl.Coil_L_spd = 0.0f;
-            //         motorctrl.Coil_R_spd = 0.0f;
-            //     }
-
-            //     Dart_Load_Test(&sensor); 
-                
-            //     //todo:飞镖装填
-
-            //     //!测试！！！
-            //     sensor.is_coil_reset = true;
-
-            //     // 两个任务都完成了，才能进入READY
-            //     if (sensor.is_coil_reset && sensor.is_dart_loaded)
-            //     {
-            //         launcher.fsm_state = READY;
-            //     };
-            //     break;  
-
             case READY:
             {
                 motorctrl.trigger_lock = true;
-                motorctrl.String_able = true;
-                motorctrl.String_target_tension = cmd.tension;//保持力矩
+                motorctrl.string_able = true;
+                motorctrl.string_target_tension = cmd.tension;//保持力矩
 
-                // if (!sensor.is_string_tight)
-                // {
-                //     launcher.fsm_state = TENSIONING;
-                // }
                 if (cmd.action == DART_FIRE &&
                     ready_fire_delay.Reach(500, fsm_state_changed))
                 {
@@ -416,20 +301,13 @@ delay_t firing_hold_delay{};
                 break;
             }
 
-            // case TENSIONING:
-            //     motorctrl.String_target_tension = cmd.tension;
-            //     if (sensor.is_string_tight)
-            //         launcher.fsm_state = READY;
-            //     break;
-
-
             case FIRING:
             {
-                motorctrl.String_able = false;
+                motorctrl.string_able = false;
                 motorctrl.trigger_lock = false; //解锁扳机
                 launcher.is_fire_done = false;
 
-                if (firing_hold_delay.Reach(1000, fsm_state_changed))
+                if (firing_hold_delay.Reach(500, fsm_state_changed))
                 {
                     Mark_Fire_Done(launcher);
                     launcher.fsm_state = IDLE;
@@ -437,8 +315,6 @@ delay_t firing_hold_delay{};
                 break;
                 }
         }
-
-        
 
          //更新历史状态
         lch2sys.current_state = launcher.fsm_state;
@@ -464,13 +340,7 @@ void delay_t::Reset()
     start_tick = 0;
 }
 
-/**
- * @brief delay helper
- * 
- * @param delay_trigger 第一次满足时开始延时，之后即使失效也不会复位
- * @param delay_ticks 延时时间，单位tick
- * 
- */
+
 bool delay_t::Reach(ULONG delay_ticks, bool delay_init)
 {
     if (delay_init)
@@ -493,6 +363,14 @@ bool delay_t::Reach(ULONG delay_ticks, bool delay_init)
     Reset();
     return true;
 }
+
+/**
+ * @brief delay helper
+ * 
+ * @param delay_trigger 第一次满足时开始延时，之后即使失效也不会复位
+ * @param delay_ticks 延时时间，单位tick
+ * 
+ */
 
 bool delay_t::Reach(bool delay_trigger, ULONG delay_ticks, bool delay_init)
 {

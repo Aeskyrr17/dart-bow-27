@@ -12,6 +12,7 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
+extern TaskMotors motor;
 
 TX_SEMAPHORE CANErrorSem;
 
@@ -112,11 +113,11 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
        uint8_t motor_id = (uint8_t)((rx_header.Identifier >> 8) & 0xFF);
 
 
-        if (motor_id == TaskMotors::Instance()->StringMotorL._id) {
-            TaskMotors::Instance()->StringMotorL.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
+         if (motor_id == motor.stringMotorL.id) {
+            motor.stringMotorL.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
         }
-        else if (motor_id == TaskMotors::Instance()->StringMotorR._id) {
-            TaskMotors::Instance()->StringMotorR.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
+        else if (motor_id == motor.stringMotorR.id) {
+            motor.stringMotorR.updateFeedback(hfdcan, rx_data, rx_header.Identifier);
         }
     }
     
