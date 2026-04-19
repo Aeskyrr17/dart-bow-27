@@ -17,7 +17,8 @@ typedef enum
     RESETTING,
     TENSIONING,
     RETRACT_AND_LOAD,
-    HAND_CONTROL
+    HAND_CONTROL,
+    LAUNCHER_FSM_STATE_INVALID = 0xFF
 } LAUNCHER_FSM_STATE;
 
 typedef enum
@@ -28,6 +29,7 @@ typedef enum
     GANTRY_2,
     COIL_TRIGGER_READY,
     TENSION_AND_RETRACT_AND_YAW,
+    PREPARE_STATE_INVALID = 0xFF
 } PREPARE_STSTE;
 
 struct Launcher_Cxt_t
@@ -48,11 +50,21 @@ struct CoilResetCxt_t
     float zero_pos;
 };
 
-struct delay_t
+class delay_t
 {
-    bool started;
-    ULONG start_tick;
+public:
+    void Reset();
+    // Reach: first trigger starts timing; ReachStable: condition must stay true for the whole delay.
+    bool Reach(ULONG delay_ticks, bool delay_init = false);
+    bool Reach(bool delay_trigger, ULONG delay_ticks, bool delay_init = false);
+    bool ReachStable(bool delay_enable, ULONG delay_ticks, bool delay_init = false);
+
+private:
+    bool started = false;
+    bool delay_ok = false;
+    ULONG start_tick = 0;
 };
+
 
 inline void Update_Slot(Launcher_Cxt_t& cxt)
 {

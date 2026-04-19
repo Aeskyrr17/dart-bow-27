@@ -4,7 +4,8 @@
 #include "tx_api.h"
 #include "config_referee.hpp"
 #include "crc.hpp"
-#include <cstdint>
+
+#include "magicmsgs.hpp"
 
 TX_THREAD RefereeThread;
 uint8_t RefereeThreadStack[2048] = {0};
@@ -13,6 +14,8 @@ RefereeRingBuffer referee_fifo;
 
 [[noreturn]] void RefereeThreadFun(ULONG initial_input)
 {
+    om_topic_t *referee_topic = om_config_topic(nullptr, "ca", "referee", sizeof(msg_referee_t));
+    msg_referee_t referee{};
     for(;;)
     {
         static uint8_t rx_byte;
@@ -95,6 +98,7 @@ RefereeRingBuffer referee_fifo;
                         {
                         case RefereeID::GameStatus:
                             memcpy(&GameStatus, msg_ptr, sizeof(GameStatus));
+                            referee.GameStatus = GameStatus;
                             break;
 
                         case RefereeID::GameResult:
@@ -115,6 +119,7 @@ RefereeRingBuffer referee_fifo;
 
                         case RefereeID::DartInfo:
                             memcpy(&DartInfo, msg_ptr, sizeof(DartInfo));
+                            referee.DartInfo = DartInfo;
                             break;
 
                         case RefereeID::GameRobotPos:
@@ -139,6 +144,7 @@ RefereeRingBuffer referee_fifo;
 
                         case RefereeID::DartClientCmd:
                             memcpy(&DartClientCmd, msg_ptr, sizeof(DartClientCmd));
+                            referee.DartClientCmd = DartClientCmd;
                             break;
 
                         case RefereeID::RoboInteractData:
@@ -166,6 +172,7 @@ RefereeRingBuffer referee_fifo;
                 break;
             }
         }
+        om_publish(referee_topic,&referee,sizeof(msg_referee_t), true, false);
         tx_thread_sleep(1);
     }
 }

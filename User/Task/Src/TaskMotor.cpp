@@ -28,28 +28,6 @@ extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
 
 
-float gantry_pos_fdb = 0.0f;
-
-namespace
-{
-constexpr ULONG kGantrySlotSwitchPeriodMs = 3000;
-
-DART_SLOT GetGantryTestSlot()
-{
-    switch ((HAL_GetTick() / kGantrySlotSwitchPeriodMs) % 4U)
-    {
-    case 0:
-        return DART_SLOT_NONE;
-    case 1:
-        return DART_SLOT_1;
-    case 2:
-        return DART_SLOT_2;
-    default:
-        return DART_SLOT_3;
-    }
-}
-}
-
 TX_THREAD MotorThread;
 uint8_t MotorThreadStack[2048] = {0};
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
@@ -70,9 +48,9 @@ PID coilSpringMotorR_pos_pid(3.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION |
 PID GantryMotor_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID StringMotorL_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorL_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorL_tq_pid(0.15f, 0.0f, 10.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID StringMotorR_spd_pid(100.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID StringMotorR_tq_pid(0.12f, 0.0f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID StringMotorR_tq_pid(0.10f, 0.05f, 0.0f, 1000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 
 float Gantry_Kp = 0.5f;
@@ -86,8 +64,6 @@ debug_motor_t String_L_debug{};
 debug_motor_t String_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
-float kp = 1000;
-float ki = 26;
 
 void TaskMotors::MotorInit() 
 {
@@ -132,8 +108,8 @@ void TaskMotors::SetModeAndPidParam()
     CoilSpringMotorR.controlMode = M3508::SPD_MODE;
 
 
-    StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 1);
-    StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 1);
+    StringMotorL.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorL._id, S_VEL, 3);
+    StringMotorR.X_V2_Auto_Return_Sys_Params_Timed(motors->StringMotorR._id, S_VEL, 3);
 }
 
 
@@ -234,7 +210,9 @@ void TaskMotors::SetModeAndPidParam()
         else 
             yaw_target_hz = 0;     
 
-        motors->YawMotor.SetTargetSpeed(yaw_target_hz);
+        // motors->YawMotor.SetTargetSpeed(yaw_target_hz);
+
+        motors->YawMotor.SetTargetSpeed(motorctrl.yaw_spd* 5000);
 
 #ifdef STRING_HAND_CONTROL
 
@@ -303,8 +281,8 @@ void TaskMotors::SetModeAndPidParam()
             float cmd_spd_R = Numeric::abs(StringMotorR_tq_pid.result);
             // if (cmd_spd_R > 800.0f) cmd_spd_R = 800.0f;
 
-            motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 1000, cmd_spd_L , false, 3000);
-            motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 1000, cmd_spd_R , false, 3000);
+            motors->StringMotorL.X_V2_Vel_LC_Control(motors->StringMotorL._id, string_L_dir, 2000, cmd_spd_L , false, 5000);
+            motors->StringMotorR.X_V2_Vel_LC_Control(motors->StringMotorR._id, string_R_dir, 2000, cmd_spd_R , false, 5000);
         }
         else 
         {
@@ -355,8 +333,6 @@ void TaskMotors::SetModeAndPidParam()
         
         //达妙电机
         // 达妙电机位控测试：按固定节拍轮换四个 slot
-        
-        gantry_pos_fdb = motors->GantryMotor.motorFeedback.positionFdb;
 
 
         // const DART_SLOT gantry_target_slot = GetGantryTestSlot();
@@ -414,6 +390,6 @@ float Find_gantry_pos(DART_SLOT slot)
             return Numeric::Pi*0.5f;
             // return 0;
         default:
-            return 0.4999237f;
+            return Numeric::Pi;
     }
 }

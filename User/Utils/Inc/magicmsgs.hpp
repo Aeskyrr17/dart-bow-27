@@ -117,9 +117,10 @@ struct msg_visiontx_t
 {
     uint8_t header; //0x5A
     uint8_t start_state;
-    uint8_t target_id; //0-outpost 1-base
+    // uint8_t target_id; //0-outpost 1-base
     uint8_t DartNumber;//1,2,3,4
     uint8_t selected_target_id;
+    float offset;
     uint16_t checksum;
 } __attribute__((packed));
 
@@ -159,7 +160,7 @@ struct msg_cmd_t
     LAUNCHER_ACTION action;
     DART_SLOT next_dart_slot;
 
-    float yaw;
+    float yaw;              //约定为-1~1
     float tension;
     float Coil_L_spd;
     float Coil_R_spd;
@@ -259,9 +260,6 @@ struct debug_motor_t
     float torque;
 };
 
-struct msg_motor2launcher_t
-{
-};
 
 struct msg_launcher2sysctrl_t
 {
@@ -272,4 +270,13 @@ struct msg_launcher2sysctrl_t
 
 #ifdef __cplusplus
 }
+
+#include "config_referee.hpp"
+
+struct msg_referee_t
+{
+    GameStatus_t GameStatus;
+    DartInfo_t DartInfo;
+    DartClientCmd_t DartClientCmd;
+};
 #endif
