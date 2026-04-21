@@ -41,11 +41,11 @@ float Find_gantry_pos(DART_SLOT slot);
 PID str_L_tqpid(0.12f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID str_R_tqpid(0.12f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID syn_pos_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID syn_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+// PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -53,7 +53,7 @@ debug_motor_t string_L_debug{};
 debug_motor_t string_R_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
-
+float debug_syn_tq;
 
 [[noreturn]] void MotorThreadFun(ULONG initial_input) 
 {
@@ -74,9 +74,9 @@ msg_motor_ctrl_t debug_motorctrl{};
     motor.triggerMotor.Lock();
 
     motor.synbeltMotor.positionPid = syn_pos_pid;
-    motor.synbeltMotor.speedPid = syn_spd_pid;
-    motor.gantryMotor.positionPid = gantry_pos_pid;
-    motor.gantryMotor.speedPid = gantry_spd_pid;
+    // motor.synbeltMotor.speedPid = syn_spd_pid;
+    // motor.gantryMotor.positionPid = gantry_pos_pid;
+    // motor.gantryMotor.speedPid = gantry_spd_pid;
 
 
     //todo:后续考虑整理局部变量
@@ -195,6 +195,24 @@ msg_motor_ctrl_t debug_motorctrl{};
         motor.gantryMotor.offset = 0.0f;
         motor.gantryMotor.positionSet = gantry_target_pos;
         motor.gantryMotor.speedSet = motor.gantry_max_spd;
+
+
+        switch (motorctrl.synbelt_mode)
+        {
+        case POS:
+            motor.synbeltMotor.positionPid.ref = motorctrl.synbelt_pos;
+            motor.synbeltMotor.positionPid.fdb = motor.synbeltMotor.motorFeedback.positionFdb;
+            motor.synbeltMotor.positionPid.UpdateResult();
+            motor.synbeltMotor.speedSet = motor.synbeltMotor.positionPid.result;
+            break;
+        case SPD:
+            motor.synbeltMotor.speedSet = motorctrl.synbelt_spd;
+            break;
+        case TORQUE:
+        default:
+            motor.synbeltMotor.speedSet = 0.0f;
+            break;
+        }
         DMMotorHandler::Instance()->sendControlData();
 
 
@@ -202,10 +220,12 @@ msg_motor_ctrl_t debug_motorctrl{};
         motorfdb.gantry_pos_fdb = motor.gantryMotor.motorFeedback.positionFdb;
         motorfdb.gantry_spd_fdb = motor.gantryMotor.motorFeedback.speedFdb;
         motorfdb.gantry_pos_set = gantry_target_pos;
+        motorfdb.syn_pos_fdb = motor.synbeltMotor.motorFeedback.positionFdb;
         om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
 
 
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
+        debug_syn_tq = motor.synbeltMotor.motorFeedback.torqueFdb;
         string_L_debug.speed = motor.stringMotorL.speed;
         string_R_debug.speed = motor.stringMotorR.speed;
         tx_thread_sleep(1);

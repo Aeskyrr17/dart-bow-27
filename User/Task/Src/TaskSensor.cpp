@@ -34,6 +34,11 @@ struct FORCE
     int32_t force_R;
 } force;
 
+static bool u2_force_waiting = false;
+static bool u3_force_waiting = false;
+static ULONG u2_force_request_tick = 0;
+static ULONG u3_force_request_tick = 0;
+
 
 
 
@@ -85,17 +90,45 @@ inline int32_t DecodeForce(const uint8_t* rx_buf)
 
 void ForceSensor_RequestAll(void)
 {
-    SCB_CleanDCache_by_Addr((uint32_t*)u2_tx_buffer, sizeof(u2_tx_buffer));
-    HAL_UART_Transmit_DMA(&huart2, u2_tx_buffer, sizeof(u2_tx_buffer));
+    const ULONG now = tx_time_get();
 
-    SCB_CleanDCache_by_Addr((uint32_t*)u3_tx_buffer, sizeof(u3_tx_buffer));
-    HAL_UART_Transmit_DMA(&huart3, u3_tx_buffer, sizeof(u3_tx_buffer));
+    if (u2_force_waiting && (now - u2_force_request_tick) > 5)
+    {
+        u2_force_waiting = false;
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
+    }
+    if (u3_force_waiting && (now - u3_force_request_tick) > 5)
+    {
+        u3_force_waiting = false;
+        HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+    }
+
+    if (!u2_force_waiting)
+    {
+        SCB_CleanDCache_by_Addr((uint32_t*)u2_tx_buffer, sizeof(u2_tx_buffer));
+        if (HAL_UART_Transmit_DMA(&huart2, u2_tx_buffer, sizeof(u2_tx_buffer)) == HAL_OK)
+        {
+            u2_force_waiting = true;
+            u2_force_request_tick = now;
+        }
+    }
+
+    if (!u3_force_waiting)
+    {
+        SCB_CleanDCache_by_Addr((uint32_t*)u3_tx_buffer, sizeof(u3_tx_buffer));
+        if (HAL_UART_Transmit_DMA(&huart3, u3_tx_buffer, sizeof(u3_tx_buffer)) == HAL_OK)
+        {
+            u3_force_waiting = true;
+            u3_force_request_tick = now;
+        }
+    }
 }
 
 void ForceSensor_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
 {
     if (huart == &huart2)
     {
+        u2_force_waiting = false;
         SCB_InvalidateDCache_by_Addr((uint32_t*)u2_rx_buffer, FORCE_DATA_RX_SIZE);
         if (size == FORCE_DATA_RX_SIZE &&
             u2_rx_buffer[0] == 0x01 &&
@@ -109,6 +142,7 @@ void ForceSensor_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
     }
     else if (huart == &huart3)
     {
+        u3_force_waiting = false;
         SCB_InvalidateDCache_by_Addr((uint32_t*)u3_rx_buffer, FORCE_DATA_RX_SIZE);
         if (size == FORCE_DATA_RX_SIZE &&
             u3_rx_buffer[0] == 0x01 &&
@@ -126,10 +160,12 @@ void ForceSensor_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2)
     {
+        u2_force_waiting = false;
         HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     }
     else if (huart == &huart3)
     {
+        u3_force_waiting = false;
         HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
     }
 }

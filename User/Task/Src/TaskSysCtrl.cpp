@@ -115,7 +115,7 @@ DartLibrary dart_lib;
             else if (remoter.right_sw == Mid)
             {
                 cmd.action = DART_SYN_ADJUST;
-                cmd.rc_syn =  remoter.right_y * 0.05f;
+                cmd.rc_syn =  remoter.right_y * 0.01f;
             }
             else if (remoter.right_sw == Up)
             {

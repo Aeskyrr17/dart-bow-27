@@ -28,6 +28,8 @@ msg_motorfdb_t debug_motorfdb{};
 msg_launcher2sysctrl_t lch2sys{};
 msg_cmd_t cmd{};
 msg_sensor_t sensor{};
+    msg_motor_ctrl_t motorctrl{};
+
 
 
 delay_t trig_lock_delay{};
@@ -38,7 +40,7 @@ delay_t firing_hold_delay{};
 {
     UNUSED(initial_input); 
     om_topic_t *motorctrl_topic = om_config_topic(nullptr, "ca", "motorctrl", sizeof(msg_motor_ctrl_t));
-    msg_motor_ctrl_t motorctrl{};
+    // msg_motor_ctrl_t motorctrl{};
     om_topic_t *lch2sys_topic = om_config_topic(nullptr, "ca", "lch2sys", sizeof(msg_launcher2sysctrl_t));
 
 
@@ -52,18 +54,15 @@ delay_t firing_hold_delay{};
     delay_t coil_L_zero_delay{};
     delay_t coil_R_zero_delay{};
 
-    const float Coil_pull_spd = 17.0f; //卷簧速度
-    const float Coil_return_spd = -12.0f; //卷簧复位速度，注意方向
-    const float Coil_return_spd_slow = -10.0f;
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.05f;
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;
-    const float syn_pos_1 = 0.0f;       //退到龙门架之后的位置
-    const float syn_pos_2 = 0.0f;
-    const float syn_pos_3 = 0.0f;
+    const float syn_pos_1 = -30.0f;       //退到龙门架之后的位置
+    const float syn_pos_2 = -25.0f;
+    const float syn_pos_3 = -26.0f;
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -71,6 +70,7 @@ delay_t firing_hold_delay{};
 
     bool hand_trigger_lock = true;
     bool coil_ready_stopped = false;
+    bool trigger_lock_latched = false;
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
     PREPARE_STSTE last_prep_state = PREPARE_STATE_INVALID;
 
@@ -98,6 +98,8 @@ delay_t firing_hold_delay{};
         motorctrl.string_R_spd = 0.0f;
         motorctrl.string_target_tension = 0.0f;
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
+        motorctrl.synbelt_mode = POS;
+        motorctrl.synbelt_spd = 0.0f;
         motorctrl.string_L_tq = cmd.tension;
         motorctrl.string_R_tq = cmd.tension;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
         motorctrl.string_able = false;
@@ -131,6 +133,7 @@ delay_t firing_hold_delay{};
         if (prep_state_changed)
         {
             coil_ready_stopped = false;
+            trigger_lock_latched = false;
         }
 
         //FSM具体实现逻辑   
@@ -138,7 +141,7 @@ delay_t firing_hold_delay{};
         {
             case HAND_CONTROL:
                 motorctrl.trigger_lock = hand_trigger_lock;
-                motorctrl.synbelt_pos = motor.synbeltMotor.motorFeedback.positionFdb;
+                motorctrl.synbelt_pos += 0;
                 motorctrl.string_L_spd = 0.0f;
                 motorctrl.string_R_spd = 0.0f;
                 motorctrl.string_able = false;
@@ -185,6 +188,7 @@ delay_t firing_hold_delay{};
                 motorctrl.trigger_lock = true;
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
                 motorctrl.string_able = false;
+                motorctrl.synbelt_pos += 0;
 
                 if (cmd.action == DART_PREPARE) 
                 {
@@ -209,32 +213,35 @@ delay_t firing_hold_delay{};
                             launcher.is_first_dart = false;
                             break;
                         }
-                        if (Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_1) <= syn_pos_deadzone)
+                        if (Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_1) <= syn_pos_deadzone)
                         {
                             launcher.prep_state = GANTRY_1;
                         }
                         break;
 
                     case GANTRY_1:
+                        motorctrl.trigger_lock = false;
                         motorctrl.gantry_target_slot = launcher.current_slot;
-                        if (Numeric::abs(Get_Gantry_Target_Pos(launcher.current_slot) - motor.gantryMotor.motorFeedback.positionFdb) <= gantry_pos_deadzone)
+                        if (Numeric::abs(Get_Gantry_Target_Pos(launcher.current_slot) - motorfdb.gantry_pos_fdb) <= gantry_pos_deadzone)
                         {
                             launcher.prep_state = SYN_2;
                         };
                         break;
                         
                     case SYN_2:
+                        motorctrl.trigger_lock = false;    
                         motorctrl.gantry_target_slot = launcher.current_slot;
                         motorctrl.synbelt_pos = syn_pos_2;
-                        if (Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_2) <= syn_pos_deadzone)
+                        if (Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_2) <= syn_pos_deadzone)
                         {
                             launcher.prep_state = GANTRY_2;
                         };
                         break;
 
                     case GANTRY_2:
+                        motorctrl.trigger_lock = false;
                         motorctrl.gantry_target_slot = DART_SLOT_NONE;
-                        if (Numeric::abs(Get_Gantry_Target_Pos(DART_SLOT_NONE) - motor.gantryMotor.motorFeedback.positionFdb) <= gantry_pos_deadzone)
+                        if (Numeric::abs(Get_Gantry_Target_Pos(DART_SLOT_NONE) - motorfdb.gantry_pos_fdb) <= gantry_pos_deadzone)
                         {
                             launcher.prep_state = SYN_TRIGGER_READY;
                         };
@@ -243,11 +250,19 @@ delay_t firing_hold_delay{};
                     case SYN_TRIGGER_READY:
                     {
                         motorctrl.synbelt_pos = syn_pos_3;
-                        motorctrl.trigger_lock = true;
+                        motorctrl.trigger_lock = false;
 
-                        bool syn_reset = Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_0) <= syn_pos_deadzone;
+                        bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_3) <= syn_pos_deadzone;
+                        if (syn_reset)
+                        {
+                            trigger_lock_latched = true;
+                        }
+                        if (trigger_lock_latched)
+                        {
+                            motorctrl.trigger_lock = true;
+                        }
 
-                        if (trig_lock_delay.Reach(syn_reset, 1000, prep_state_changed))
+                        if (trig_lock_delay.Reach(trigger_lock_latched, 1000, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
                         };
@@ -265,7 +280,7 @@ delay_t firing_hold_delay{};
 
                         bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= string_deadzone;
                         bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= string_deadzone;
-                        bool syn_reset = Numeric::abs(motor.synbeltMotor.motorFeedback.positionFdb - syn_pos_0 <= syn_pos_deadzone);
+                        bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_0) <= syn_pos_deadzone;
 
 
                         if (string_L_ok && string_R_ok && syn_reset)

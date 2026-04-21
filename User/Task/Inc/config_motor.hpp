@@ -1,4 +1,5 @@
 #pragma once
+#include "DM4310_MultiPos.hpp"
 #ifndef TASK_MOTOR_HPP
 #define TASK_MOTOR_HPP
 
@@ -38,8 +39,8 @@ class ServoMotors
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 1100  / 20000.0f;
-        this->lock_pulse = 1630 / 20000.0f;//50Hz //1750
+        this->open_pulse = 980  / 20000.0f;
+        this->lock_pulse = 1580 / 20000.0f;//50Hz //1750
     }
 
     void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
@@ -386,7 +387,7 @@ class ZDTStepper
 class TaskMotors
 {
     public:
-    DM4310 synbeltMotor;            //同步带电机
+    DM4310_MultiPos synbeltMotor;            //同步带电机
     DM4310 gantryMotor;         
 
     Stepper YawMotor;
@@ -410,16 +411,18 @@ class TaskMotors
     void MotorsInit()
     {
         DMMotorHandler::Instance()->registerMotor(&this->synbeltMotor, &hfdcan1, 0x02);
-        this->synbeltMotor.controlMode = DMMotor::POS_SPD_MODE;
+        this->synbeltMotor.controlMode = DMMotor::SPD_MODE;
         this->synbeltMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
-        gantry_max_spd = 10.0f;
+        this->synbelt_max_spd = 3.0f;
+
 
         DMMotorHandler::Instance()->registerMotor(&this->gantryMotor, &hfdcan1, 0x01);
         this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
         this->gantryMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
-        synbelt_max_spd = 20.0f;
+        this->gantry_max_spd = 10.0f;
+
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
         this->triggerMotor.Lock();
