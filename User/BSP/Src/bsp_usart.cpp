@@ -58,19 +58,19 @@ void USART_Init()
   // // __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST); // 清空缓存，消除接收错位
   // HAL_UARTEx_ReceiveToIdle_DMA(&huart7, UART7RxBuffer, 256);
   // usart2
-  __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_usart2_rx, DMA_IT_TC);
-  __HAL_DMA_DISABLE_IT(&hdma_usart2_tx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_usart2_tx, DMA_IT_TC);
-  __HAL_UART_SEND_REQ(&huart2, UART_RXDATA_FLUSH_REQUEST);
-  HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
-  // usart3
-  __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_usart3_rx, DMA_IT_TC);
-  __HAL_DMA_DISABLE_IT(&hdma_usart3_tx, DMA_IT_HT);
-  __HAL_DMA_ENABLE_IT(&hdma_usart3_tx, DMA_IT_TC);
-  __HAL_UART_SEND_REQ(&huart3, UART_RXDATA_FLUSH_REQUEST);
-  HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+  // __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+  // __HAL_DMA_ENABLE_IT(&hdma_usart2_rx, DMA_IT_TC);
+  // __HAL_DMA_DISABLE_IT(&hdma_usart2_tx, DMA_IT_HT);
+  // __HAL_DMA_ENABLE_IT(&hdma_usart2_tx, DMA_IT_TC);
+  // __HAL_UART_SEND_REQ(&huart2, UART_RXDATA_FLUSH_REQUEST);
+  // HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
+  // // usart3
+  // __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
+  // __HAL_DMA_ENABLE_IT(&hdma_usart3_rx, DMA_IT_TC);
+  // __HAL_DMA_DISABLE_IT(&hdma_usart3_tx, DMA_IT_HT);
+  // __HAL_DMA_ENABLE_IT(&hdma_usart3_tx, DMA_IT_TC);
+  // __HAL_UART_SEND_REQ(&huart3, UART_RXDATA_FLUSH_REQUEST);
+  // HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
   
 }
 
@@ -93,24 +93,24 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     referee_fifo.push(USART1RxBuffer, Size);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 256);
   }
-  else if (huart == &huart2)
-  {
-    ForceSensor_RxEventCallback(huart, Size);
-  }
-  else if (huart == &huart3)
-  {
-    ForceSensor_RxEventCallback(huart, Size);
-  }
+  // else if (huart == &huart2)
+  // {
+  //   ForceSensor_RxEventCallback(huart, Size);
+  // }
+  // else if (huart == &huart3)
+  // {
+  //   ForceSensor_RxEventCallback(huart, Size);
+  // }
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-  if (huart == &huart2)
-  {
-    ForceSensor_ErrorCallback(huart);
-  }
-  else if (huart == &huart3)
-  {
-    ForceSensor_ErrorCallback(huart);
-  }
-}
+// void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+// {
+//   if (huart == &huart2)
+//   {
+//     ForceSensor_ErrorCallback(huart);
+//   }
+//   else if (huart == &huart3)
+//   {
+//     ForceSensor_ErrorCallback(huart);
+//   }
+// }

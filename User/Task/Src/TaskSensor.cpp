@@ -9,24 +9,36 @@
 #include "stm32h7xx_hal_uart.h"
 #include "tx_api.h"
 #include "om.h"
-#include "crc.hpp"
 
 #include "bsp_usart.hpp"
-#include "config_sensor.hpp"
 
 #include "magicmsgs.hpp"
+#include <cstdint>
 
+#include "crc.hpp"
+// #include "config_sensor.hpp"
 
 TX_THREAD SensorThread;
 uint8_t SensorThreadStack[2048] = {0};
 
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart3;
+#define HALL_R_PORT                GPIOE
+#define HALL_R_PIN                 GPIO_PIN_1
 
-__attribute__((section(".RAM_D1"))) uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE] = {0};
-__attribute__((section(".RAM_D1"))) uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE] = {0};
-static __attribute__((section(".RAM_D1"))) uint8_t u2_tx_buffer[8] = {0x01, 0x03, 0x00, 0x50, 0x00, 0x02, 0xC4, 0x1A};
-static __attribute__((section(".RAM_D1"))) uint8_t u3_tx_buffer[8] = {0x01, 0x03, 0x00, 0x50, 0x00, 0x02, 0xC4, 0x1A};
+#define HALL_L_PORT                GPIOE
+#define HALL_L_PIN                 GPIO_PIN_0
+
+#define LIGHT_PORT                 GPIOE
+#define LIGHT_PIN                  GPIO_PIN_14
+
+#define FORCE_DATA_RX_SIZE         9
+
+// usart2 force_left
+static uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE];
+static uint8_t u2_rx_done = 0;
+
+// usart3 force_right
+static uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
+static uint8_t u3_rx_done = 0;
 
 struct FORCE
 {
@@ -34,20 +46,16 @@ struct FORCE
     int32_t force_R;
 } force;
 
-static bool u2_force_waiting = false;
-static bool u3_force_waiting = false;
-static ULONG u2_force_request_tick = 0;
-static ULONG u3_force_request_tick = 0;
-
-
-
-
-
 struct HALL
 {
     bool is_L_reset;
     bool is_R_reset;
-} hall;
+}hall;
+
+
+
+void Force_L_Request080();
+void Force_R_Request080();
 
 [[nonreturn]] void SensorThreadFun(ULONG initial_input)
 {
@@ -55,6 +63,8 @@ struct HALL
 
     om_topic_t *sensor_topic = om_config_topic(nullptr, "ca", "sensor", sizeof(msg_sensor_t));
     msg_sensor_t sensor{};
+
+    // HALL hall{};
 
     hall.is_L_reset = false;
     hall.is_R_reset = false;
@@ -66,106 +76,99 @@ struct HALL
     sensor.string_L_force = 0.0f;
     sensor.string_R_force = 0.0f;
 
+    HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
+    HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+
     for (;;)
     {
+        // hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
+        // hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
+        // sensor.is_coil_reset = (hall.is_L_reset && hall.is_R_reset);
         sensor.is_coil_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
         sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
 
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
 
-        ForceSensor_RequestAll();
+        Force_L_Request080();
+        Force_R_Request080();
 
         sensor.string_L_force = force.force_L;
         sensor.string_R_force = force.force_R;
 
         om_publish(sensor_topic, &sensor, sizeof(msg_sensor_t), true, false);
-        tx_thread_sleep(2);
+        tx_thread_sleep(5);
     }
 }
 
-inline int32_t DecodeForce(const uint8_t* rx_buf)
+// read force value(080): 01 03 00 50 00 02 + crc16（C4 1A)
+void Force_L_Request080()
 {
-    return (rx_buf[3] << 24) | (rx_buf[4] << 16) | (rx_buf[5] << 8) | rx_buf[6];
+    uint8_t cmd[8] = {0x01, 0x03, 0x00, 0x50, 0x00, 0x02, 0x00, 0x00};
+    Append_CRC16_Modbus_Check_Sum(cmd, 8);
+    u2_rx_done = 0;
+    HAL_UART_Transmit(&huart2, cmd, 8, 100);
 }
 
-void ForceSensor_RequestAll(void)
+void Force_R_Request080()
 {
-    const ULONG now = tx_time_get();
-
-    if (u2_force_waiting && (now - u2_force_request_tick) > 5)
-    {
-        u2_force_waiting = false;
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
-    }
-    if (u3_force_waiting && (now - u3_force_request_tick) > 5)
-    {
-        u3_force_waiting = false;
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
-    }
-
-    if (!u2_force_waiting)
-    {
-        SCB_CleanDCache_by_Addr((uint32_t*)u2_tx_buffer, sizeof(u2_tx_buffer));
-        if (HAL_UART_Transmit_DMA(&huart2, u2_tx_buffer, sizeof(u2_tx_buffer)) == HAL_OK)
-        {
-            u2_force_waiting = true;
-            u2_force_request_tick = now;
-        }
-    }
-
-    if (!u3_force_waiting)
-    {
-        SCB_CleanDCache_by_Addr((uint32_t*)u3_tx_buffer, sizeof(u3_tx_buffer));
-        if (HAL_UART_Transmit_DMA(&huart3, u3_tx_buffer, sizeof(u3_tx_buffer)) == HAL_OK)
-        {
-            u3_force_waiting = true;
-            u3_force_request_tick = now;
-        }
-    }
+    uint8_t cmd[8] = {0x01, 0x03, 0x00, 0x50, 0x00, 0x02, 0x00, 0x00};
+    Append_CRC16_Modbus_Check_Sum(cmd, 8);
+    u3_rx_done = 0;
+    HAL_UART_Transmit(&huart3, cmd, 8, 100);
 }
 
-void ForceSensor_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
+int32_t Decode_Force(const uint8_t* rx_buf)
+{
+    int32_t force = (rx_buf[3] << 24) | (rx_buf[4] << 16) | (rx_buf[5] << 8) | rx_buf[6];
+    return force;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2)
     {
-        u2_force_waiting = false;
-        SCB_InvalidateDCache_by_Addr((uint32_t*)u2_rx_buffer, FORCE_DATA_RX_SIZE);
-        if (size == FORCE_DATA_RX_SIZE &&
-            u2_rx_buffer[0] == 0x01 &&
+        if (u2_rx_buffer[0] == 0x01 &&
             u2_rx_buffer[1] == 0x03 &&
             u2_rx_buffer[2] == 0x04 &&
             Verify_CRC16_Modbus_Check_Sum(u2_rx_buffer, FORCE_DATA_RX_SIZE))
         {
-            force.force_L = DecodeForce(u2_rx_buffer);
+            force.force_L = Decode_Force(u2_rx_buffer);
+            u2_rx_done = 1;
         }
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
+        else
+        {
+            u2_rx_done = 0;
+        }
+        HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     }
-    else if (huart == &huart3)
+
+    if (huart == &huart3)
     {
-        u3_force_waiting = false;
-        SCB_InvalidateDCache_by_Addr((uint32_t*)u3_rx_buffer, FORCE_DATA_RX_SIZE);
-        if (size == FORCE_DATA_RX_SIZE &&
-            u3_rx_buffer[0] == 0x01 &&
+        if (u3_rx_buffer[0] == 0x01 &&
             u3_rx_buffer[1] == 0x03 &&
             u3_rx_buffer[2] == 0x04 &&
             Verify_CRC16_Modbus_Check_Sum(u3_rx_buffer, FORCE_DATA_RX_SIZE))
         {
-            force.force_R = DecodeForce(u3_rx_buffer);
+            force.force_R = Decode_Force(u3_rx_buffer);
+            u3_rx_done = 1;
         }
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+        else
+        {
+            u3_rx_done = 0;
+        }
+        HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
     }
 }
 
-void ForceSensor_ErrorCallback(UART_HandleTypeDef *huart)
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2)
     {
-        u2_force_waiting = false;
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
+        HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     }
-    else if (huart == &huart3)
+
+    if (huart == &huart3)
     {
-        u3_force_waiting = false;
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+        HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
     }
 }

@@ -60,9 +60,9 @@ delay_t firing_hold_delay{};
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;
-    const float syn_pos_1 = -30.0f;       //退到龙门架之后的位置
-    const float syn_pos_2 = -25.0f;
-    const float syn_pos_3 = -26.0f;
+    const float syn_pos_1 = -24.0f;       //退到龙门架之后的位置
+    const float syn_pos_2 = -17.0f;
+    const float syn_pos_3 = -29.90f;
 
 
     motorctrl.Coil_L_spd = 0.0f;

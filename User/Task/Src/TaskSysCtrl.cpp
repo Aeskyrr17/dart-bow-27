@@ -39,10 +39,10 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, 0.0f,50000.0f};
-    dart_lib.dart[2] = {2, 0.0f,60000.0f};
-    dart_lib.dart[3] = {3, 0.0f,50000.0f};
-    dart_lib.dart[4] = {4, 0.0f,60000.0f};
+    dart_lib.dart[1] = {1, 0.0f,80000.0f};
+    dart_lib.dart[2] = {2, 0.0f,90000.0f};
+    dart_lib.dart[3] = {3, 0.0f,80000.0f};
+    dart_lib.dart[4] = {4, 0.0f,90000.0f};
     dart_lib.dart[5] = {5, 0.0f,5000.0f};
     dart_lib.dart[6] = {6, 0.0f,5000.0f};
     dart_lib.dart[7] = {7, 0.0f,5000.0f};
