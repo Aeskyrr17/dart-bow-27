@@ -60,9 +60,10 @@ delay_t firing_hold_delay{};
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;
-    const float syn_pos_1 = -24.0f;       //退到龙门架之后的位置
-    const float syn_pos_2 = -17.0f;
-    const float syn_pos_3 = -29.90f;
+    // const float syn_pos_1 = -24.7f;       //退到龙门架之后的位置
+    const float syn_pos_1 = -24.00f;
+    const float syn_pos_2 = -13.0f;
+    const float syn_pos_3 = -30.5f;
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -188,6 +189,7 @@ delay_t firing_hold_delay{};
                 motorctrl.trigger_lock = true;
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
                 motorctrl.string_able = false;
+                motorctrl.synbelt_mode = POS;
                 motorctrl.synbelt_pos += 0;
 
                 if (cmd.action == DART_PREPARE) 
@@ -231,9 +233,13 @@ delay_t firing_hold_delay{};
                     case SYN_2:
                         motorctrl.trigger_lock = false;    
                         motorctrl.gantry_target_slot = launcher.current_slot;
+                        motorctrl.synbelt_mode = SPD;
+                        motorctrl.synbelt_spd = 8.0f;
                         motorctrl.synbelt_pos = syn_pos_2;
                         if (Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_2) <= syn_pos_deadzone)
                         {
+                            motorctrl.synbelt_spd = 0.0f;
+                            motorctrl.synbelt_mode = POS;  
                             launcher.prep_state = GANTRY_2;
                         };
                         break;
@@ -281,6 +287,10 @@ delay_t firing_hold_delay{};
                         bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= string_deadzone;
                         bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= string_deadzone;
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_0) <= syn_pos_deadzone;
+
+                        //! 目前步进电机有问题，先让他不要动
+                        string_L_ok = true;
+                        string_R_ok = true;
 
 
                         if (string_L_ok && string_R_ok && syn_reset)

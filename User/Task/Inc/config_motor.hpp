@@ -3,8 +3,7 @@
 #ifndef TASK_MOTOR_HPP
 #define TASK_MOTOR_HPP
 
-#include <cstdint>
-
+#include "main.h"
 #include "stm32h7xx_hal_gpio.h"
 #include "gpio.h"
 #include "tim.h"
@@ -21,10 +20,11 @@
 #include "Stepper.hpp"
 #include "X_V2.hpp"
 
+#include "config_launcher.hpp"
 
-//todo:看需不需要改成更加通用的setangle，目前扳机和夹爪应该都是只需要起始和结束两个脉冲值
 /**
  * @brief 舵机类，实现两点间移动
+ * 长时间一直发送PWM舵机很可能过热，撒放机构有机械自锁，Open和Lock函数会在达到目标位置后停止PWM输出。
  */
 class ServoMotors
 {
@@ -35,12 +35,18 @@ class ServoMotors
     float open_pulse; //打开时脉冲
     float lock_pulse; //锁定时的脉冲
 
+    float last_pulse;
+
+    delay_t open_delay;
+    delay_t close_delay;
+
     ServoMotors()
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 980  / 20000.0f;
-        this->lock_pulse = 1580 / 20000.0f;//50Hz //1750
+        this->open_pulse = 930  / 20000.0f;
+        this->lock_pulse = 1390 / 20000.0f;//50Hz //1750
+
     }
 
     void Init(TIM_HandleTypeDef* htim, uint32_t channel) //初始化舵机,配置挂载的定时器和通道
@@ -53,14 +59,34 @@ class ServoMotors
 
     void Open()
     {
-        PWM_SetDutyRatio(this->htim, open_pulse, this->channel); //默认闭合
+        if (!open_delay.ReachStable(this->last_pulse == this->open_pulse, 3000))
+        {
+            PWM_Start(this->htim, this->channel);
+            PWM_SetDutyRatio(this->htim, open_pulse, this->channel); //默认闭合
+            this->last_pulse = this->open_pulse;
+            return;
+        }
+        PWM_Stop(this->htim, this->channel);
+        this->last_pulse = this->open_pulse;
+        return;
+
     }
 
     void Lock()
     {
-        PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
+        if (!close_delay.ReachStable(this->last_pulse == this->lock_pulse, 3000))
+        {
+            PWM_Start(this->htim, this->channel);
+            PWM_SetDutyRatio(this->htim, lock_pulse, this->channel); //默认闭合
+            this->last_pulse = this->lock_pulse;
+            return;
+        }
+        PWM_Stop(this->htim, this->channel);
+        this->last_pulse = this->lock_pulse;
+
     }
 };
+
 
 /**
  * @brief 张大头步进电机类
@@ -390,7 +416,7 @@ class TaskMotors
     DM4310_MultiPos synbeltMotor;            //同步带电机
     DM4310 gantryMotor;         
 
-    Stepper YawMotor;
+    ZDTStepper yawMotor;
 
     ZDTStepper stringMotorL;
     ZDTStepper stringMotorR;
@@ -428,23 +454,12 @@ class TaskMotors
         this->triggerMotor.Lock();
 
         this->stringMotorL.Init(&hfdcan3, 2, 0);
-        this->stringMotorR.Init(&hfdcan3, 1, 1);
+        this->stringMotorR.Init(&hfdcan3, 1, 1); //?这个positive_dir是什么来着
 
-        YawMotor_Init();
+        this->yawMotor.Init(&hfdcan2, 1, 0);
 
     }   
 
-
-    void YawMotor_Init()
-    {
-        this->YawMotor.Init(
-            &htim2,            
-            TIM_CHANNEL_3,        
-            GPIOA,                  // 方向引脚 (R_DIR)
-            GPIO_PIN_0,              // PA0
-            true                   //todo:确定方向
-        );
-    }
 
 };
 

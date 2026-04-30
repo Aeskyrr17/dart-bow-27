@@ -34,12 +34,12 @@ DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
 TaskMotors motor;
 
-// #define STRING_HAND_CONTROL   //! 定义是否手控拉弦
+#define MOTOR_DEBUG
 
 float Find_gantry_pos(DART_SLOT slot);
 
-PID str_L_tqpid(0.12f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID str_R_tqpid(0.12f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_L_tqpid(0.11f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_R_tqpid(0.11f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID syn_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -69,8 +69,6 @@ float debug_syn_tq;
 
     motor.MotorsInit();
 
-
-    motor.YawMotor.SetTargetSpeed(0);
     motor.triggerMotor.Lock();
 
     motor.synbeltMotor.positionPid = syn_pos_pid;
@@ -94,36 +92,11 @@ float debug_syn_tq;
         if ( motorctrl.trigger_lock)        motor.triggerMotor.Lock();
         else if ( !motorctrl.trigger_lock)  motor.triggerMotor.Open();
 
-        //yaw轴步进电机简单控制逻辑
-        // float yaw_target_hz = 0.0f;
-        // if (motorctrl.yaw_spd > 0.03)
-        //     yaw_target_hz = 1000;
-        // else if (motorctrl.yaw_spd < -0.03)
-        //     yaw_target_hz = -1000;
-        // else 
-        //     yaw_target_hz = 0;     
 
-        motor.YawMotor.SetTargetSpeed(motorctrl.yaw_spd* 5000);
+        motor.yawMotor.X_V2_Vel_LC_Control(motor.yawMotor.id, motor.yawMotor.dir, 1000,
+                                            motor.yawMotor.ParseSpeed(motorctrl.yaw_spd * 100), 
+                                            false, 5000);
 
-#ifdef STRING_HAND_CONTROL
-
-        if (motorctrl.string_L_spd > 0.03)          string_L_spd = 1000.0f;
-        else if (motorctrl.string_L_spd < -0.03)    string_L_spd = -1000.0f;
-        else                                        string_L_spd = 0.0f;     
-
-        if (motorctrl.string_R_spd > 0.03)          string_R_spd = 1000.0f;
-        else if (motorctrl.string_R_spd < -0.03)    string_R_spd = -1000.0f;
-        else                                        string_R_spd = 0.0f;     
-
-        motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 1000,
-                                                motor.stringMotorL.ParseSpeed(string_L_spd),
-                                                false, 3000);
-        motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 1000,
-                                                motor.stringMotorR.ParseSpeed(string_R_spd),
-                                                false, 3000);
-#else 
-
-//! for test
 
         if (motorctrl.string_able)
         {
@@ -158,11 +131,11 @@ float debug_syn_tq;
         {
             if (motorctrl.string_L_spd > 0.03)
             {
-                string_L_spd = 1000.0f;
+                string_L_spd = 3000.0f;
             }
             else if (motorctrl.string_L_spd < -0.03)
             {
-                string_L_spd = -1000.0f;
+                string_L_spd = -3000.0f;
             }
             else 
                 string_L_spd = 0.0f;     
@@ -170,11 +143,11 @@ float debug_syn_tq;
 
             if (motorctrl.string_R_spd > 0.03)
             {
-                string_R_spd = 1000.0f;
+                string_R_spd = 3000.0f;
             }
             else if (motorctrl.string_R_spd < -0.03)
             {
-                string_R_spd = -1000.0f;
+                string_R_spd = -3000.0f;
             }
             else 
                 string_R_spd = 0.0f;     
@@ -187,8 +160,6 @@ float debug_syn_tq;
                                                     false, 3000);
         }
 
-#endif
-
 
         DART_SLOT gantry_target_slot = motorctrl.gantry_target_slot;
         float gantry_target_pos = Find_gantry_pos(gantry_target_slot);
@@ -197,9 +168,9 @@ float debug_syn_tq;
         motor.gantryMotor.speedSet = motor.gantry_max_spd;
 
 
-        switch (motorctrl.synbelt_mode)
+        switch (motorctrl.synbelt_mode)//pos为4310的SPD模式+外部pos闭环
         {
-        case POS:
+        case POS: 
             motor.synbeltMotor.positionPid.ref = motorctrl.synbelt_pos;
             motor.synbeltMotor.positionPid.fdb = motor.synbeltMotor.motorFeedback.positionFdb;
             motor.synbeltMotor.positionPid.UpdateResult();
@@ -208,7 +179,7 @@ float debug_syn_tq;
         case SPD:
             motor.synbeltMotor.speedSet = motorctrl.synbelt_spd;
             break;
-        case TORQUE:
+        case TORQUE: //? 暂时未完成
         default:
             motor.synbeltMotor.speedSet = 0.0f;
             break;
@@ -223,11 +194,13 @@ float debug_syn_tq;
         motorfdb.syn_pos_fdb = motor.synbeltMotor.motorFeedback.positionFdb;
         om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
 
-
+#ifdef MOTOR_DEBUG
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
         debug_syn_tq = motor.synbeltMotor.motorFeedback.torqueFdb;
         string_L_debug.speed = motor.stringMotorL.speed;
         string_R_debug.speed = motor.stringMotorR.speed;
+#endif
+
         tx_thread_sleep(1);
     }
 }
@@ -241,10 +214,10 @@ float debug_syn_tq;
  */
  void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim == motor.YawMotor.pwmTim) 
-    {
-        motor.YawMotor.HandleInterrupt();
-    }
+    // if (htim == motor.YawMotor.pwmTim) 
+    // {
+    //     motor.YawMotor.HandleInterrupt();
+    // }
 }
 
 float Find_gantry_pos(DART_SLOT slot)

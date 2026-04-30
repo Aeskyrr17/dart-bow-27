@@ -107,6 +107,9 @@ struct msg_visionrx_t
     uint8_t header; // 发送数据包的头
     float distance;
     float yaw; 
+    float distance_reserve;
+    float angle_reserve;
+    uint8_t flag_reserve;
     uint8_t stable_state;//0不稳定，1稳定
     uint16_t checksum; // 校验和
     
@@ -117,9 +120,9 @@ struct msg_visiontx_t
 {
     uint8_t header; //0x5A
     uint8_t start_state;
-    // uint8_t target_id; //0-outpost 1-base
+    uint8_t target_id; //0-outpost 1-base
     uint8_t DartNumber;//1,2,3,4
-    uint8_t selected_target_id;
+    // uint8_t selected_target_id;
     float offset;
     uint16_t checksum;
 } __attribute__((packed));

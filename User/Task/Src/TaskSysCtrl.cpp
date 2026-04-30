@@ -39,10 +39,10 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, 0.0f,80000.0f};
-    dart_lib.dart[2] = {2, 0.0f,90000.0f};
-    dart_lib.dart[3] = {3, 0.0f,80000.0f};
-    dart_lib.dart[4] = {4, 0.0f,90000.0f};
+    dart_lib.dart[1] = {1, -0.1f,240000.0f};
+    dart_lib.dart[2] = {2, -0.1f,240000.0f};
+    dart_lib.dart[3] = {3, -0.1f,240000.0f};
+    dart_lib.dart[4] = {4, 0.0f,240000.0f};
     dart_lib.dart[5] = {5, 0.0f,5000.0f};
     dart_lib.dart[6] = {6, 0.0f,5000.0f};
     dart_lib.dart[7] = {7, 0.0f,5000.0f};
@@ -60,7 +60,7 @@ DartLibrary dart_lib;
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         //! !!!!!!测试代码
         vision_rx.distance = 25.0f;
-        vision_rx.stable_state = 1;
+        // vision_rx.stable_state = 1;
 
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
@@ -77,16 +77,27 @@ DartLibrary dart_lib;
         int id = dart_lib.current_dart_id;
         float my_offset = dart_lib.dart[id].yaw_offset;
         float my_tension = dart_lib.dart[id].tension_tq;
-        float target_yaw = remoter.right_x + my_offset;
+        float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
 
         vision_tx.header = 0x5A;
         vision_tx.offset = my_offset;
         vision_tx.DartNumber = id;
         // vision_tx.target_id = dart_lib.referee.chosen_target;
+        vision_tx.target_id = 1;
         vision_tx.start_state = dart_lib.referee.game_status;
 
         cmd.tension = my_tension;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
+
+        if (remoter.offline)
+        {
+            cmd.action = DART_RELAX;
+            dart_lib.Update_Fired_State(&lch2sys);
+            om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
+            om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
+            tx_thread_sleep(1);
+            continue;
+        }
 
 
 
@@ -187,13 +198,14 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     {
         cmd->action = DART_RELAX;
         cmd->tension = tension;
-        cmd->yaw = yaw;
+        // cmd->yaw = yaw;
+        cmd->yaw = 0;
         return;
     }
 
     cmd->action = DART_PREPARE;
     cmd->tension = tension;
-    cmd->yaw = yaw;
+    // cmd->yaw = yaw;
 
     dart->autoAim.yaw_ok = false;
 
@@ -213,15 +225,15 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     {
         cmd->yaw = -0.5f;
     }
-    else if (rx->yaw > 0.03f)
+    else if (rx->yaw > 0.04f)
     {
-        cmd->yaw = 0.2f;
+        cmd->yaw = 0.15f;
     }
-    else if (rx->yaw < -0.03f)
+    else if (rx->yaw < -0.04f)
     {
-        cmd->yaw = -0.2f;
+        cmd->yaw = -0.15f;
     }
-    else if (rx->yaw <= 0.03f && rx->yaw >= -0.03f)
+    else if (rx->yaw <= 0.04f && rx->yaw >= -0.04f)
     {
         dart->autoAim.yaw_ok = true;
     };
