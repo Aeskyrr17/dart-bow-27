@@ -1,5 +1,6 @@
 #pragma once
 #include "DM4310_MultiPos.hpp"
+#include "DMMotor.hpp"
 #ifndef TASK_MOTOR_HPP
 #define TASK_MOTOR_HPP
 
@@ -45,7 +46,7 @@ class ServoMotors
         this->htim = nullptr;
         this->channel = 0;
         this->open_pulse = 930  / 20000.0f;
-        this->lock_pulse = 1390 / 20000.0f;//50Hz //1750
+        this->lock_pulse = 1390/ 20000.0f;//50Hz //1750
 
     }
 
@@ -440,7 +441,9 @@ class TaskMotors
         this->synbeltMotor.controlMode = DMMotor::SPD_MODE;
         this->synbeltMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
-        this->synbelt_max_spd = 3.0f;
+        // this->synbelt_max_spd = 3.0f;
+        this->synbeltMotor.speedSet = 15.0f;
+        DMMotorHandler::Instance()->sendControlData();
 
 
         DMMotorHandler::Instance()->registerMotor(&this->gantryMotor, &hfdcan1, 0x01);

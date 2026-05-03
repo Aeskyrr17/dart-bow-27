@@ -39,10 +39,10 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -0.1f,240000.0f};
-    dart_lib.dart[2] = {2, -0.1f,240000.0f};
-    dart_lib.dart[3] = {3, -0.1f,240000.0f};
-    dart_lib.dart[4] = {4, 0.0f,240000.0f};
+    dart_lib.dart[1] = {1, -1.9f,535000.0f};
+    dart_lib.dart[2] = {2, -1.5f,535000.0f};
+    dart_lib.dart[3] = {3, -1.5f,562000.0f};
+    dart_lib.dart[4] = {4, -1.5f,560000.0f};
     dart_lib.dart[5] = {5, 0.0f,5000.0f};
     dart_lib.dart[6] = {6, 0.0f,5000.0f};
     dart_lib.dart[7] = {7, 0.0f,5000.0f};
@@ -60,6 +60,8 @@ DartLibrary dart_lib;
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         //! !!!!!!测试代码
         vision_rx.distance = 25.0f;
+        dart_lib.referee.game_status = 4;
+        dart_lib.is_door_open = true;
         // vision_rx.stable_state = 1;
 
         om_suber_export(remoter_suber, &remoter, false);
@@ -225,15 +227,15 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     {
         cmd->yaw = -0.5f;
     }
-    else if (rx->yaw > 0.04f)
+    else if (rx->yaw > 0.02f)
     {
         cmd->yaw = 0.15f;
     }
-    else if (rx->yaw < -0.04f)
+    else if (rx->yaw < -0.02f)
     {
         cmd->yaw = -0.15f;
     }
-    else if (rx->yaw <= 0.04f && rx->yaw >= -0.04f)
+    else if (rx->yaw <= 0.02f && rx->yaw >= -0.02f)
     {
         dart->autoAim.yaw_ok = true;
     };

@@ -85,7 +85,7 @@ inline void Update_Slot(Launcher_Cxt_t& cxt)
     }
 }
 
-inline void Mark_Fire_Done(Launcher_Cxt_t& cxt, uint8_t hold_ticks = 5)
+inline void Mark_Fire_Done(Launcher_Cxt_t& cxt, uint8_t hold_ticks = 10)
 {
     cxt.is_fire_done = true;
     cxt.fire_done_hold_ticks = hold_ticks;

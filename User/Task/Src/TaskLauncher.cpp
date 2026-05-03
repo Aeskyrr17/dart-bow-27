@@ -57,11 +57,11 @@ delay_t firing_hold_delay{};
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.05f;
-    const float string_deadzone = 500.0f;
+    const float string_deadzone = 300.0f;
 
     const float syn_pos_0 = 0.0f;
     // const float syn_pos_1 = -24.7f;       //退到龙门架之后的位置
-    const float syn_pos_1 = -24.00f;
+    const float syn_pos_1 = -26.00f;
     const float syn_pos_2 = -13.0f;
     const float syn_pos_3 = -30.5f;
 
@@ -268,7 +268,7 @@ delay_t firing_hold_delay{};
                             motorctrl.trigger_lock = true;
                         }
 
-                        if (trig_lock_delay.Reach(trigger_lock_latched, 1000, prep_state_changed))
+                        if (trig_lock_delay.Reach(trigger_lock_latched, 1500, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
                         };

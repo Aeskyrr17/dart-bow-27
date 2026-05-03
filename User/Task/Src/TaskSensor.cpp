@@ -38,7 +38,7 @@ static uint8_t u2_rx_done = 0;
 
 // usart3 force_right
 static uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
--+static uint8_t u3_rx_done = 0;
+static uint8_t u3_rx_done = 0;
 
 struct FORCE
 {

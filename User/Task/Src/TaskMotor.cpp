@@ -38,8 +38,8 @@ TaskMotors motor;
 
 float Find_gantry_pos(DART_SLOT slot);
 
-PID str_L_tqpid(0.11f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID str_R_tqpid(0.11f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_L_tqpid(0.012f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_R_tqpid(0.012f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID syn_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -120,10 +120,10 @@ float debug_syn_tq;
             else
                 string_R_spd = cmd_spd_R;
 
-            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 2000,
+            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 3000,
                                                     motor.stringMotorL.ParseSpeed(string_L_spd),
                                                     false, 5000);
-            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 2000,
+            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 3000,
                                                     motor.stringMotorR.ParseSpeed(string_R_spd),
                                                     false, 5000);
         }
@@ -131,11 +131,11 @@ float debug_syn_tq;
         {
             if (motorctrl.string_L_spd > 0.03)
             {
-                string_L_spd = 3000.0f;
+                string_L_spd = 400.0f;
             }
             else if (motorctrl.string_L_spd < -0.03)
             {
-                string_L_spd = -3000.0f;
+                string_L_spd = -400.0f;
             }
             else 
                 string_L_spd = 0.0f;     
@@ -143,19 +143,19 @@ float debug_syn_tq;
 
             if (motorctrl.string_R_spd > 0.03)
             {
-                string_R_spd = 3000.0f;
+                string_R_spd = 400.0f;
             }
             else if (motorctrl.string_R_spd < -0.03)
             {
-                string_R_spd = -3000.0f;
+                string_R_spd = -400.0f;
             }
             else 
                 string_R_spd = 0.0f;     
 
-            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 1000,
+            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 3000,
                                                     motor.stringMotorL.ParseSpeed(string_L_spd),
                                                     false, 3000);
-            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 1000,
+            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 3000,
                                                     motor.stringMotorR.ParseSpeed(string_R_spd),
                                                     false, 3000);
         }
