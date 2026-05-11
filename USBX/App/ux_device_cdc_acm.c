@@ -39,7 +39,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define CDC_ACM_READ_TIMEOUT_MS 2U
 
 /* USER CODE END PD */
 
@@ -96,12 +95,6 @@ VOID USBD_CDC_ACM_Activate(VOID *cdc_acm_instance)
   /* Set device class_cdc_acm with default parameters */
   if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_LINE_CODING,
                                     &CDC_VCP_LineCoding) != UX_SUCCESS)
-  {
-    Error_Handler();
-  }
-
-  if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_READ_TIMEOUT,
-                                    (VOID *)UX_MS_TO_TICK(CDC_ACM_READ_TIMEOUT_MS)) != UX_SUCCESS)
   {
     Error_Handler();
   }
@@ -189,7 +182,6 @@ VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance)
 /* USER CODE BEGIN 2 */
 uint32_t new_data_ = 0;
 
-struct msg_visionrx_t msg_visionrx;
 struct msg_visionrx_t debug_visionrx;
 /**
   * @brief  Function implementing USBX_DEVICE_CDC_ACM_Read_TASK.
@@ -202,6 +194,8 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   UX_PARAMETER_NOT_USED(thread_input);
+
+  struct msg_visionrx_t msg_visionrx;
 
   om_topic_t *visionrx_topic = om_config_topic(NULL, "ca", "visionrx", sizeof(msg_visionrx));
   // tx_thread_sleep(TX_WAIT_FOREVER);
@@ -216,10 +210,11 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
 
       if (actual_length >= sizeof(msg_visionrx))
       {
-      memcpy(&msg_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
+        memcpy(&msg_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
+        memcpy(&debug_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
+
       }
-      memcpy(&debug_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
-      tx_thread_sleep(1);
+        // tx_thread_sleep(1); //测试过有没有这个1都能正常收发
     }
     om_publish(visionrx_topic, &msg_visionrx, sizeof(msg_visionrx), true, false);
     tx_thread_sleep(2);
