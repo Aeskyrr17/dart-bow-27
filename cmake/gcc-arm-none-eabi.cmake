@@ -5,15 +5,29 @@ set(CMAKE_C_COMPILER_ID GNU)
 set(CMAKE_CXX_COMPILER_ID GNU)
 
 # Some default GCC settings
-# arm-none-eabi- must be part of path environment
+# Set ARM_NONE_EABI_TOOLCHAIN_PATH to a local GCC ARM Embedded toolchain
+# directory when you want to avoid picking up STM32Cube-managed bundles.
 set(TOOLCHAIN_PREFIX                arm-none-eabi-)
 
-set(CMAKE_C_COMPILER                ${TOOLCHAIN_PREFIX}gcc)
+set(ARM_NONE_EABI_TOOLCHAIN_PATH "" CACHE PATH "Local arm-none-eabi toolchain root or bin directory")
+if(ARM_NONE_EABI_TOOLCHAIN_PATH)
+    find_program(ARM_NONE_EABI_GCC ${TOOLCHAIN_PREFIX}gcc PATHS "${ARM_NONE_EABI_TOOLCHAIN_PATH}" "${ARM_NONE_EABI_TOOLCHAIN_PATH}/bin" NO_DEFAULT_PATH REQUIRED)
+    find_program(ARM_NONE_EABI_GXX ${TOOLCHAIN_PREFIX}g++ PATHS "${ARM_NONE_EABI_TOOLCHAIN_PATH}" "${ARM_NONE_EABI_TOOLCHAIN_PATH}/bin" NO_DEFAULT_PATH REQUIRED)
+    find_program(ARM_NONE_EABI_OBJCOPY ${TOOLCHAIN_PREFIX}objcopy PATHS "${ARM_NONE_EABI_TOOLCHAIN_PATH}" "${ARM_NONE_EABI_TOOLCHAIN_PATH}/bin" NO_DEFAULT_PATH REQUIRED)
+    find_program(ARM_NONE_EABI_SIZE ${TOOLCHAIN_PREFIX}size PATHS "${ARM_NONE_EABI_TOOLCHAIN_PATH}" "${ARM_NONE_EABI_TOOLCHAIN_PATH}/bin" NO_DEFAULT_PATH REQUIRED)
+else()
+    find_program(ARM_NONE_EABI_GCC ${TOOLCHAIN_PREFIX}gcc REQUIRED)
+    find_program(ARM_NONE_EABI_GXX ${TOOLCHAIN_PREFIX}g++ REQUIRED)
+    find_program(ARM_NONE_EABI_OBJCOPY ${TOOLCHAIN_PREFIX}objcopy REQUIRED)
+    find_program(ARM_NONE_EABI_SIZE ${TOOLCHAIN_PREFIX}size REQUIRED)
+endif()
+
+set(CMAKE_C_COMPILER                ${ARM_NONE_EABI_GCC})
 set(CMAKE_ASM_COMPILER              ${CMAKE_C_COMPILER})
-set(CMAKE_CXX_COMPILER              ${TOOLCHAIN_PREFIX}g++)
-set(CMAKE_LINKER                    ${TOOLCHAIN_PREFIX}g++)
-set(CMAKE_OBJCOPY                   ${TOOLCHAIN_PREFIX}objcopy)
-set(CMAKE_SIZE                      ${TOOLCHAIN_PREFIX}size)
+set(CMAKE_CXX_COMPILER              ${ARM_NONE_EABI_GXX})
+set(CMAKE_LINKER                    ${ARM_NONE_EABI_GXX})
+set(CMAKE_OBJCOPY                   ${ARM_NONE_EABI_OBJCOPY})
+set(CMAKE_SIZE                      ${ARM_NONE_EABI_SIZE})
 
 set(CMAKE_EXECUTABLE_SUFFIX_ASM     ".elf")
 set(CMAKE_EXECUTABLE_SUFFIX_C       ".elf")

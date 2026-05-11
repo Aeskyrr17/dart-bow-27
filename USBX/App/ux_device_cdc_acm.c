@@ -39,6 +39,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define CDC_ACM_READ_TIMEOUT_MS 2U
 
 /* USER CODE END PD */
 
@@ -95,6 +96,12 @@ VOID USBD_CDC_ACM_Activate(VOID *cdc_acm_instance)
   /* Set device class_cdc_acm with default parameters */
   if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_LINE_CODING,
                                     &CDC_VCP_LineCoding) != UX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  if (ux_device_class_cdc_acm_ioctl(cdc_acm, UX_SLAVE_CLASS_CDC_ACM_IOCTL_SET_READ_TIMEOUT,
+                                    (VOID *)UX_MS_TO_TICK(CDC_ACM_READ_TIMEOUT_MS)) != UX_SUCCESS)
   {
     Error_Handler();
   }

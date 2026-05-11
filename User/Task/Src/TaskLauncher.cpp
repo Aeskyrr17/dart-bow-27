@@ -59,11 +59,15 @@ delay_t firing_hold_delay{};
     const float syn_pos_deadzone = 0.05f;
     const float string_deadzone = 300.0f;
 
-    const float syn_pos_0 = 0.0f;
+    const float syn_pos_0 = 0.0f;  
     // const float syn_pos_1 = -24.7f;       //退到龙门架之后的位置
-    const float syn_pos_1 = -26.00f;
-    const float syn_pos_2 = -13.0f;
-    const float syn_pos_3 = -30.5f;
+    const float syn_pos_1 = -18.0f;
+    const float syn_pos_2 = -10.0f;
+    const float syn_pos_3 = -29.4f;
+    const float syn_pos_4 = -26.0f;
+    const float syn_pos_5 = 2.00f;
+    // const float syn_pos_3 = -30.5f; //电机轴未松动的位置
+    const float syn_slow_spd = 7.0f;
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -190,7 +194,8 @@ delay_t firing_hold_delay{};
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
                 motorctrl.string_able = false;
                 motorctrl.synbelt_mode = POS;
-                motorctrl.synbelt_pos += 0;
+                // motorctrl.synbelt_pos = syn_pos_0;
+                motorctrl.synbelt_pos +=0 ; 
 
                 if (cmd.action == DART_PREPARE) 
                 {
@@ -234,7 +239,7 @@ delay_t firing_hold_delay{};
                         motorctrl.trigger_lock = false;    
                         motorctrl.gantry_target_slot = launcher.current_slot;
                         motorctrl.synbelt_mode = SPD;
-                        motorctrl.synbelt_spd = 8.0f;
+                        motorctrl.synbelt_spd = syn_slow_spd;
                         motorctrl.synbelt_pos = syn_pos_2;
                         if (Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_2) <= syn_pos_deadzone)
                         {
@@ -278,20 +283,34 @@ delay_t firing_hold_delay{};
                     {
                         motorctrl.trigger_lock = true;
                         motorctrl.string_target_tension = cmd.tension;
-                        motorctrl.string_able = true;
+                        if (motorfdb.syn_pos_fdb >= syn_pos_1)
+                        {
+                            motorctrl.string_able = true; //保证同步带已经离开弓弦后再开始调整弓弦的力
+                        }
+                        else
+                        {
+                            motorctrl.string_able = false;
+                        }
 
-                        motorctrl.synbelt_pos = syn_pos_0;
+                        if (motorfdb.syn_pos_fdb <= syn_pos_4) //保证以比较慢的速度离开扳机
+                        {
+                            motorctrl.synbelt_mode = SPD;
+                            motorctrl.synbelt_spd = syn_slow_spd;
+                        }
+                        else
+                        {
+                            motorctrl.synbelt_pos = syn_pos_5;
+                            motorctrl.synbelt_mode = POS;
+                        }
+
 
                         motorctrl.yaw_spd = cmd.yaw;
 
+
+
                         bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= string_deadzone;
                         bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= string_deadzone;
-                        bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_0) <= syn_pos_deadzone;
-
-                        //! 目前步进电机有问题，先让他不要动
-                        string_L_ok = true;
-                        string_R_ok = true;
-
+                        bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_5) <= syn_pos_deadzone;
 
                         if (string_L_ok && string_R_ok && syn_reset)
                         {

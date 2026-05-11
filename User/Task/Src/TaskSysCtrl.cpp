@@ -39,15 +39,17 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -1.9f,535000.0f};
-    dart_lib.dart[2] = {2, -1.5f,535000.0f};
-    dart_lib.dart[3] = {3, -1.5f,562000.0f};
-    dart_lib.dart[4] = {4, -1.5f,560000.0f};
-    dart_lib.dart[5] = {5, 0.0f,5000.0f};
-    dart_lib.dart[6] = {6, 0.0f,5000.0f};
-    dart_lib.dart[7] = {7, 0.0f,5000.0f};
-    dart_lib.dart[8] = {8, 0.0f,5000.0f};
-    dart_lib.dart[9] = {9, 0.0f,5000.0f};
+    dart_lib.dart[1] = {1, -0.0f,690000.0f};
+    // dart_lib.dart[1] = {1, -1.9f,480000.0f};
+
+    dart_lib.dart[2] = {2, -1.5f,690000.0f};
+    dart_lib.dart[3] = {3, -1.5f,690000.0f};
+    dart_lib.dart[4] = {4, -1.5f,690000.0f};
+    dart_lib.dart[5] = {5, 0.0f,690000.0f};
+    dart_lib.dart[6] = {6, 0.0f,690000.0f};
+    dart_lib.dart[7] = {7, 0.0f,690000.0f};
+    dart_lib.dart[8] = {8, 0.0f,690000.0f};
+    dart_lib.dart[9] = {9, 0.0f,690000.0f};
 
     dart_lib.sequence[0] = 1;
     dart_lib.sequence[1] = 2;

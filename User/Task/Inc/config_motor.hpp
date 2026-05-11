@@ -46,7 +46,7 @@ class ServoMotors
         this->htim = nullptr;
         this->channel = 0;
         this->open_pulse = 930  / 20000.0f;
-        this->lock_pulse = 1390/ 20000.0f;//50Hz //1750
+        this->lock_pulse = 1395/ 20000.0f;//50Hz //1750
 
     }
 
@@ -450,7 +450,7 @@ class TaskMotors
         this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
         this->gantryMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
-        this->gantry_max_spd = 10.0f;
+        this->gantry_max_spd = 8.0f;
 
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);

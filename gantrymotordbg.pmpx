@@ -659,7 +659,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_syn_tq</member>
-			<member name="last_addr" type="uint32">0x2000A1CC</member>
+			<member name="last_addr" type="uint32">0x2000A1E0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -708,7 +708,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">force.force_L</member>
-			<member name="last_addr" type="uint32">0x2000AA98</member>
+			<member name="last_addr" type="uint32">0x2000AAAC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -757,7 +757,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">force.force_R</member>
-			<member name="last_addr" type="uint32">0x2000AA9C</member>
+			<member name="last_addr" type="uint32">0x2000AAB0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1579,7 +1579,7 @@
 			<member name="data_capture_mode" type="sint32">0</member>
 			<member name="data_capture_onaction" type="sint32">0</member>
 			<member name="data_capture_file_type" type="sint32">0</member>
-			<member name="data_capture_dir" type="string">C:\Data</member>
+			<member name="data_capture_dir" type="string">D:\RM\projects\dart\new</member>
 			<member name="data_absolute_time" type="sint32">0</member>
 			<member name="name" type="string">forfce</member>
 			<member name="href" type="string"/>
