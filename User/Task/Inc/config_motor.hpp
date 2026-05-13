@@ -37,16 +37,20 @@ class ServoMotors
     float lock_pulse; //锁定时的脉冲
 
     float last_pulse;
+    bool pwm_stopped;
 
     delay_t open_delay;
     delay_t close_delay;
+    static constexpr ULONG pwm_hold_ticks = 4000;
 
     ServoMotors()
     {
         this->htim = nullptr;
         this->channel = 0;
         this->open_pulse = 930  / 20000.0f;
-        this->lock_pulse = 1395/ 20000.0f;//50Hz //1750
+        this->lock_pulse = 1410/ 20000.0f;//50Hz //1750
+        this->last_pulse = 0.0f;
+        this->pwm_stopped = false;
 
     }
 
@@ -56,35 +60,42 @@ class ServoMotors
         this->channel = channel;
         PWM_Start(this->htim, this->channel);
         PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
+        this->last_pulse = this->lock_pulse;
+        this->pwm_stopped = false;
     }
 
     void Open()
     {
-        if (!open_delay.ReachStable(this->last_pulse == this->open_pulse, 3000))
-        {
-            PWM_Start(this->htim, this->channel);
-            PWM_SetDutyRatio(this->htim, open_pulse, this->channel); //默认闭合
-            this->last_pulse = this->open_pulse;
-            return;
-        }
-        PWM_Stop(this->htim, this->channel);
-        this->last_pulse = this->open_pulse;
-        return;
-
+        ApplyPulseForHold(this->open_pulse, this->open_delay);
     }
 
     void Lock()
     {
-        if (!close_delay.ReachStable(this->last_pulse == this->lock_pulse, 3000))
+        ApplyPulseForHold(this->lock_pulse, this->close_delay);
+    }
+
+    void ApplyPulseForHold(float target_pulse, delay_t& hold_delay)
+    {
+        if (this->last_pulse != target_pulse)
         {
-            PWM_Start(this->htim, this->channel);
-            PWM_SetDutyRatio(this->htim, lock_pulse, this->channel); //默认闭合
-            this->last_pulse = this->lock_pulse;
+            hold_delay.Reset();
+            this->last_pulse = target_pulse;
+            this->pwm_stopped = false;
+        }
+
+        if (this->pwm_stopped)
+        {
             return;
         }
-        PWM_Stop(this->htim, this->channel);
-        this->last_pulse = this->lock_pulse;
 
+        PWM_Start(this->htim, this->channel);
+        PWM_SetDutyRatio(this->htim, target_pulse, this->channel);
+
+        if (hold_delay.ReachLatched(pwm_hold_ticks))
+        {
+            PWM_Stop(this->htim, this->channel);
+            this->pwm_stopped = true;
+        }
     }
 };
 

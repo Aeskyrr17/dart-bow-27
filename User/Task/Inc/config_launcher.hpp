@@ -1,6 +1,8 @@
 #pragma once
 
+#include "DelayHelper.hpp"
 #include "magicmsgs.hpp"
+#include "math.hpp"
 #include <cstdint>
 
 #define TOF_DATA_SIZE 9
@@ -29,12 +31,12 @@ typedef enum
     SYN_TRIGGER_READY,
     TENSION_AND_RETRACT_AND_YAW,
     PREPARE_STATE_INVALID = 0xFF
-} PREPARE_STSTE;
+} PREPARE_STATE;
 
 struct Launcher_Cxt_t
 {
     LAUNCHER_FSM_STATE fsm_state;
-    PREPARE_STSTE prep_state;
+    PREPARE_STATE prep_state;
 
     DART_SLOT current_slot;
     bool is_first_dart;
@@ -42,28 +44,6 @@ struct Launcher_Cxt_t
     bool last_fire_done;
     uint8_t fire_done_hold_ticks;
 };
-
-struct CoilResetCxt_t
-{
-    bool homed;
-    float zero_pos;
-};
-
-class delay_t
-{
-public:
-    void Reset();
-    // Reach: first trigger starts timing; ReachStable: condition must stay true for the whole delay.
-    bool Reach(ULONG delay_ticks, bool delay_init = false);
-    bool Reach(bool delay_trigger, ULONG delay_ticks, bool delay_init = false);
-    bool ReachStable(bool delay_enable, ULONG delay_ticks, bool delay_init = false);
-
-private:
-    bool started = false;
-    bool delay_ok = false;
-    ULONG start_tick = 0;
-};
-
 
 inline void Update_Slot(Launcher_Cxt_t& cxt)
 {

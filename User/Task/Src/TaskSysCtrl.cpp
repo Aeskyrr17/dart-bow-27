@@ -39,12 +39,12 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -0.0f,690000.0f};
+    dart_lib.dart[1] = {1, -1.5f,705000.0f};
     // dart_lib.dart[1] = {1, -1.9f,480000.0f};
 
-    dart_lib.dart[2] = {2, -1.5f,690000.0f};
-    dart_lib.dart[3] = {3, -1.5f,690000.0f};
-    dart_lib.dart[4] = {4, -1.5f,690000.0f};
+    dart_lib.dart[2] = {2, -1.5f,705000.0f};
+    dart_lib.dart[3] = {3, -1.5f,705000.0f};
+    dart_lib.dart[4] = {4, -1.5f,705000.0f};
     dart_lib.dart[5] = {5, 0.0f,690000.0f};
     dart_lib.dart[6] = {6, 0.0f,690000.0f};
     dart_lib.dart[7] = {7, 0.0f,690000.0f};
@@ -61,7 +61,7 @@ DartLibrary dart_lib;
     {   
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         //! !!!!!!测试代码
-        vision_rx.distance = 25.0f;
+        // vision_rx.distance = 25.0f;
         dart_lib.referee.game_status = 4;
         dart_lib.is_door_open = true;
         // vision_rx.stable_state = 1;

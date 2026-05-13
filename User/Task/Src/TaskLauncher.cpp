@@ -51,22 +51,18 @@ delay_t firing_hold_delay{};
     om_suber_t *motorfdb_suber = om_subscribe(om_find_topic("motorfdb", UINT32_MAX));
     msg_motorfdb_t motorfdb{};
 
-    delay_t coil_L_zero_delay{};
-    delay_t coil_R_zero_delay{};
-
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.05f;
     const float string_deadzone = 300.0f;
 
     const float syn_pos_0 = 0.0f;  
-    // const float syn_pos_1 = -24.7f;       //退到龙门架之后的位置
-    const float syn_pos_1 = -18.0f;
-    const float syn_pos_2 = -10.0f;
-    const float syn_pos_3 = -29.4f;
-    const float syn_pos_4 = -26.0f;
-    const float syn_pos_5 = 2.00f;
-    // const float syn_pos_3 = -30.5f; //电机轴未松动的位置
+    const float syn_pos_1 = -20.8f;
+    const float syn_pos_2 = -11.5f;
+    const float syn_pos_3 = -30.90f;
+    const float syn_pos_4 = -26.5f;
+    const float syn_pos_5 = 0.60f;
+
     const float syn_slow_spd = 7.0f;
 
 
@@ -74,10 +70,10 @@ delay_t firing_hold_delay{};
     motorctrl.Coil_R_spd = 0.0f;
 
     bool hand_trigger_lock = true;
-    bool coil_ready_stopped = false;
+    // bool coil_ready_stopped = false;
     bool trigger_lock_latched = false;
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
-    PREPARE_STSTE last_prep_state = PREPARE_STATE_INVALID;
+    PREPARE_STATE last_prep_state = PREPARE_STATE_INVALID;
 
     launcher.is_first_dart = true;   //!用于准备阶段区分第一发，第一发不需要龙门架移动
     for (;;) 
@@ -90,7 +86,7 @@ delay_t firing_hold_delay{};
 
         //! 测试用
         // sensor.is_string_tight = true;
-        sensor.is_door_open = true;
+        // sensor.is_door_open = true;
         // lch2sys.next_dart_slot = cmd.next_dart_slot;
 
         motorctrl.trigger_lock = true;
@@ -131,13 +127,13 @@ delay_t firing_hold_delay{};
         // Freeze the state at loop entry; state changes below take effect on the next loop.
         //和"current_state"做区分，用于区分是否是“刚进入一个状态”
         const LAUNCHER_FSM_STATE current_fsm_state = launcher.fsm_state;
-        const PREPARE_STSTE current_prep_state = launcher.prep_state;
+        const PREPARE_STATE current_prep_state = launcher.prep_state;
         const bool fsm_state_changed = (current_fsm_state != last_fsm_state);
         const bool prep_state_changed = fsm_state_changed || (current_prep_state != last_prep_state);
 
         if (prep_state_changed)
         {
-            coil_ready_stopped = false;
+            // coil_ready_stopped = false;
             trigger_lock_latched = false;
         }
 
@@ -374,65 +370,4 @@ delay_t firing_hold_delay{};
         tx_thread_sleep(1);
     }
 
-}
-
-
-void delay_t::Reset()
-{
-    started = false;
-    delay_ok = false;
-    start_tick = 0;
-}
-
-
-bool delay_t::Reach(ULONG delay_ticks, bool delay_init)
-{
-    if (delay_init)
-    {
-        Reset();
-    }
-
-    if (!started)
-    {
-        start_tick = tx_time_get();
-        started = true;
-    }
-
-    delay_ok = (tx_time_get() - start_tick) >= delay_ticks;
-    if (!delay_ok)
-    {
-        return false;
-    }
-
-    Reset();
-    return true;
-}
-
-/**
- * @brief delay helper
- * 
- * @param delay_trigger 第一次满足时开始延时，之后即使失效也不会复位
- * @param delay_ticks 延时时间，单位tick
- * 
- */
-
-bool delay_t::Reach(bool delay_trigger, ULONG delay_ticks, bool delay_init)
-{
-    if (!started && !delay_trigger)
-    {
-        return false;
-    }
-
-    return Reach(delay_ticks, delay_init);
-}
-
-bool delay_t::ReachStable(bool delay_enable, ULONG delay_ticks, bool delay_init)
-{
-    if (!delay_enable)
-    {
-        Reset();
-        return false;
-    }
-
-    return Reach(delay_ticks, delay_init);
 }
