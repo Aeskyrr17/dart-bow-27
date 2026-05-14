@@ -9,6 +9,7 @@
 
 TX_THREAD RefereeThread;
 uint8_t RefereeThreadStack[2048] = {0};
+TX_SEMAPHORE RefereeThreadSem;
 
 RefereeRingBuffer referee_fifo;
 
@@ -173,6 +174,7 @@ RefereeRingBuffer referee_fifo;
             }
         }
         om_publish(referee_topic,&referee,sizeof(msg_referee_t), true, false);
+        tx_semaphore_ceiling_put(&RefereeThreadSem, 1);
         tx_thread_sleep(1);
     }
 }

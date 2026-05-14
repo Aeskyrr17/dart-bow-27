@@ -1,5 +1,6 @@
 #include "main.h"
 #include "tx_api.h"
+#include "bsp_can.hpp"
 
 extern TX_THREAD UIThread;
 extern uint8_t UIThreadStack[2048];
@@ -21,10 +22,26 @@ extern TX_THREAD SensorThread;
 extern uint8_t SensorThreadStack[2048];
 extern void SensorThreadFun(ULONG initial_input);
 
+extern TX_THREAD AliveThread;
+extern uint8_t AliveThreadStack[512];
+extern void AliveThreadFun(ULONG thread_input);
+
+extern TX_SEMAPHORE MotorAlive;
+extern TX_SEMAPHORE CANErrorSem;
+extern TX_SEMAPHORE VisionErrorSem;
+
+
 //todo:确定优先级
 #define TX_NAME(s) const_cast<CHAR*>(s)
+
 extern "C" void TaskBooster(void)
 {
+    tx_semaphore_create(&MotorAlive, TX_NAME("MotorAlive"), 0);
+    tx_semaphore_create(&CANErrorSem, TX_NAME("CANErrorSem"), 0);
+    tx_semaphore_create(&VisionErrorSem, TX_NAME("VisionErrorSem"), 0);
+
+    CAN_Init();
+
     tx_thread_create(&UIThread, TX_NAME("UIThread"), UIThreadFun, 0x1234,
                      UIThreadStack, sizeof(UIThreadStack),
                      8, 8, TX_NO_TIME_SLICE, TX_AUTO_START);
@@ -44,4 +61,8 @@ extern "C" void TaskBooster(void)
     tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
                      SensorThreadStack, sizeof(SensorThreadStack),
                      9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&AliveThread, TX_NAME("AliveThread"), AliveThreadFun, 0x1234,
+                     AliveThreadStack, sizeof(AliveThreadStack),
+                     19, 19, TX_NO_TIME_SLICE, TX_AUTO_START);
 }
