@@ -40,17 +40,17 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -1.5f,600000.0f};
+    dart_lib.dart[1] = {1, -1.5f,600000.0f, 500000.0f};
     // dart_lib.dart[1] = {1, -1.9f,480000.0f};
 
-    dart_lib.dart[2] = {2, -1.5f,550000.0f};
-    dart_lib.dart[3] = {3, -1.5f,500000.0f};
-    dart_lib.dart[4] = {4, -1.5f,705000.0f};
-    dart_lib.dart[5] = {5, 0.0f,690000.0f};
-    dart_lib.dart[6] = {6, 0.0f,690000.0f};
-    dart_lib.dart[7] = {7, 0.0f,690000.0f};
-    dart_lib.dart[8] = {8, 0.0f,690000.0f};
-    dart_lib.dart[9] = {9, 0.0f,690000.0f};
+    dart_lib.dart[2] = {2, -1.5f,550000.0f, 500000.0f};
+    dart_lib.dart[3] = {3, -1.5f,500000.0f, 500000.0f};
+    dart_lib.dart[4] = {4, -1.5f,705000.0f, 500000.0f};
+    dart_lib.dart[5] = {5,  0.0f,690000.0f, 500000.0f};
+    dart_lib.dart[6] = {6,  0.0f,690000.0f, 500000.0f};
+    dart_lib.dart[7] = {7,  0.0f,690000.0f, 500000.0f};
+    dart_lib.dart[8] = {8,  0.0f,690000.0f, 500000.0f};
+    dart_lib.dart[9] = {9,  0.0f,690000.0f, 500000.0f};
 
     dart_lib.sequence[0] = 1;
     dart_lib.sequence[1] = 2;
@@ -61,12 +61,6 @@ DartLibrary dart_lib;
     for (;;)
     {   
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
-        // //! !!!!!!测试代码
-        // vision_rx.distance = 25.0f;
-        // dart_lib.referee.game_status = 4;
-        // dart_lib.is_door_open = true;
-
-
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
         om_suber_export(lch2sys_suber, &lch2sys, false);
@@ -77,13 +71,28 @@ DartLibrary dart_lib;
         dart_lib.Update_Current_State(&lch2sys);
         dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) && (vision_rx.distance > 10.0f);
         dart_lib.Update_Current_Dart_Id();
+
+        // //! !!!!!！！！！！！！！！！！！！！！！！!测试代码
+        // vision_rx.distance = 25.0f;
+        // dart_lib.referee.game_status = 4;
+        // dart_lib.is_door_open = true;
+        dart_lib.referee.chosen_target = 1;
+        // dart_lib.referee.chosen_target = 0; //前哨
         
         // dart_lib.autoAim.light_lost = (vision_rx.distance == 111 || 
 
         //更新tension和yaw数据
         int id = dart_lib.current_dart_id;
         float my_offset = dart_lib.dart[id].yaw_offset;
-        float my_tension = dart_lib.dart[id].tension_tq;
+        float my_tension;
+        if (dart_lib.referee.chosen_target == 0) //前哨站
+        {
+            my_tension = dart_lib.dart[id].tension_tq_outpost;
+        }
+        else 
+        {
+            my_tension = dart_lib.dart[id].tension_tq_base;
+        }
         float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
 
         cmd.tension = my_tension;

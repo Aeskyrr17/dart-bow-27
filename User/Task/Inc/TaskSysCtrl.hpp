@@ -4,7 +4,8 @@ struct Dart_Config_t
 {
     int id;
     float yaw_offset;
-    float tension_tq;
+    float tension_tq_base;
+    float tension_tq_outpost;
 };
 
 struct RefereeInfo_t
@@ -40,16 +41,16 @@ public:
 
     DartLibrary()
     {
-        dart[0] = {0, 0.0f, 0.0f};
-        dart[1] = {1, 0.0f, 0.0f};
-        dart[2] = {2, 0.0f, 0.0f};
-        dart[3] = {3, 0.0f, 0.0f};
-        dart[4] = {4, 0.0f, 0.0f};
-        dart[5] = {5, 0.0f, 0.0f};
-        dart[6] = {6, 0.0f, 0.0f};
-        dart[7] = {7, 0.0f, 0.0f};
-        dart[8] = {8, 0.0f, 0.0f};
-        dart[9] = {9, 0.0f, 0.0f};
+        dart[0] = {0, 0.0f, 0.0f, 0.0f};
+        dart[1] = {1, 0.0f, 0.0f, 0.0f};
+        dart[2] = {2, 0.0f, 0.0f, 0.0f};
+        dart[3] = {3, 0.0f, 0.0f, 0.0f};
+        dart[4] = {4, 0.0f, 0.0f, 0.0f};
+        dart[5] = {5, 0.0f, 0.0f, 0.0f};
+        dart[6] = {6, 0.0f, 0.0f, 0.0f};
+        dart[7] = {7, 0.0f, 0.0f, 0.0f};
+        dart[8] = {8, 0.0f, 0.0f, 0.0f};
+        dart[9] = {9, 0.0f, 0.0f, 0.0f};
 
         sequence[0] = 1;
         sequence[1] = 2;
