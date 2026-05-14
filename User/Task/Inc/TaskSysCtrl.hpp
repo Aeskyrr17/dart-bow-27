@@ -20,6 +20,7 @@ struct AutoAim_t
 {
     bool enable;
     bool yaw_ok;
+    bool light_lost; //视觉看不到绿灯
 };
 
 class DartLibrary

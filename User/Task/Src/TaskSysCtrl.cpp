@@ -13,6 +13,7 @@
 
 TX_THREAD SysctrlThread;
 uint8_t SysctrlThreadStack[2048] = {0};
+TX_SEMAPHORE VisionErrorSem;
 
 void Run_Auto_Control(const msg_visionrx_t* rx, const msg_sensor_t* sensor, DartLibrary* dart, msg_cmd_t* cmd, float tension, float yaw);
 void Update_referee_data(msg_referee_t* rawdata, DartLibrary* dart);
@@ -39,11 +40,11 @@ DartLibrary dart_lib;
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -1.5f,705000.0f};
+    dart_lib.dart[1] = {1, -1.5f,600000.0f};
     // dart_lib.dart[1] = {1, -1.9f,480000.0f};
 
-    dart_lib.dart[2] = {2, -1.5f,705000.0f};
-    dart_lib.dart[3] = {3, -1.5f,705000.0f};
+    dart_lib.dart[2] = {2, -1.5f,550000.0f};
+    dart_lib.dart[3] = {3, -1.5f,500000.0f};
     dart_lib.dart[4] = {4, -1.5f,705000.0f};
     dart_lib.dart[5] = {5, 0.0f,690000.0f};
     dart_lib.dart[6] = {6, 0.0f,690000.0f};
@@ -60,11 +61,11 @@ DartLibrary dart_lib;
     for (;;)
     {   
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
-        //! !!!!!!测试代码
+        // //! !!!!!!测试代码
         // vision_rx.distance = 25.0f;
-        dart_lib.referee.game_status = 4;
-        dart_lib.is_door_open = true;
-        // vision_rx.stable_state = 1;
+        // dart_lib.referee.game_status = 4;
+        // dart_lib.is_door_open = true;
+
 
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
@@ -72,27 +73,32 @@ DartLibrary dart_lib;
         om_suber_export(visionrx_suber,&vision_rx,false);
         om_suber_export(referee_suber,&referee_pack,false);
         Update_referee_data(&referee_pack,&dart_lib);
+
         dart_lib.Update_Current_State(&lch2sys);
-
-        dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) &&
-                                (vision_rx.distance > 10.0f);
-
+        dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) && (vision_rx.distance > 10.0f);
         dart_lib.Update_Current_Dart_Id();
+        
+        // dart_lib.autoAim.light_lost = (vision_rx.distance == 111 || 
+
+        //更新tension和yaw数据
         int id = dart_lib.current_dart_id;
         float my_offset = dart_lib.dart[id].yaw_offset;
         float my_tension = dart_lib.dart[id].tension_tq;
         float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
 
+        cmd.tension = my_tension;
+        cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
+
+        //处理vision_tx数据
         vision_tx.header = 0x5A;
         vision_tx.offset = my_offset;
         vision_tx.DartNumber = id;
         // vision_tx.target_id = dart_lib.referee.chosen_target;
-        vision_tx.target_id = 1;
+        // vision_tx.target_id = 1;
+        vision_tx.target_id = 0; //! 前哨站
         vision_tx.start_state = dart_lib.referee.game_status;
 
-        cmd.tension = my_tension;
-        cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
-
+        //遥控器offline保护和visionrx数据异常的灯控提示
         if (remoter.offline)
         {
             cmd.action = DART_RELAX;
@@ -102,7 +108,10 @@ DartLibrary dart_lib;
             tx_thread_sleep(1);
             continue;
         }
-
+        if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f || vision_rx.yaw == 0.0f || vision_rx.checksum == 0)
+        {
+            tx_semaphore_put(&VisionErrorSem);
+        }
 
 
         //先判断edge判断的fire
@@ -112,15 +121,6 @@ DartLibrary dart_lib;
             cmd.yaw = target_yaw;
             cmd.tension = my_tension;
         }
-        //右上，手动trigger
-        // else if (remoter.right_sw == Up && remoter.left_sw == M2U)
-        // {
-        //     cmd.action = DART_TRIGGER_OPEN;
-        // }
-        // else if (remoter.right_sw == Up && remoter.left_sw == U2M)
-        // {
-        //     cmd.action = DART_TRIGGER_CLOSE;
-        // }
         else if (remoter.left_sw == Down)
         {
             if (remoter.right_sw == Down)
@@ -197,6 +197,12 @@ DartLibrary dart_lib;
  */
 void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartLibrary* dart,  msg_cmd_t* cmd, float tension, float yaw)
 {
+    //比赛开始之前都不执行自动模式
+    if (dart->referee.game_status != 4)
+    {
+        cmd->action = DART_RELAX;
+        return;
+    }
 
     if (!(dart->current_shot_number >= 1 && dart->current_shot_number <= 4))
     {
@@ -251,10 +257,13 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     }
 };
 
+
 void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
 {
     dart->referee.last_launch_station_status = dart->referee.launch_station_status;
-    dart->referee.game_status =  referee_rx->GameStatus.Game_progress;
+    //! todo 强制开始比赛
+    // dart->referee.game_status =  referee_rx->GameStatus.Game_progress;
+    dart->referee.game_status = 4;
     dart->referee.shooting_remaining_time =  referee_rx->DartInfo.dart_remaining_time;
     dart->referee.chosen_target = ( referee_rx->DartInfo.dart_info >> 6) & 0x07;
     dart->referee.launch_station_status =  referee_rx->DartClientCmd.dart_launch_opening_status;

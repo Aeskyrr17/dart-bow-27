@@ -59,7 +59,7 @@ delay_t firing_hold_delay{};
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -20.8f;
     const float syn_pos_2 = -11.5f;
-    const float syn_pos_3 = -30.90f;
+    const float syn_pos_3 = -30.56f;
     const float syn_pos_4 = -26.5f;
     const float syn_pos_5 = 0.60f;
 
@@ -269,7 +269,7 @@ delay_t firing_hold_delay{};
                             motorctrl.trigger_lock = true;
                         }
 
-                        if (trig_lock_delay.Reach(trigger_lock_latched, 1500, prep_state_changed))
+                        if (trig_lock_delay.Reach(trigger_lock_latched, 2500, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
                         };

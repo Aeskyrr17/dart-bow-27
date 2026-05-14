@@ -21,6 +21,7 @@
 #include "magicmsgs.hpp"
 #include "math.hpp"
 
+#include "config_launcher.hpp"
 #include "config_motor.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
@@ -30,13 +31,12 @@ extern FDCAN_HandleTypeDef hfdcan3;
 
 TX_THREAD MotorThread;
 uint8_t MotorThreadStack[2048] = {0};
+TX_SEMAPHORE MotorAlive;
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
 TaskMotors motor;
 
 #define MOTOR_DEBUG
-
-float Find_gantry_pos(DART_SLOT slot);
 
 PID str_L_tqpid(0.010f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID str_R_tqpid(0.010f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -82,6 +82,8 @@ float debug_syn_tq;
 
     float string_L_spd = 0.0f;
     float string_R_spd = 0.0f;
+    uint16_t string_max_current = 5000;
+    const float string_force_limit = 1000000.0f;
 
     for (;;)
     {
@@ -120,12 +122,6 @@ float debug_syn_tq;
             else
                 string_R_spd = cmd_spd_R;
 
-            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 3000,
-                                                    motor.stringMotorL.ParseSpeed(string_L_spd),
-                                                    false, 5000);
-            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 3000,
-                                                    motor.stringMotorR.ParseSpeed(string_R_spd),
-                                                    false, 5000);
         }
         else 
         {
@@ -152,17 +148,28 @@ float debug_syn_tq;
             else 
                 string_R_spd = 0.0f;     
 
-            motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 3000,
-                                                    motor.stringMotorL.ParseSpeed(string_L_spd),
-                                                    false, 3000);
-            motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 3000,
-                                                    motor.stringMotorR.ParseSpeed(string_R_spd),
-                                                    false, 3000);
         }
+
+        // 
+        if (sensor.string_L_force > string_force_limit && string_L_spd < 0.0f)
+        {
+            string_L_spd = 0.0f;
+        }
+        if (sensor.string_R_force > string_force_limit && string_R_spd < 0.0f)
+        {
+            string_R_spd = 0.0f;
+        }
+
+        motor.stringMotorL.X_V2_Vel_LC_Control(motor.stringMotorL.id, motor.stringMotorL.dir, 3000,
+                                                motor.stringMotorL.ParseSpeed(string_L_spd),
+                                                false, string_max_current);
+        motor.stringMotorR.X_V2_Vel_LC_Control(motor.stringMotorR.id, motor.stringMotorR.dir, 3000,
+                                                motor.stringMotorR.ParseSpeed(string_R_spd),
+                                                false, string_max_current);
 
 
         DART_SLOT gantry_target_slot = motorctrl.gantry_target_slot;
-        float gantry_target_pos = Find_gantry_pos(gantry_target_slot);
+        float gantry_target_pos = Get_Gantry_Target_Pos(gantry_target_slot);
         motor.gantryMotor.offset = 0.0f;
         motor.gantryMotor.positionSet = gantry_target_pos;
         motor.gantryMotor.speedSet = motor.gantry_max_spd;
@@ -185,8 +192,6 @@ float debug_syn_tq;
             break;
         }
         DMMotorHandler::Instance()->sendControlData();
-
-
 
         motorfdb.gantry_pos_fdb = motor.gantryMotor.motorFeedback.positionFdb;
         motorfdb.gantry_spd_fdb = motor.gantryMotor.motorFeedback.speedFdb;
@@ -220,21 +225,3 @@ float debug_syn_tq;
     // }
 }
 
-float Find_gantry_pos(DART_SLOT slot)
-{
-
-        switch (slot)
-    {
-        case DART_SLOT_NONE: //原点
-            return Numeric::Pi;
-        case DART_SLOT_1:
-            return -Numeric::Pi*0.5f;
-        case DART_SLOT_2:
-            return 0.0f;
-        case DART_SLOT_3:
-            return Numeric::Pi*0.5f;
-            // return 0;
-        default:
-            return Numeric::Pi;
-    }
-}

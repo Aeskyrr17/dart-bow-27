@@ -42,7 +42,9 @@ struct Launcher_Cxt_t
     bool is_first_dart;
     bool is_fire_done;
     bool last_fire_done;
-    uint8_t fire_done_hold_ticks;
+
+    ULONG fire_done_hold_ticks = 10;
+    delay_t fire_done_hold_delay;
 };
 
 inline void Update_Slot(Launcher_Cxt_t& cxt)
@@ -67,6 +69,7 @@ inline void Update_Slot(Launcher_Cxt_t& cxt)
 
 inline void Mark_Fire_Done(Launcher_Cxt_t& cxt, uint8_t hold_ticks = 10)
 {
+    cxt.fire_done_hold_delay.Reset();
     cxt.is_fire_done = true;
     cxt.fire_done_hold_ticks = hold_ticks;
 }
@@ -75,12 +78,16 @@ inline void Step_Fire_Done(Launcher_Cxt_t& cxt)
 {
     cxt.last_fire_done = cxt.is_fire_done;
 
-    if (cxt.fire_done_hold_ticks > 0)
+    if (!cxt.is_fire_done)
     {
-        cxt.fire_done_hold_ticks--;
+        cxt.fire_done_hold_delay.Reset();
+        return;
     }
 
-    cxt.is_fire_done = (cxt.fire_done_hold_ticks > 0);
+    if (cxt.fire_done_hold_delay.Reach(cxt.fire_done_hold_ticks))
+    {
+        cxt.is_fire_done = false;
+    }
 }
 
 inline float Get_Gantry_Target_Pos(DART_SLOT slot)

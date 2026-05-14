@@ -47,8 +47,8 @@ class ServoMotors
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 930  / 20000.0f;
-        this->lock_pulse = 1410/ 20000.0f;//50Hz //1750
+        this->open_pulse = 740  / 20000.0f;
+        this->lock_pulse = 1230/ 20000.0f;//50Hz //1750
         this->last_pulse = 0.0f;
         this->pwm_stopped = false;
 
