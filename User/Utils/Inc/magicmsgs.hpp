@@ -140,7 +140,8 @@ typedef enum
     DART_FIRE = 4,           // 发射
     DART_TRIGGER_OPEN,
     DART_TRIGGER_CLOSE,
-    DART_YAW_ADJUST
+    DART_YAW_ADJUST,
+    DART_PRE_TENSION
 } LAUNCHER_ACTION;
 
 /**
@@ -213,8 +214,6 @@ struct msg_motor_ctrl_t
 
     bool string_able;
 
-    float string_target_tension;
-
     DART_SLOT gantry_target_slot;
 };
 
@@ -227,6 +226,7 @@ struct msg_motorfdb_t
     float gantry_pos_set;
 
     float syn_pos_fdb;
+    float syn_tq_fdb;
 };
 
 // struct tof_data_t

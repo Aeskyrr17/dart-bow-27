@@ -197,6 +197,7 @@ float debug_syn_tq;
         motorfdb.gantry_spd_fdb = motor.gantryMotor.motorFeedback.speedFdb;
         motorfdb.gantry_pos_set = gantry_target_pos;
         motorfdb.syn_pos_fdb = motor.synbeltMotor.motorFeedback.positionFdb;
+        motorfdb.syn_tq_fdb = motor.synbeltMotor.motorFeedback.torqueFdb;
         om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
 
 #ifdef MOTOR_DEBUG

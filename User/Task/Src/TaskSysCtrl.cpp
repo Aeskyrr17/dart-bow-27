@@ -41,8 +41,6 @@ DartLibrary dart_lib;
     msg_visionrx_t vision_rx{};
 
     dart_lib.dart[1] = {1, -1.2f,800000.0f, 500000.0f};
-    // dart_lib.dart[1] = {1, -1.9f,480000.0f};
-
     dart_lib.dart[2] = {2, -1.20f,800000.0f, 500000.0f};
     dart_lib.dart[3] = {3, -1.2f,800000.0f, 500000.0f};
     dart_lib.dart[4] = {4, -1.2f,792000.0f, 500000.0f};
@@ -53,13 +51,16 @@ DartLibrary dart_lib;
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
 
     dart_lib.sequence[0] = 3;
-    dart_lib.sequence[1] = 4;
+    dart_lib.sequence[1] = 1;
     dart_lib.sequence[2] = 5;
     dart_lib.sequence[3] = 6;
 
+    const float pre_tension = 300000.0f;
+
+
 
     for (;;)
-    {   
+    {
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
@@ -186,7 +187,8 @@ DartLibrary dart_lib;
             }
             else
             {
-                cmd.action = DART_RELAX;
+                cmd.action = DART_PRE_TENSION;
+                cmd.tension = pre_tension;
             }
 
         }

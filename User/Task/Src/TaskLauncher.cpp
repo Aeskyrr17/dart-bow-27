@@ -35,6 +35,8 @@ msg_sensor_t sensor{};
 delay_t trig_lock_delay{};
 delay_t ready_fire_delay{};
 delay_t firing_hold_delay{};
+delay_t syn_tq_error_delay{};
+delay_t string_force_jump_delay{};
 
 [[nonreturn]] void LauncherThreadFun(ULONG initial_input) 
 {
@@ -59,11 +61,16 @@ delay_t firing_hold_delay{};
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -19.0f;
     const float syn_pos_2 = -11.5f;
-    const float syn_pos_3 = -31.3f;
+    const float syn_pos_3 = -31.55f;
     const float syn_pos_4 = -26.5f;
-    const float syn_pos_5 = 0.5f;
+    const float syn_pos_5 = 0.15f;
 
     const float syn_slow_spd = 7.0f;
+    const float string_force_error_limit = 100000000.0f;
+    const float syn_tq_error_limit = 10.0f;
+    const float string_force_jump_limit = 500000.0f;
+    const ULONG syn_tq_error_ticks = 5000;
+    const ULONG string_force_jump_ticks = 1000;
 
 
     motorctrl.Coil_L_spd = 0.0f;
@@ -72,6 +79,9 @@ delay_t firing_hold_delay{};
     bool hand_trigger_lock = true;
     // bool coil_ready_stopped = false;
     bool trigger_lock_latched = false;
+    bool string_force_fdb_valid = false;
+    float string_L_force_1s_ago = 0.0f;
+    float string_R_force_1s_ago = 0.0f;
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
     PREPARE_STATE last_prep_state = PREPARE_STATE_INVALID;
 
@@ -97,7 +107,6 @@ delay_t firing_hold_delay{};
         motorctrl.Coil_R_spd = 0.0f;
         motorctrl.string_L_spd = 0.0f;
         motorctrl.string_R_spd = 0.0f;
-        motorctrl.string_target_tension = 0.0f;
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
         motorctrl.synbelt_mode = POS;
         motorctrl.synbelt_spd = 0.0f;
@@ -109,16 +118,59 @@ delay_t firing_hold_delay{};
         //直接处理yaw
         motorctrl.yaw_spd = cmd.yaw;
 
+        bool string_force_error = (Numeric::abs(sensor.string_L_force) > string_force_error_limit) ||
+                                  (Numeric::abs(sensor.string_R_force) > string_force_error_limit);
+        bool string_force_jump_error = false;
+        bool syn_tq_error = syn_tq_error_delay.ReachStable(
+            Numeric::abs(motorfdb.syn_tq_fdb) > syn_tq_error_limit,
+            syn_tq_error_ticks);
+
+        if (!string_force_fdb_valid || launcher.fsm_state == FIRING)
+        {
+            string_force_fdb_valid = true;
+            string_L_force_1s_ago = sensor.string_L_force;
+            string_R_force_1s_ago = sensor.string_R_force;
+            string_force_jump_delay.Reset();
+        }
+        else
+        {
+            string_force_jump_error =
+                ((Numeric::abs(sensor.string_L_force - string_L_force_1s_ago) > string_force_jump_limit) ||
+                (Numeric::abs(sensor.string_R_force - string_R_force_1s_ago) > string_force_jump_limit)) 
+                &&
+                string_L_force_1s_ago != 0.0f && string_R_force_1s_ago != 0.0f; //避免初始状态力传感器数据异常导致的误判
+
+            if (string_force_jump_delay.Reach(string_force_jump_ticks))
+            {
+                string_L_force_1s_ago = sensor.string_L_force;
+                string_R_force_1s_ago = sensor.string_R_force;
+            }
+        }
+        //! 暂时不判断力传感器的跳变
+               string_force_jump_error = false;
+
+
         //处理cmd
-        if (cmd.action == DART_RELAX) 
+        if (string_force_error || syn_tq_error || string_force_jump_error)
+        {
+            launcher.fsm_state = ERROR_STOP;
+        }
+        else if (launcher.fsm_state != ERROR_STOP &&
+                 launcher.fsm_state != FIRING &&
+                 cmd.action == DART_PRE_TENSION)
+        {
+            launcher.fsm_state = PRE_TENSION;
+        }
+        else if (launcher.fsm_state != ERROR_STOP &&
+                 cmd.action == DART_RELAX)
         {
             if ((launcher.fsm_state != HAND_CONTROL || hand_trigger_lock) &&
                 launcher.fsm_state != FIRING)
-                launcher.fsm_state = IDLE; 
+                launcher.fsm_state = IDLE;
         }
         else if (cmd.action == DART_SYN_ADJUST || cmd.action == DART_STRING_ADJUST ||
-                 cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
-                 cmd.action == DART_YAW_ADJUST)
+          cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
+          cmd.action == DART_YAW_ADJUST)
         {
             // 如果遥控器发出了手动调试指令，强行切入手动状态
             launcher.fsm_state = HAND_CONTROL;
@@ -201,6 +253,28 @@ delay_t firing_hold_delay{};
                 }
                 break;
 
+            case PRE_TENSION:
+            {
+                motorctrl.trigger_lock = true;
+                motorctrl.string_able = true;
+                motorctrl.string_L_tq = cmd.tension;
+                motorctrl.string_R_tq = cmd.tension;
+                motorctrl.synbelt_mode = POS;
+                motorctrl.synbelt_pos +=0 ;
+
+                if (cmd.action == DART_PREPARE)
+                {
+                    launcher.fsm_state = PREPARING;
+                    launcher.current_slot = cmd.next_dart_slot;
+                    launcher.prep_state = SYN_1;
+                }
+                else if (cmd.action == DART_RELAX)
+                {
+                    launcher.fsm_state = IDLE;
+                }
+                break;
+            }
+
             case PREPARING:
 
                 switch (current_prep_state)
@@ -278,7 +352,6 @@ delay_t firing_hold_delay{};
                     case TENSION_AND_RETRACT_AND_YAW:
                     {
                         motorctrl.trigger_lock = true;
-                        motorctrl.string_target_tension = cmd.tension;
                         if (motorfdb.syn_pos_fdb >= syn_pos_1)
                         {
                             motorctrl.string_able = true; //保证同步带已经离开弓弦后再开始调整弓弦的力
@@ -298,7 +371,8 @@ delay_t firing_hold_delay{};
                             motorctrl.synbelt_pos = syn_pos_5;
                             motorctrl.synbelt_mode = POS;
                         }
-
+                            // motorctrl.synbelt_pos = syn_pos_5;
+                            // motorctrl.synbelt_mode = POS;
 
                         motorctrl.yaw_spd = cmd.yaw;
 
@@ -316,7 +390,8 @@ delay_t firing_hold_delay{};
                         {
                             if (!string_L_ok || !string_R_ok)
                             {
-                                motorctrl.string_target_tension = cmd.tension;
+                                motorctrl.string_L_tq = cmd.tension;
+                                motorctrl.string_R_tq = cmd.tension;
                             }
                         }                           
                         break;
@@ -331,7 +406,8 @@ delay_t firing_hold_delay{};
             {
                 motorctrl.trigger_lock = true;
                 motorctrl.string_able = true;
-                motorctrl.string_target_tension = cmd.tension;//保持力矩
+                motorctrl.string_L_tq = cmd.tension;//保持力矩
+                motorctrl.string_R_tq = cmd.tension;
 
                 if (cmd.action == DART_FIRE &&
                     ready_fire_delay.Reach(750, fsm_state_changed))
@@ -354,6 +430,22 @@ delay_t firing_hold_delay{};
                 }
                 break;
                 }
+
+            case ERROR_STOP:
+            {
+                motorctrl.trigger_lock = true;
+                motorctrl.string_able = false;
+                // motorctrl.gantry_target_slot = DART_SLOT_NONE;
+                motorctrl.synbelt_mode = POS;
+                motorctrl.synbelt_pos += 0;
+                if (cmd.action == DART_SYN_ADJUST || cmd.action == DART_STRING_ADJUST ||
+                    cmd.action == DART_TRIGGER_OPEN || cmd.action == DART_TRIGGER_CLOSE ||
+                    cmd.action == DART_YAW_ADJUST)
+                {
+                    launcher.fsm_state = HAND_CONTROL;
+                }
+                break;
+            }
         }
 
          //更新历史状态
