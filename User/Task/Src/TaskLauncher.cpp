@@ -54,14 +54,14 @@ delay_t firing_hold_delay{};
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.05f;
-    const float string_deadzone = 300.0f;
+    const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;  
-    const float syn_pos_1 = -20.8f;
+    const float syn_pos_1 = -19.0f;
     const float syn_pos_2 = -11.5f;
-    const float syn_pos_3 = -30.56f;
+    const float syn_pos_3 = -31.3f;
     const float syn_pos_4 = -26.5f;
-    const float syn_pos_5 = 0.60f;
+    const float syn_pos_5 = 0.5f;
 
     const float syn_slow_spd = 7.0f;
 
@@ -334,7 +334,7 @@ delay_t firing_hold_delay{};
                 motorctrl.string_target_tension = cmd.tension;//保持力矩
 
                 if (cmd.action == DART_FIRE &&
-                    ready_fire_delay.Reach(500, fsm_state_changed))
+                    ready_fire_delay.Reach(750, fsm_state_changed))
                 {
                     launcher.fsm_state = FIRING;
                 }

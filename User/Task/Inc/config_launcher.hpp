@@ -7,10 +7,10 @@
 
 #define TOF_DATA_SIZE 9
 
-#define DART_GANTRY_POS_NONE (3.1415926f)
-#define DART_GANTRY_POS_SLOT_1 (-1.5707963f)
+#define DART_GANTRY_POS_NONE (Numeric::Pi)
+#define DART_GANTRY_POS_SLOT_1 (-Numeric::Pi/2.0f)
 #define DART_GANTRY_POS_SLOT_2 (0.0f)
-#define DART_GANTRY_POS_SLOT_3 (1.5707963f)
+#define DART_GANTRY_POS_SLOT_3 (Numeric::Pi/2.0f)
 
 typedef enum
 {
@@ -43,7 +43,7 @@ struct Launcher_Cxt_t
     bool is_fire_done;
     bool last_fire_done;
 
-    ULONG fire_done_hold_ticks = 10;
+    ULONG fire_done_hold_ticks = 5;
     delay_t fire_done_hold_delay;
 };
 
@@ -67,7 +67,7 @@ inline void Update_Slot(Launcher_Cxt_t& cxt)
     }
 }
 
-inline void Mark_Fire_Done(Launcher_Cxt_t& cxt, uint8_t hold_ticks = 10)
+inline void Mark_Fire_Done(Launcher_Cxt_t& cxt, uint8_t hold_ticks = 5)
 {
     cxt.fire_done_hold_delay.Reset();
     cxt.is_fire_done = true;

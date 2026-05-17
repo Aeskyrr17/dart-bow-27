@@ -47,8 +47,8 @@ class ServoMotors
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 740  / 20000.0f;
-        this->lock_pulse = 1230/ 20000.0f;//50Hz //1750
+        this->open_pulse = 730  / 20000.0f;
+        this->lock_pulse = 2200/ 20000.0f;//50Hz //1750
         this->last_pulse = 0.0f;
         this->pwm_stopped = false;
 
@@ -453,7 +453,7 @@ class TaskMotors
         this->synbeltMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
         // this->synbelt_max_spd = 3.0f;
-        this->synbeltMotor.speedSet = 15.0f;
+        this->synbeltMotor.speedSet = 20.0f;
         DMMotorHandler::Instance()->sendControlData();
 
 
