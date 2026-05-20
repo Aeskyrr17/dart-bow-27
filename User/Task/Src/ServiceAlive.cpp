@@ -11,6 +11,7 @@ extern TX_SEMAPHORE RefereeThreadSem;
 extern TX_SEMAPHORE CANErrorSem;
 extern TX_SEMAPHORE VisionErrorSem;
 extern TX_SEMAPHORE MotorAlive;
+extern TX_SEMAPHORE GantryMotorErrorSem;
 
 
 [[noreturn]] void AliveThreadFun(ULONG thread_input)
@@ -22,32 +23,45 @@ extern TX_SEMAPHORE MotorAlive;
         bool can_error = tx_semaphore_get(&CANErrorSem, TX_NO_WAIT) == TX_SUCCESS;
         bool referee_alive = tx_semaphore_get(&RefereeThreadSem, TX_NO_WAIT) == TX_SUCCESS;
         bool vision_error = tx_semaphore_get(&VisionErrorSem, TX_NO_WAIT) == TX_SUCCESS;
-        if (can_error)
+        bool gantry_motor_error = tx_semaphore_get(&GantryMotorErrorSem, TX_NO_WAIT) == TX_SUCCESS;
+
+        if (can_error && vision_error && gantry_motor_error)
+        {
+            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
+        }
+        else if (can_error && vision_error)
+        {
+            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE);
+        }
+        else if (can_error && gantry_motor_error)
+        {
+            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_WHITE);
+        }
+        else if (vision_error && gantry_motor_error)
+        {
+            LED_blink_alternate(LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
+        }
+        else if (can_error)
         {
             LED_blink(LED_COLOR::LED_RED);
         }
-        // else if (!imu_alive) 
-        // {
-        //     LED_blink(LED_COLOR::LED_WHITE);        
-        // }
         else if (vision_error)
         {
             LED_blink(LED_COLOR::LED_BLUE);
+        }
+        else if (gantry_motor_error)
+        {
+            LED_blink(LED_COLOR::LED_WHITE);
         }
         else
         {
             if (referee_alive)
             {
                 LED_blink(LED_COLOR::LED_GREEN);
-                // if (DMMotorHandler::Instance()->AllMotorAliveCheck())
-                // {
-                //     tx_semaphore_put(&MotorAlive);
-                //     LED_blink(LED_COLOR::LED_GREEN);
-                // }
-                // else
-                // {
-                //     LED_blink(LED_COLOR::LED_BLUE);
-                // }
+            }
+            else
+            {
+                LED_ALL_OFF();
             }
         }
         tx_thread_sleep(2);
