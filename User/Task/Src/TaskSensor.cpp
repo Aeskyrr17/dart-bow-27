@@ -16,29 +16,22 @@
 #include <cstdint>
 
 #include "crc.hpp"
-// #include "config_sensor.hpp"
+#include "config_sensor.hpp"
 
 TX_THREAD SensorThread;
 uint8_t SensorThreadStack[2048] = {0};
 
-#define HALL_R_PORT                GPIOE
-#define HALL_R_PIN                 GPIO_PIN_1
-
-#define HALL_L_PORT                GPIOE
-#define HALL_L_PIN                 GPIO_PIN_0
-
-#define LIGHT_PORT                 GPIOE
-#define LIGHT_PIN                  GPIO_PIN_14
-
-#define FORCE_DATA_RX_SIZE         9
-
 // usart2 force_left
-static uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE];
+uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE];
 static uint8_t u2_rx_done = 0;
 
 // usart3 force_right
-static uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
+uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
 static uint8_t u3_rx_done = 0;
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#define USING_G4_FORCE_SENSOR
+
 
 struct FORCE
 {
@@ -52,7 +45,24 @@ struct HALL
     bool is_R_reset;
 }hall;
 
+#define G4_FORCE_RX_TIMEOUT 100
+#define G4_FORCE_RX_RESTART_DELAY 3
 
+struct G4Force
+{
+    uint32_t L;
+    uint32_t R;
+}g4_force;
+
+__attribute__((section(".RAM_D1"), aligned(32))) uint8_t g4_rx_buffer[G4_FORCE_RX_BUFFER_SIZE];
+TX_SEMAPHORE G4ForceGot;
+
+static uint32_t ForceSensor_DecodeU24(const uint8_t* buf)
+{
+    return ((uint32_t)buf[0]) |
+           ((uint32_t)buf[1] << 8) |
+           ((uint32_t)buf[2] << 16);
+}
 
 void Force_L_Request080();
 void Force_R_Request080();
@@ -76,6 +86,8 @@ void Force_R_Request080();
     sensor.string_L_force = 0.0f;
     sensor.string_R_force = 0.0f;
 
+    uint32_t g4_force_lost_ticks = 0;
+
     HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
 
@@ -89,6 +101,39 @@ void Force_R_Request080();
 
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
 
+
+#ifdef USING_G4_FORCE_SENSOR
+        bool got_g4_rx_done = false;
+        while (tx_semaphore_get(&G4ForceGot, 0) == TX_SUCCESS)
+        {
+            got_g4_rx_done = true;
+        }
+
+        if (got_g4_rx_done && g4_rx_buffer[0] == 'L' && g4_rx_buffer[4] == 'R')
+        {
+            g4_force_lost_ticks = 0;
+            g4_force.L = ForceSensor_DecodeU24(&g4_rx_buffer[1]);
+            g4_force.R = ForceSensor_DecodeU24(&g4_rx_buffer[5]);
+        }
+        else
+        {
+            g4_force_lost_ticks++;
+            if (g4_force_lost_ticks >= G4_FORCE_RX_TIMEOUT)
+            {
+                HAL_UART_Abort(&huart7);
+                tx_thread_sleep(G4_FORCE_RX_RESTART_DELAY);
+                HAL_UART_Receive_DMA(&huart7, g4_rx_buffer, G4_FORCE_RX_DATA_SIZE);
+                g4_force_lost_ticks = 0;
+            }
+        }
+        sensor.string_L_force = (float)g4_force.L;
+        sensor.string_R_force = (float)g4_force.R;
+
+        om_publish(sensor_topic, &sensor, sizeof(msg_sensor_t), true, false);
+        tx_thread_sleep(1);
+
+#else
+
         Force_L_Request080();
         Force_R_Request080();
 
@@ -96,7 +141,10 @@ void Force_R_Request080();
         sensor.string_R_force = force.force_R;
 
         om_publish(sensor_topic, &sensor, sizeof(msg_sensor_t), true, false);
+
         tx_thread_sleep(5);
+#endif
+
     }
 }
 
@@ -123,7 +171,7 @@ int32_t Decode_Force(const uint8_t* rx_buf)
     return force;
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void ForceSensor_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2)
     {
@@ -160,7 +208,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+void ForceSensor_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2)
     {
