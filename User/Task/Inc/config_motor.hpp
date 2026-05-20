@@ -23,8 +23,8 @@
 
 #include "config_launcher.hpp"
 
-/**
- * @brief 舵机类，实现两点间移动
+
+/** @brief 舵机类，实现两点间移动
  * 长时间一直发送PWM舵机很可能过热，撒放机构有机械自锁，Open和Lock函数会在达到目标位置后停止PWM输出。
  */
 class ServoMotors
@@ -64,14 +64,24 @@ class ServoMotors
         this->pwm_stopped = false;
     }
 
-    void Open()
+    void OpenThenRelax()
     {
         ApplyPulseForHold(this->open_pulse, this->open_delay);
     }
 
-    void Lock()
+    void LockThenRelax()
     {
         ApplyPulseForHold(this->lock_pulse, this->close_delay);
+    }
+
+    void OpenRemain()
+    {
+        ApplyPulse(this->open_pulse);
+    }
+
+    void LockRemain()
+    {
+        ApplyPulse(this->lock_pulse);
     }
 
     void ApplyPulseForHold(float target_pulse, delay_t& hold_delay)
@@ -96,6 +106,13 @@ class ServoMotors
             PWM_Stop(this->htim, this->channel);
             this->pwm_stopped = true;
         }
+    }
+
+    void ApplyPulse(float target_pulse)
+    {
+
+        PWM_Start(this->htim, this->channel);
+        PWM_SetDutyRatio(this->htim, target_pulse, this->channel);
     }
 };
 
@@ -465,7 +482,7 @@ class TaskMotors
 
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
-        this->triggerMotor.Lock();
+        this->triggerMotor.LockThenRelax();
 
         this->stringMotorL.Init(&hfdcan3, 2, 0);
         this->stringMotorR.Init(&hfdcan3, 1, 1); //?这个positive_dir是什么来着

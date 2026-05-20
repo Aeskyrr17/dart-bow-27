@@ -32,6 +32,7 @@ extern FDCAN_HandleTypeDef hfdcan3;
 TX_THREAD MotorThread;
 uint8_t MotorThreadStack[2048] = {0};
 TX_SEMAPHORE MotorAlive;
+TX_SEMAPHORE GantryMotorErrorSem;
 DJIMotorHandler* DJIMotorhandler = DJIMotorHandler::Instance();
 
 TaskMotors motor;
@@ -69,7 +70,7 @@ float debug_syn_tq;
 
     motor.MotorsInit();
 
-    motor.triggerMotor.Lock();
+    motorctrl.trigger = lock_then_relax;
 
     motor.synbeltMotor.positionPid = syn_pos_pid;
     // motor.synbeltMotor.speedPid = syn_spd_pid;
@@ -84,6 +85,11 @@ float debug_syn_tq;
     float string_R_spd = 0.0f;
     uint16_t string_max_current = 5000;
     const float string_force_limit = 1000000.0f;
+    const uint32_t gantry_alive_check_period = 100;
+    const uint8_t gantry_alive_lost_limit = 3;
+    uint32_t gantry_alive_check_count = 0;
+    uint8_t gantry_alive_lost_count = 0;
+    bool gantry_motor_error = false;
 
     for (;;)
     {
@@ -91,8 +97,24 @@ float debug_syn_tq;
         om_suber_export(sensor_suber, &sensor, false);
 
         //撒放机构处理逻辑
-        if ( motorctrl.trigger_lock)        motor.triggerMotor.Lock();
-        else if ( !motorctrl.trigger_lock)  motor.triggerMotor.Open();
+        switch (motorctrl.trigger)
+        {
+            case open_then_relax:
+                motor.triggerMotor.OpenThenRelax();
+                break;
+            case lock_then_relax:
+                motor.triggerMotor.LockThenRelax();
+                break;
+            case open_and_remain:
+                motor.triggerMotor.OpenRemain();
+                break;
+            case lock_and_remain:
+                motor.triggerMotor.LockRemain();
+                break;
+            default:
+                motor.triggerMotor.LockThenRelax();
+                break;
+        }
 
 
         motor.yawMotor.X_V2_Vel_LC_Control(motor.yawMotor.id, motor.yawMotor.dir, 1000,
@@ -192,6 +214,33 @@ float debug_syn_tq;
             break;
         }
         DMMotorHandler::Instance()->sendControlData();
+
+        // gantry电机状态error check
+        gantry_alive_check_count++;
+        if (gantry_alive_check_count >= gantry_alive_check_period)
+        {
+            gantry_alive_check_count = 0;
+            bool gantry_offline = (motor.gantryMotor.AliveCheck() == DMMotor::MOTOR_OFFLINE);
+            bool gantry_state_error = motor.gantryMotor.Enable_Failed ||
+                                      (motor.gantryMotor.motorFeedback.ERR != DMMotor::ERR_ENABLE);
+
+            if (gantry_offline)
+            {
+                if (gantry_alive_lost_count < gantry_alive_lost_limit)
+                    gantry_alive_lost_count++;
+            }
+            else
+            {
+                gantry_alive_lost_count = 0;
+            }
+
+            gantry_motor_error = (gantry_alive_lost_count >= gantry_alive_lost_limit) || gantry_state_error;
+        }
+
+        if (gantry_motor_error)
+        {
+            tx_semaphore_ceiling_put(&GantryMotorErrorSem, 1);
+        }
 
         motorfdb.gantry_pos_fdb = motor.gantryMotor.motorFeedback.positionFdb;
         motorfdb.gantry_spd_fdb = motor.gantryMotor.motorFeedback.speedFdb;

@@ -12,10 +12,12 @@
 #define LIGHT_PIN                  GPIO_PIN_14
 
 #define FORCE_DATA_RX_SIZE         9
+#define G4_FORCE_RX_DATA_SIZE      8
+#define G4_FORCE_RX_BUFFER_SIZE    32
 
 extern uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE];
 extern uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
+extern uint8_t g4_rx_buffer[G4_FORCE_RX_BUFFER_SIZE];
 
-void ForceSensor_RequestAll(void);
-void ForceSensor_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size);
+void ForceSensor_RxCpltCallback(UART_HandleTypeDef *huart);
 void ForceSensor_ErrorCallback(UART_HandleTypeDef *huart);

@@ -171,6 +171,14 @@ struct msg_cmd_t
     float rc_string_R;
 };
 
+typedef enum TriggerStatus
+{
+    open_then_relax = 0,
+    lock_then_relax,
+    open_and_remain,
+    lock_and_remain,
+} TriggerStatus;
+
 /**
  * @brief 电机控制消息结构，由Tasklauncher发送给Taskmotors
  * yaw轴步进电机
@@ -182,7 +190,8 @@ struct msg_motor_ctrl_t
     float yaw_pos;
     CTRL_MODE yaw_mode;
 
-    bool trigger_lock;
+    // bool trigger_lock;
+    TriggerStatus trigger;
 
     CTRL_MODE Coil_L_mode;
     CTRL_MODE Coil_R_mode;

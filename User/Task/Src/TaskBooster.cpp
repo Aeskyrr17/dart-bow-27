@@ -29,6 +29,8 @@ extern void AliveThreadFun(ULONG thread_input);
 extern TX_SEMAPHORE MotorAlive;
 extern TX_SEMAPHORE CANErrorSem;
 extern TX_SEMAPHORE VisionErrorSem;
+extern TX_SEMAPHORE G4ForceGot;
+extern TX_SEMAPHORE GantryMotorErrorSem;
 
 
 //todo:确定优先级
@@ -39,6 +41,9 @@ extern "C" void TaskBooster(void)
     tx_semaphore_create(&MotorAlive, TX_NAME("MotorAlive"), 0);
     tx_semaphore_create(&CANErrorSem, TX_NAME("CANErrorSem"), 0);
     tx_semaphore_create(&VisionErrorSem, TX_NAME("VisionErrorSem"), 0);
+    tx_semaphore_create(&G4ForceGot, TX_NAME("G4ForceGot"), 0);
+    tx_semaphore_create(&GantryMotorErrorSem, TX_NAME("GantryMotorErrorSem"), 0);
+
 
     CAN_Init();
 

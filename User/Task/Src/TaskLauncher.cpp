@@ -66,7 +66,7 @@ delay_t string_force_jump_delay{};
     const float syn_pos_5 = 0.15f;
 
     const float syn_slow_spd = 7.0f;
-    const float string_force_error_limit = 100000000.0f;
+    const float string_force_error_limit = 100000000.0f; //? 暂时没有使用,测试数据
     const float syn_tq_error_limit = 10.0f;
     const float string_force_jump_limit = 500000.0f;
     const ULONG syn_tq_error_ticks = 5000;
@@ -99,7 +99,8 @@ delay_t string_force_jump_delay{};
         // sensor.is_door_open = true;
         // lch2sys.next_dart_slot = cmd.next_dart_slot;
 
-        motorctrl.trigger_lock = true;
+        // motorctrl.trigger_lock = true;
+        motorctrl.trigger = lock_then_relax;
         motorctrl.Coil_mode = SPD;
         motorctrl.Coil_L_mode = SPD;
         motorctrl.Coil_R_mode = SPD;
@@ -193,7 +194,7 @@ delay_t string_force_jump_delay{};
         switch (current_fsm_state)
         {
             case HAND_CONTROL:
-                motorctrl.trigger_lock = hand_trigger_lock;
+                motorctrl.trigger = hand_trigger_lock ? TriggerStatus::lock_then_relax : TriggerStatus::open_then_relax;
                 motorctrl.synbelt_pos += 0;
                 motorctrl.string_L_spd = 0.0f;
                 motorctrl.string_R_spd = 0.0f;
@@ -225,12 +226,12 @@ delay_t string_force_jump_delay{};
                 else if (cmd.action == DART_TRIGGER_CLOSE)
                 {
                     hand_trigger_lock = true;
-                    motorctrl.trigger_lock = true;
+                    motorctrl.trigger = TriggerStatus::lock_then_relax;
                 }
                 else if (cmd.action == DART_TRIGGER_OPEN)
                 {
                     hand_trigger_lock = false;
-                    motorctrl.trigger_lock = false;
+                    motorctrl.trigger = TriggerStatus::open_then_relax;
                 }
 
                 break;
@@ -238,7 +239,7 @@ delay_t string_force_jump_delay{};
             case IDLE:
                 // motorctrl.yaw_spd = 0.0f;
                 
-                motorctrl.trigger_lock = true;
+                motorctrl.trigger = TriggerStatus::lock_then_relax;
                 motorctrl.gantry_target_slot = DART_SLOT_NONE;//龙门架在默认位置
                 motorctrl.string_able = false;
                 motorctrl.synbelt_mode = POS;
@@ -255,7 +256,7 @@ delay_t string_force_jump_delay{};
 
             case PRE_TENSION:
             {
-                motorctrl.trigger_lock = true;
+                motorctrl.trigger = TriggerStatus::lock_then_relax;
                 motorctrl.string_able = true;
                 motorctrl.string_L_tq = cmd.tension;
                 motorctrl.string_R_tq = cmd.tension;
@@ -280,7 +281,7 @@ delay_t string_force_jump_delay{};
                 switch (current_prep_state)
                 {
                     case SYN_1:
-                        motorctrl.trigger_lock = false;
+                        motorctrl.trigger = TriggerStatus::open_then_relax;
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos = syn_pos_1;
 
@@ -297,7 +298,7 @@ delay_t string_force_jump_delay{};
                         break;
 
                     case GANTRY_1:
-                        motorctrl.trigger_lock = false;
+                        motorctrl.trigger = TriggerStatus::open_then_relax;
                         motorctrl.gantry_target_slot = launcher.current_slot;
                         if (Numeric::abs(Get_Gantry_Target_Pos(launcher.current_slot) - motorfdb.gantry_pos_fdb) <= gantry_pos_deadzone)
                         {
@@ -306,7 +307,7 @@ delay_t string_force_jump_delay{};
                         break;
                         
                     case SYN_2:
-                        motorctrl.trigger_lock = false;    
+                        motorctrl.trigger = TriggerStatus::open_then_relax;
                         motorctrl.gantry_target_slot = launcher.current_slot;
                         motorctrl.synbelt_mode = SPD;
                         motorctrl.synbelt_spd = syn_slow_spd;
@@ -320,7 +321,7 @@ delay_t string_force_jump_delay{};
                         break;
 
                     case GANTRY_2:
-                        motorctrl.trigger_lock = false;
+                        motorctrl.trigger = TriggerStatus::open_and_remain;
                         motorctrl.gantry_target_slot = DART_SLOT_NONE;
                         if (Numeric::abs(Get_Gantry_Target_Pos(DART_SLOT_NONE) - motorfdb.gantry_pos_fdb) <= gantry_pos_deadzone)
                         {
@@ -331,7 +332,7 @@ delay_t string_force_jump_delay{};
                     case SYN_TRIGGER_READY:
                     {
                         motorctrl.synbelt_pos = syn_pos_3;
-                        motorctrl.trigger_lock = false;
+                        motorctrl.trigger = TriggerStatus::open_and_remain;
 
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_3) <= syn_pos_deadzone;
                         if (syn_reset)
@@ -340,7 +341,7 @@ delay_t string_force_jump_delay{};
                         }
                         if (trigger_lock_latched)
                         {
-                            motorctrl.trigger_lock = true;
+                            motorctrl.trigger = TriggerStatus::lock_and_remain;
                         }
 
                         if (trig_lock_delay.Reach(trigger_lock_latched, 2500, prep_state_changed))
@@ -351,7 +352,7 @@ delay_t string_force_jump_delay{};
                     }
                     case TENSION_AND_RETRACT_AND_YAW:
                     {
-                        motorctrl.trigger_lock = true;
+                        motorctrl.trigger = TriggerStatus::lock_and_remain;
                         if (motorfdb.syn_pos_fdb >= syn_pos_1)
                         {
                             motorctrl.string_able = true; //保证同步带已经离开弓弦后再开始调整弓弦的力
@@ -404,7 +405,7 @@ delay_t string_force_jump_delay{};
 
             case READY:
             {
-                motorctrl.trigger_lock = true;
+                motorctrl.trigger = TriggerStatus::lock_and_remain;
                 motorctrl.string_able = true;
                 motorctrl.string_L_tq = cmd.tension;//保持力矩
                 motorctrl.string_R_tq = cmd.tension;
@@ -420,7 +421,7 @@ delay_t string_force_jump_delay{};
             case FIRING:
             {
                 motorctrl.string_able = false;
-                motorctrl.trigger_lock = false; //解锁扳机
+                motorctrl.trigger = TriggerStatus::open_then_relax; //解锁扳机
                 launcher.is_fire_done = false;
 
                 if (firing_hold_delay.Reach(500, fsm_state_changed))
@@ -433,7 +434,7 @@ delay_t string_force_jump_delay{};
 
             case ERROR_STOP:
             {
-                motorctrl.trigger_lock = true;
+                motorctrl.trigger = TriggerStatus::lock_then_relax;
                 motorctrl.string_able = false;
                 // motorctrl.gantry_target_slot = DART_SLOT_NONE;
                 motorctrl.synbelt_mode = POS;

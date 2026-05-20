@@ -49,13 +49,20 @@ DartLibrary dart_lib;
     dart_lib.dart[7] = {7,  0.00f,820000.0f, 500000.0f};
     dart_lib.dart[8] = {8,  0.00f,690000.0f, 500000.0f};
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[12] = {12, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[13] = {13, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[14] = {14, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
+    dart_lib.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
 
     dart_lib.sequence[0] = 3;
     dart_lib.sequence[1] = 1;
     dart_lib.sequence[2] = 5;
     dart_lib.sequence[3] = 6;
 
-    const float pre_tension = 300000.0f;
+    const float pre_tension = 320000.0f;
 
 
 
@@ -70,14 +77,15 @@ DartLibrary dart_lib;
         Update_referee_data(&referee_pack,&dart_lib);
 
         dart_lib.Update_Current_State(&lch2sys);
-        dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) && 
-                                (vision_rx.distance > 10.0f) && (vision_rx.distance < 50.0f);
+        // dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) && 
+        //                         (vision_rx.distance > 10.0f) && (vision_rx.distance < 50.0f);
+        dart_lib.UPDATE_DOOR_STATUS(&vision_rx);
         dart_lib.Update_Current_Dart_Id();
 
         // //! !!!!!！！！！！！！！！！！！！！！！！!测试代码
         // vision_rx.distance = 25.0f;
         // dart_lib.referee.game_status = 4;
-        // dart_lib.is_door_open = true;
+        // dart_lib.door_status = DOOR_OPEN;
         // dart_lib.referee.chosen_target = 1;
         // dart_lib.referee.chosen_target = 0; //前哨
         
@@ -114,6 +122,7 @@ DartLibrary dart_lib;
         {
             cmd.action = DART_RELAX;
             dart_lib.Update_Fired_State(&lch2sys);
+            dart_lib.Update_History(&lch2sys);
             om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
             om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
             tx_thread_sleep(1);
@@ -181,7 +190,9 @@ DartLibrary dart_lib;
         }
         else if (remoter.left_sw == Up && remoter.right_sw == Up)
         {
-            if (dart_lib.referee.game_status == 4)
+            if (dart_lib.referee.game_status == 4 && 
+                (dart_lib.door_status == DOOR_OPEN || dart_lib.door_status == DOOR_OPENING) && 
+                dart_lib.fired_count_this_open < 2)
             {
                 Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, my_tension, my_offset);
             }
@@ -199,6 +210,7 @@ DartLibrary dart_lib;
         }
 
         dart_lib.Update_Fired_State(&lch2sys);
+        dart_lib.Update_History(&lch2sys);
 
 
         om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
@@ -267,7 +279,7 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
         dart->autoAim.yaw_ok = true;
     };
 
-    if ((dart->is_door_open &&
+    if ((dart->door_status == DOOR_OPEN &&
         dart->fired_count_this_open < 2 &&
         dart->autoAim.yaw_ok &&
         rx->stable_state == 1))
@@ -280,17 +292,16 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
 void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
 {
     dart->referee.last_launch_station_status = dart->referee.launch_station_status;
-    //! todo 强制开始比赛
     dart->referee.game_status =  referee_rx->GameStatus.Game_progress;
     // dart->referee.game_status = 4;
     dart->referee.shooting_remaining_time =  referee_rx->DartInfo.dart_remaining_time;
     dart->referee.chosen_target = ( referee_rx->DartInfo.dart_info >> 6) & 0x07;
     dart->referee.launch_station_status =  referee_rx->DartClientCmd.dart_launch_opening_status;
 
-    if (dart->referee.launch_station_status == 0 &&
-        dart->referee.last_launch_station_status != 0)
-    {
-        dart->fired_count_this_open = 0;
-    }
+    // if (dart->referee.launch_station_status == 0 &&
+    //     dart->referee.last_launch_station_status != 0)
+    // {
+    //     dart->fired_count_this_open = 0;
+    // }
 }
 

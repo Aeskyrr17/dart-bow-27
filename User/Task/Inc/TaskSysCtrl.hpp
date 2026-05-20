@@ -23,21 +23,30 @@ struct AutoAim_t
     bool yaw_ok;
     bool light_lost; //视觉看不到绿灯
 };
-
+enum DOOR_STATUS
+{
+    DOOR_OPENING,
+    DOOR_OPEN,
+    DOOR_CLOSING,
+    DOOR_CLOSED,
+    // DOOR_UNKNOWN
+};
 class DartLibrary
 {
 public:
-    Dart_Config_t dart[10];
+    Dart_Config_t dart[17];
     int sequence[4];
     int current_shot_number;
     int current_dart_id;
-    bool is_door_open;
+    DOOR_STATUS door_status;
+    DOOR_STATUS last_door_status;
 
     bool last_fire_finished;
     int fired_count_this_open;
 
-    RefereeInfo_t referee;
     AutoAim_t autoAim;
+    RefereeInfo_t referee;
+    msg_visionrx_t vision_rx;//!? 暂时没有使用
 
     DartLibrary()
     {
@@ -51,6 +60,13 @@ public:
         dart[7] = {7, 0.0f, 0.0f, 0.0f};
         dart[8] = {8, 0.0f, 0.0f, 0.0f};
         dart[9] = {9, 0.0f, 0.0f, 0.0f};
+        dart[10] = {10, 0.0f, 0.0f, 0.0f};
+        dart[11] = {11, 0.0f, 0.0f, 0.0f};
+        dart[12] = {12, 0.0f, 0.0f, 0.0f};
+        dart[13] = {13, 0.0f, 0.0f, 0.0f};
+        dart[14] = {14, 0.0f, 0.0f, 0.0f};
+        dart[15] = {15, 0.0f, 0.0f, 0.0f}; 
+        dart[16] = {16, 0.0f, 0.0f, 0.0f};
 
         sequence[0] = 1;
         sequence[1] = 2;
@@ -59,7 +75,8 @@ public:
 
         current_shot_number = 1;
         current_dart_id = sequence[0];
-        is_door_open = false;
+        door_status = DOOR_CLOSED;
+        last_door_status = DOOR_CLOSED;
         last_fire_finished = false;
         fired_count_this_open = 0;
 
@@ -72,6 +89,35 @@ public:
         autoAim.enable = false;
         autoAim.yaw_ok = false;
     }
+
+    void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
+    {
+        if (referee.launch_station_status == 1)
+        {
+            door_status = DOOR_CLOSED;
+        }
+        else if (rx->distance > 10.0f && rx->distance < 50.0f && referee.launch_station_status == 0)
+        {
+            door_status = DOOR_OPEN;
+        }
+        else if (referee.launch_station_status == 2 )
+        {
+            if (last_door_status == DOOR_CLOSED || last_door_status == DOOR_OPENING)
+            {
+                door_status = DOOR_OPENING;
+            }
+            else if (last_door_status == DOOR_OPEN || last_door_status == DOOR_CLOSING)
+            {
+                door_status = DOOR_CLOSING;
+            }
+            else
+            {
+                door_status = DOOR_CLOSED;
+            }
+
+        }
+  
+    };
 
 
     DART_SLOT Get_Prepare_Slot() const
@@ -120,6 +166,16 @@ public:
             fired_count_this_open++;
         }
 
+        if (last_door_status == DOOR_CLOSING && door_status == DOOR_CLOSED)
+        {
+            fired_count_this_open = 0;
+        }
+
+    }
+
+    void Update_History(msg_launcher2sysctrl_t* msg)
+    {
+        last_door_status = door_status;
         last_fire_finished = msg->is_fire_finished;
     }
 };
