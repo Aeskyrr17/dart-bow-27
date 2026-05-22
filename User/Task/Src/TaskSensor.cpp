@@ -30,7 +30,7 @@ uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
 static uint8_t u3_rx_done = 0;
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#define USING_G4_FORCE_SENSOR
+// #define USING_G4_FORCE_SENSOR
 
 
 struct FORCE
@@ -100,6 +100,8 @@ void Force_R_Request080();
         sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
 
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
+
+        sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
 
 
 #ifdef USING_G4_FORCE_SENSOR

@@ -11,6 +11,9 @@
 #define LIGHT_PORT                 GPIOE
 #define LIGHT_PIN                  GPIO_PIN_14
 
+#define TRIGGER_PORT               GPIOE
+#define TRIGGER_PIN                GPIO_PIN_9
+
 #define FORCE_DATA_RX_SIZE         9
 #define G4_FORCE_RX_DATA_SIZE      8
 #define G4_FORCE_RX_BUFFER_SIZE    32

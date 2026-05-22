@@ -30,27 +30,36 @@
 class ServoMotors
 {
     public:
+    enum OpenResetState
+    {
+        OPEN_RESET_IDLE = 0,
+        OPEN_RESET_OPENING,
+        OPEN_RESET_RESETTING,
+    };
+
     TIM_HandleTypeDef* htim; 
     uint32_t channel;
 
     float open_pulse; //打开时脉冲
-    float lock_pulse; //锁定时的脉冲
+    float idle_pulse; //空闲时脉冲
 
     float last_pulse;
     bool pwm_stopped;
+    OpenResetState open_reset_state;
 
     delay_t open_delay;
-    delay_t close_delay;
-    static constexpr ULONG pwm_hold_ticks = 4000;
+    delay_t reset_delay;
+    static constexpr ULONG pwm_hold_ticks = 1000;
 
     ServoMotors()
     {
         this->htim = nullptr;
         this->channel = 0;
-        this->open_pulse = 680  / 20000.0f;
-        this->lock_pulse = 2200/ 20000.0f;//50Hz //1750
+        this->open_pulse = 1750  / 20000.0f;
+        this->idle_pulse = 1700 / 20000.0f;//50Hz //1750
         this->last_pulse = 0.0f;
         this->pwm_stopped = false;
+        this->open_reset_state = OPEN_RESET_IDLE;
 
     }
 
@@ -59,30 +68,72 @@ class ServoMotors
         this->htim = htim;
         this->channel = channel;
         PWM_Start(this->htim, this->channel);
-        PWM_SetDutyRatio(this->htim, lock_pulse, this->channel);
-        this->last_pulse = this->lock_pulse;
+        PWM_SetDutyRatio(this->htim, idle_pulse, this->channel);
+        this->last_pulse = this->idle_pulse;
         this->pwm_stopped = false;
+        this->open_reset_state = OPEN_RESET_IDLE;
     }
 
-    void OpenThenRelax()
+    bool OpenAndReset()
     {
-        ApplyPulseForHold(this->open_pulse, this->open_delay);
+        switch (this->open_reset_state)
+        {
+            case OPEN_RESET_IDLE:
+                this->open_delay.Reset();
+                this->reset_delay.Reset();
+                this->pwm_stopped = false;
+                this->open_reset_state = OPEN_RESET_OPENING;
+                break;
+
+            case OPEN_RESET_OPENING:
+                ApplyPulse(this->open_pulse);
+                if (this->open_delay.ReachLatched(pwm_hold_ticks))
+                {
+                    this->reset_delay.Reset();
+                    this->open_reset_state = OPEN_RESET_RESETTING;
+                }
+                break;
+
+            case OPEN_RESET_RESETTING:
+                ApplyPulse(this->idle_pulse);
+                if (this->reset_delay.ReachLatched(pwm_hold_ticks))
+                {
+                    PWM_Stop(this->htim, this->channel);
+                    this->pwm_stopped = true;
+                    this->open_delay.Reset();
+                    this->reset_delay.Reset();
+                    this->last_pulse = this->idle_pulse;
+                    this->open_reset_state = OPEN_RESET_IDLE;
+                    return true;
+                }
+                break;
+
+            default:
+                this->open_reset_state = OPEN_RESET_IDLE;
+                break;
+        }
+        return false;
     }
 
-    void LockThenRelax()
-    {
-        ApplyPulseForHold(this->lock_pulse, this->close_delay);
-    }
+    // void OpenThenRelax()
+    // {
+    //     ApplyPulseForHold(this->open_pulse, this->open_delay);
+    // }
 
-    void OpenRemain()
-    {
-        ApplyPulse(this->open_pulse);
-    }
+    // void LockThenRelax()
+    // {
+    //     ApplyPulseForHold(this->idle_pulse, this->reset_delay);
+    // }
 
-    void LockRemain()
-    {
-        ApplyPulse(this->lock_pulse);
-    }
+    // void OpenRemain()
+    // {
+    //     ApplyPulse(this->open_pulse);
+    // }
+
+    // void LockRemain()
+    // {
+    //     ApplyPulse(this->idle_pulse);
+    // }
 
     void ApplyPulseForHold(float target_pulse, delay_t& hold_delay)
     {
@@ -482,7 +533,6 @@ class TaskMotors
 
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
-        this->triggerMotor.LockThenRelax();
 
         this->stringMotorL.Init(&hfdcan3, 2, 0);
         this->stringMotorR.Init(&hfdcan3, 1, 1); //?这个positive_dir是什么来着

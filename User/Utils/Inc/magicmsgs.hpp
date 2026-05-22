@@ -191,7 +191,8 @@ struct msg_motor_ctrl_t
     CTRL_MODE yaw_mode;
 
     // bool trigger_lock;
-    TriggerStatus trigger;
+    // TriggerStatus trigger;
+    bool trigger_release;
 
     CTRL_MODE Coil_L_mode;
     CTRL_MODE Coil_R_mode;
@@ -262,6 +263,7 @@ struct msg_sensor_t
     bool is_dart_loaded;        //飞镖装填完毕
     float string_L_force;       //左副弦力矩
     float string_R_force;       //右副弦力矩
+    bool is_trigger_locked;     //扳机是否锁定
 };
 
 struct debug_motor_t

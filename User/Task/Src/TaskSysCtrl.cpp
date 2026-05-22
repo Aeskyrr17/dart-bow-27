@@ -20,6 +20,9 @@ void Update_referee_data(msg_referee_t* rawdata, DartLibrary* dart);
 
 DartLibrary dart_lib;
 
+    msg_remoter_t remoter{};
+
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -30,7 +33,7 @@ DartLibrary dart_lib;
     msg_visiontx_t vision_tx{};
 
     om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
-    msg_remoter_t remoter{};
+    // msg_remoter_t remoter{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor",UINT32_MAX));
     msg_sensor_t sensor{};
     om_suber_t *lch2sys_suber = om_subscribe(om_find_topic("lch2sys",UINT32_MAX));

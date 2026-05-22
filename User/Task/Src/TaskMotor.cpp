@@ -70,8 +70,6 @@ float debug_syn_tq;
 
     motor.MotorsInit();
 
-    motorctrl.trigger = lock_then_relax;
-
     motor.synbeltMotor.positionPid = syn_pos_pid;
     // motor.synbeltMotor.speedPid = syn_spd_pid;
     // motor.gantryMotor.positionPid = gantry_pos_pid;
@@ -83,7 +81,7 @@ float debug_syn_tq;
 
     float string_L_spd = 0.0f;
     float string_R_spd = 0.0f;
-    uint16_t string_max_current = 5000;
+    const uint16_t string_max_current = 5000;
     const float string_force_limit = 1000000.0f;
     const uint32_t gantry_alive_check_period = 100;
     const uint8_t gantry_alive_lost_limit = 3;
@@ -91,31 +89,25 @@ float debug_syn_tq;
     uint8_t gantry_alive_lost_count = 0;
     bool gantry_motor_error = false;
 
+    bool trigger_latched = false;
+    bool last_trigger_release = false;
+
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
 
         //撒放机构处理逻辑
-        switch (motorctrl.trigger)
+        if (motorctrl.trigger_release && !last_trigger_release) 
         {
-            case open_then_relax:
-                motor.triggerMotor.OpenThenRelax();
-                break;
-            case lock_then_relax:
-                motor.triggerMotor.LockThenRelax();
-                break;
-            case open_and_remain:
-                motor.triggerMotor.OpenRemain();
-                break;
-            case lock_and_remain:
-                motor.triggerMotor.LockRemain();
-                break;
-            default:
-                motor.triggerMotor.LockThenRelax();
-                break;
+            trigger_latched = true;
         }
 
+        if (trigger_latched)
+        {
+            trigger_latched = !motor.triggerMotor.OpenAndReset();
+        }
+        last_trigger_release = motorctrl.trigger_release;
 
         motor.yawMotor.X_V2_Vel_LC_Control(motor.yawMotor.id, motor.yawMotor.dir, 1000,
                                             motor.yawMotor.ParseSpeed(motorctrl.yaw_spd * 100), 
