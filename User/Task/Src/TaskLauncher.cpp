@@ -17,39 +17,28 @@
 TX_THREAD LauncherThread;
 uint8_t LauncherThreadStack[2048] = {0};
 
-extern TaskMotors motor; //todo：之后可以重新整理到taskmotor中
-
-
 Launcher_Cxt_t launcher{};
 
-void Dart_Load_Test(msg_sensor_t* sensor);
-
+//global variable for debug
 msg_motorfdb_t debug_motorfdb{};
-msg_launcher2sysctrl_t lch2sys{};
-msg_cmd_t cmd{};
-msg_sensor_t sensor{};
-    msg_motor_ctrl_t motorctrl{};
+// msg_launcher2sysctrl_t lch2sys{};
+// msg_cmd_t cmd{};
+// msg_sensor_t sensor{};
+// msg_motor_ctrl_t motorctrl{};
 
-
-
-delay_t trig_lock_delay{};
-delay_t ready_fire_delay{};
-delay_t firing_hold_delay{};
-delay_t syn_tq_error_delay{};
-delay_t string_force_jump_delay{};
 
 [[nonreturn]] void LauncherThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
     om_topic_t *motorctrl_topic = om_config_topic(nullptr, "ca", "motorctrl", sizeof(msg_motor_ctrl_t));
-    // msg_motor_ctrl_t motorctrl{};
+    msg_motor_ctrl_t motorctrl{};
     om_topic_t *lch2sys_topic = om_config_topic(nullptr, "ca", "lch2sys", sizeof(msg_launcher2sysctrl_t));
-
+    msg_launcher2sysctrl_t lch2sys{};
 
     om_suber_t *cmd_suber = om_subscribe(om_find_topic("cmd", UINT32_MAX));
-    // msg_cmd_t cmd{};
+    msg_cmd_t cmd{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
-    // msg_sensor_t sensor{};
+    msg_sensor_t sensor{};
     om_suber_t *motorfdb_suber = om_subscribe(om_find_topic("motorfdb", UINT32_MAX));
     msg_motorfdb_t motorfdb{};
 
@@ -62,7 +51,7 @@ delay_t string_force_jump_delay{};
     const float syn_pos_1 = -27.0f;
     const float syn_pos_2 = -21.0f;
     const float syn_pos_3 = -38.5f;
-    // const float syn_pos_4 = -26.5f;
+    // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 0.3f;
 
     const float syn_slow_spd = 7.0f;
@@ -85,7 +74,13 @@ delay_t string_force_jump_delay{};
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
     PREPARE_STATE last_prep_state = PREPARE_STATE_INVALID;
 
-    launcher.is_first_dart = true;   //!用于准备阶段区分第一发，第一发不需要龙门架移动
+    delay_t trig_lock_delay{};
+    delay_t ready_fire_delay{};
+    delay_t firing_hold_delay{};
+    delay_t syn_tq_error_delay{};
+    delay_t string_force_jump_delay{};
+
+    launcher.is_first_dart = true;   //! 用于准备阶段区分第一发，第一发不需要龙门架移动
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
