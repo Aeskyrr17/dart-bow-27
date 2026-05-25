@@ -27,19 +27,19 @@ extern TX_SEMAPHORE GantryMotorErrorSem;
 
         if (can_error && vision_error && gantry_motor_error)
         {
-            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
+            LED_blink(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
         }
         else if (can_error && vision_error)
         {
-            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE);
+            LED_blink(LED_COLOR::LED_RED, LED_COLOR::LED_BLUE);
         }
         else if (can_error && gantry_motor_error)
         {
-            LED_blink_alternate(LED_COLOR::LED_RED, LED_COLOR::LED_WHITE);
+            LED_blink(LED_COLOR::LED_RED, LED_COLOR::LED_WHITE);
         }
         else if (vision_error && gantry_motor_error)
         {
-            LED_blink_alternate(LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
+            LED_blink(LED_COLOR::LED_BLUE, LED_COLOR::LED_WHITE);
         }
         else if (can_error)
         {

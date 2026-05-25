@@ -49,7 +49,7 @@ void LED_blink(enum LED_COLOR color)
     }
 }
 
-void LED_blink_alternate(enum LED_COLOR color_a, enum LED_COLOR color_b)
+void LED_blink(enum LED_COLOR color_a, enum LED_COLOR color_b)
 {
     static uint32_t flash_count;
     flash_count++;
@@ -69,7 +69,7 @@ void LED_blink_alternate(enum LED_COLOR color_a, enum LED_COLOR color_b)
     }
 }
 
-void LED_blink_alternate(enum LED_COLOR color_a, enum LED_COLOR color_b, enum LED_COLOR color_c)
+void LED_blink(enum LED_COLOR color_a, enum LED_COLOR color_b, enum LED_COLOR color_c)
 {
     static uint32_t flash_count;
     flash_count++;

@@ -47,8 +47,8 @@ void LED_toggle(enum LED_COLOR color);
  * @todo 闪烁频率单位还有极限值未确定
  */
 void LED_blink(enum LED_COLOR color);
-void LED_blink_alternate(enum LED_COLOR color_a, enum LED_COLOR color_b);
-void LED_blink_alternate(enum LED_COLOR color_a, enum LED_COLOR color_b, enum LED_COLOR color_c);
+void LED_blink(enum LED_COLOR color_a, enum LED_COLOR color_b);
+void LED_blink(enum LED_COLOR color_a, enum LED_COLOR color_b, enum LED_COLOR color_c);
 
 /**
  * @brief  关闭所有LED灯
