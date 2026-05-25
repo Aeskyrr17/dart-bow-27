@@ -16,6 +16,8 @@ static void LED_set_color(enum LED_COLOR color)
         case LED_WHITE:
             WS2812_Ctrl(7, 7, 7);
             break;
+        // case LED_ORANGE:
+
     }
 }
 

@@ -13,12 +13,13 @@ enum LED_COLOR
     LED_RED = 0,
     LED_GREEN,
     LED_BLUE,
-    LED_WHITE
+    LED_WHITE,
+    LED_VIOLET,
 };
 
 /**
  * @brief  初始化LED引脚
- * @note 所有的LED灯都初始化为ON状态
+ * @note 所有的LED灯都初始化为ON状态 
  */
 void LED_init(void);
 

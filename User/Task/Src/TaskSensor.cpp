@@ -20,6 +20,7 @@
 
 TX_THREAD SensorThread;
 uint8_t SensorThreadStack[2048] = {0};
+TX_SEMAPHORE G4SensorLostSem;
 
 // usart2 force_left
 uint8_t u2_rx_buffer[FORCE_DATA_RX_SIZE];
@@ -46,7 +47,7 @@ struct HALL
 }hall;
 
 #define G4_FORCE_RX_TIMEOUT 100
-#define G4_FORCE_RX_RESTART_DELAY 3
+// #define G4_FORCE_RX_RESTART_DELAY 3
 
 struct G4Force
 {
@@ -95,13 +96,14 @@ void Force_R_Request080();
     {
         // hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
         // hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
+        sensor.is_trigger_locked = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
         // sensor.is_coil_reset = (hall.is_L_reset && hall.is_R_reset);
-        sensor.is_coil_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
-        sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
+        // sensor.is_coil_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
+        // sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
 
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
 
-        sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
+        // sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
 
 
 #ifdef USING_G4_FORCE_SENSOR
@@ -123,7 +125,7 @@ void Force_R_Request080();
             if (g4_force_lost_ticks >= G4_FORCE_RX_TIMEOUT)
             {
                 HAL_UART_Abort(&huart7);
-                tx_thread_sleep(G4_FORCE_RX_RESTART_DELAY);
+                tx_thread_sleep(2);
                 HAL_UART_Receive_DMA(&huart7, g4_rx_buffer, G4_FORCE_RX_DATA_SIZE);
                 g4_force_lost_ticks = 0;
             }

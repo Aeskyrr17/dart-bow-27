@@ -48,11 +48,11 @@ msg_motorfdb_t debug_motorfdb{};
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;  
-    const float syn_pos_1 = -27.0f;
-    const float syn_pos_2 = -21.0f;
-    const float syn_pos_3 = -38.5f;
+    const float syn_pos_1 = -24.2f;
+    const float syn_pos_2 = -19.0f;
+    const float syn_pos_3 = -38.44f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
-    const float syn_pos_5 = 0.3f;
+    const float syn_pos_5 = 0.0f;
 
     const float syn_slow_spd = 7.0f;
     const float string_force_error_limit = 100000000.0f; //? 暂时没有使用,测试数据

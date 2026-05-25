@@ -20,7 +20,7 @@ void Update_referee_data(msg_referee_t* rawdata, DartLibrary* dart);
 
 DartLibrary dart_lib;
 
-    msg_remoter_t remoter{};
+msg_remoter_t remoter{};
 
 
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
@@ -65,7 +65,7 @@ DartLibrary dart_lib;
     dart_lib.sequence[2] = 5;
     dart_lib.sequence[3] = 6;
 
-    const float pre_tension = 320000.0f;
+    const float pre_tension = 320000.0f; //调整预张紧的值
 
 
 
@@ -85,7 +85,7 @@ DartLibrary dart_lib;
         dart_lib.UPDATE_DOOR_STATUS(&vision_rx);
         dart_lib.Update_Current_Dart_Id();
 
-        // //! !!!!!！！！！！！！！！！！！！！！！！!测试代码
+        // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
         // vision_rx.distance = 25.0f;
         // dart_lib.referee.game_status = 4;
         // dart_lib.door_status = DOOR_OPEN;
@@ -122,14 +122,29 @@ DartLibrary dart_lib;
 
         //遥控器offline保护和visionrx数据异常的灯控提示 //?! remoteroffline 可能需要删除
         if (remoter.offline)
-        {
-            cmd.action = DART_RELAX;
-            dart_lib.Update_Fired_State(&lch2sys);
-            dart_lib.Update_History(&lch2sys);
-            om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
-            om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
-            tx_thread_sleep(1);
-            continue;
+        // {
+        //     cmd.action = DART_RELAX;
+        //     dart_lib.Update_Fired_State(&lch2sys);
+        //     dart_lib.Update_History(&lch2sys);
+        //     om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
+        //     om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
+        //     tx_thread_sleep(1);
+        //     continue;
+        // }
+        if (remoter.offline){
+            if (dart_lib.referee.game_status == 4)
+            {
+                continue;
+            }
+            else {
+                cmd.action = DART_RELAX;
+                dart_lib.Update_Fired_State(&lch2sys);
+                dart_lib.Update_History(&lch2sys);
+                om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
+                om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
+                tx_thread_sleep(1);
+                continue;
+            }
         }
         if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f || vision_rx.yaw == 0.0f || vision_rx.checksum == 0)
         {

@@ -12,6 +12,8 @@ extern TX_SEMAPHORE CANErrorSem;
 extern TX_SEMAPHORE VisionErrorSem;
 extern TX_SEMAPHORE MotorAlive;
 extern TX_SEMAPHORE GantryMotorErrorSem;
+extern TX_SEMAPHORE G4SensorLostSem;
+
 
 
 [[noreturn]] void AliveThreadFun(ULONG thread_input)
@@ -24,6 +26,7 @@ extern TX_SEMAPHORE GantryMotorErrorSem;
         bool referee_alive = tx_semaphore_get(&RefereeThreadSem, TX_NO_WAIT) == TX_SUCCESS;
         bool vision_error = tx_semaphore_get(&VisionErrorSem, TX_NO_WAIT) == TX_SUCCESS;
         bool gantry_motor_error = tx_semaphore_get(&GantryMotorErrorSem, TX_NO_WAIT) == TX_SUCCESS;
+        bool g4force_error = tx_semaphore_get(&G4SensorLostSem, TX_NO_WAIT) == TX_SUCCESS;
 
         if (can_error && vision_error && gantry_motor_error)
         {
