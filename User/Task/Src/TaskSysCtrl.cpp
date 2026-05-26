@@ -43,10 +43,10 @@ msg_remoter_t remoter{};
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -1.2f,800000.0f, 500000.0f};
-    dart_lib.dart[2] = {2, -1.20f,800000.0f, 500000.0f};
-    dart_lib.dart[3] = {3, -1.2f,800000.0f, 500000.0f};
-    dart_lib.dart[4] = {4, -1.2f,792000.0f, 500000.0f};
+    dart_lib.dart[1] = {1, -0.0f,800000.0f, 500000.0f};
+    dart_lib.dart[2] = {2, -0.0f,800000.0f, 500000.0f};
+    dart_lib.dart[3] = {3, -0.0f,800000.0f, 500000.0f};
+    dart_lib.dart[4] = {4, -0.0f,792000.0f, 500000.0f};
     dart_lib.dart[5] = {5, -1.2f,810000.0f, 500000.0f};
     dart_lib.dart[6] = {6, -1.2f,805000.0f, 500000.0f};
     dart_lib.dart[7] = {7,  0.00f,820000.0f, 500000.0f};
@@ -110,6 +110,7 @@ msg_remoter_t remoter{};
 
         cmd.tension = my_tension;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
+        cmd.current_shot_number = dart_lib.current_shot_number;
 
         //处理vision_tx数据
         vision_tx.header = 0x5A;

@@ -55,6 +55,8 @@ struct G4Force
     uint32_t R;
 }g4_force;
 
+msg_sensor_t sensor_debug;
+
 __attribute__((section(".RAM_D1"), aligned(32))) uint8_t g4_rx_buffer[G4_FORCE_RX_BUFFER_SIZE];
 TX_SEMAPHORE G4ForceGot;
 
@@ -96,7 +98,7 @@ void Force_R_Request080();
     {
         // hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
         // hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
-        sensor.is_trigger_locked = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
+        sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_RESET);
         // sensor.is_coil_reset = (hall.is_L_reset && hall.is_R_reset);
         // sensor.is_coil_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
         // sensor.is_coil_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
@@ -104,7 +106,7 @@ void Force_R_Request080();
         sensor.is_launchplat_return = (HAL_GPIO_ReadPin(LIGHT_PORT, LIGHT_PIN) == GPIO_PIN_SET);
 
         // sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
-
+        memcpy(&sensor_debug, &sensor, sizeof(msg_sensor_t));
 
 #ifdef USING_G4_FORCE_SENSOR
         bool got_g4_rx_done = false;

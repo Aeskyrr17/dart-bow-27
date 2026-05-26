@@ -163,6 +163,7 @@ struct msg_cmd_t
 {
     LAUNCHER_ACTION action;
     DART_SLOT next_dart_slot;
+    uint8_t current_shot_number;
 
     float yaw;              //约定为-1~1
     float tension;

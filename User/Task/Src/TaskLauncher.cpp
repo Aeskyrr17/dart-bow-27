@@ -50,7 +50,7 @@ msg_motorfdb_t debug_motorfdb{};
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -24.2f;
     const float syn_pos_2 = -19.0f;
-    const float syn_pos_3 = -38.44f;
+    const float syn_pos_3 = -38.77f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 0.0f;
 
@@ -80,7 +80,6 @@ msg_motorfdb_t debug_motorfdb{};
     delay_t syn_tq_error_delay{};
     delay_t string_force_jump_delay{};
 
-    launcher.is_first_dart = true;   //! 用于准备阶段区分第一发，第一发不需要龙门架移动
     for (;;) 
     {
         om_suber_export(cmd_suber, &cmd, false);
@@ -279,10 +278,9 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos = syn_pos_1;
 
-                        if (launcher.is_first_dart)
+                        if (cmd.current_shot_number == 1)
                         {
                             launcher.prep_state = SYN_TRIGGER_READY;    //第一发镖直接上膛
-                            launcher.is_first_dart = false;
                             break;
                         }
                         if (Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_1) <= syn_pos_deadzone)
