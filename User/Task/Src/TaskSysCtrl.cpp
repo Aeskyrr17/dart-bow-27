@@ -21,14 +21,15 @@ void Update_referee_data(msg_referee_t* rawdata, DartLibrary* dart);
 DartLibrary dart_lib;
 
 msg_remoter_t remoter{};
-
+msg_cmd_t cmd{};
 
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
 
     om_topic_t *cmd_topic = om_config_topic(nullptr, "ca", "cmd", sizeof(msg_cmd_t));
-    msg_cmd_t cmd{};
+    // msg_cmd_t cmd{};
+
     om_topic_t *visiontx_topic = om_config_topic(nullptr, "ca", "visiontx", sizeof(msg_visiontx_t));
     msg_visiontx_t vision_tx{};
 
@@ -43,10 +44,10 @@ msg_remoter_t remoter{};
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-    dart_lib.dart[1] = {1, -0.0f,800000.0f, 500000.0f};
-    dart_lib.dart[2] = {2, -0.0f,800000.0f, 500000.0f};
-    dart_lib.dart[3] = {3, -0.0f,800000.0f, 500000.0f};
-    dart_lib.dart[4] = {4, -0.0f,792000.0f, 500000.0f};
+    dart_lib.dart[1] = {1, -0.0f,800000.0f, 720000.0f};
+    dart_lib.dart[2] = {2, -0.0f,800000.0f, 720000.0f};
+    dart_lib.dart[3] = {3, -0.0f,800000.0f, 720000.0f};
+    dart_lib.dart[4] = {4, -0.0f,792000.0f, 720000.0f};
     dart_lib.dart[5] = {5, -1.2f,810000.0f, 500000.0f};
     dart_lib.dart[6] = {6, -1.2f,805000.0f, 500000.0f};
     dart_lib.dart[7] = {7,  0.00f,820000.0f, 500000.0f};
@@ -60,10 +61,10 @@ msg_remoter_t remoter{};
     dart_lib.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
     dart_lib.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
 
-    dart_lib.sequence[0] = 3;
-    dart_lib.sequence[1] = 1;
-    dart_lib.sequence[2] = 5;
-    dart_lib.sequence[3] = 6;
+    dart_lib.sequence[0] = 1;
+    dart_lib.sequence[1] = 2;
+    dart_lib.sequence[2] = 3;
+    dart_lib.sequence[3] = 4;
 
     const float pre_tension = 320000.0f; //调整预张紧的值
 

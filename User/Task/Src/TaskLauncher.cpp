@@ -48,11 +48,11 @@ msg_motorfdb_t debug_motorfdb{};
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;  
-    const float syn_pos_1 = -24.2f;
-    const float syn_pos_2 = -19.0f;
-    const float syn_pos_3 = -38.77f;
+    const float syn_pos_1 = -24.8f;
+    const float syn_pos_2 = -17.8f;
+    const float syn_pos_3 = -36.75f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
-    const float syn_pos_5 = 0.0f;
+    const float syn_pos_5 = 2.08f;
 
     const float syn_slow_spd = 7.0f;
     const float string_force_error_limit = 100000000.0f; //? 暂时没有使用,测试数据
@@ -325,8 +325,9 @@ msg_motorfdb_t debug_motorfdb{};
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_3) <= syn_pos_deadzone;
 
 
-                        if (trig_lock_delay.Reach(syn_reset, 500, prep_state_changed) 
-                            && sensor.is_trigger_locked)
+                        // if (trig_lock_delay.Reach(syn_reset, 500, prep_state_changed) 
+                        //     && sensor.is_trigger_locked)
+                        if (trig_lock_delay.Reach(syn_reset, 500, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
                         };
