@@ -68,7 +68,7 @@ msg_cmd_t cmd{};
     dart_lib.sequence[2] = 3;
     dart_lib.sequence[3] = 8;
 
-    const float pre_tension = 320000.0f; //调整预张紧的值
+    const float pre_tension = 340000.0f; //调整预张紧的值
 
 
 
