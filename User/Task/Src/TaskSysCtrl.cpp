@@ -23,6 +23,9 @@ DartLibrary dart_lib;
 msg_remoter_t remoter{};
 msg_cmd_t cmd{};
 
+#define FORCE_TABLING
+//! 测试的时候用dart_lib里面的固定值
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -63,6 +66,26 @@ msg_cmd_t cmd{};
     dart_lib.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
     dart_lib.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
 
+    const Dart_Base_Table_Point_t base_distance_table[] = {
+        {1,  25.0f, -0.8f,  660000.0f},
+        {2,  25.0f, -1.2f,  670000.0f},
+        {3,  25.0f, -0.68f, 660000.0f},
+        {4,  25.0f, -1.2f,  670000.0f},
+        {5,  25.0f, -0.9f,  645000.0f},
+        {6,  25.0f, -0.75f, 655000.0f},
+        {7,  25.0f,  0.00f, 820000.0f},
+        {8,  25.0f, -0.7f,  660000.0f},
+        {9,  25.0f,  0.00f, 690000.0f},
+        {10, 25.0f,  0.00f, 690000.0f},
+        {11, 25.0f,  0.00f, 690000.0f},
+        {12, 25.0f,  0.00f, 690000.0f},
+        {13, 25.0f,  0.00f, 690000.0f},
+        {14, 25.0f,  0.00f, 690000.0f},
+        {15, 25.0f,  0.00f, 690000.0f},
+        {16, 25.0f,  0.00f, 690000.0f},
+    };
+    dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
+
     dart_lib.sequence[0] = 1;
     dart_lib.sequence[1] = 8;
     dart_lib.sequence[2] = 3;
@@ -99,15 +122,23 @@ msg_cmd_t cmd{};
 
         //更新tension和yaw数据
         int id = dart_lib.current_dart_id;
-        float my_offset = dart_lib.dart[id].yaw_offset;
+        Dart_Base_Aim_t base_aim = dart_lib.Get_Base_Aim_By_Distance(id, vision_rx.distance);
+        float my_offset;
         float my_tension;
         if (dart_lib.referee.chosen_target == 0) //前哨站
         {
+            my_offset = dart_lib.dart[id].yaw_offset;
             my_tension = dart_lib.dart[id].tension_tq_outpost;
         }
         else 
         {
+#ifdef FORCE_TABLING
+            my_offset = dart_lib.dart[id].yaw_offset;
             my_tension = dart_lib.dart[id].tension_tq_base;
+#else
+            my_offset = base_aim.yaw_offset;
+            my_tension = base_aim.tension_tq;
+#endif
         }
         float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
 

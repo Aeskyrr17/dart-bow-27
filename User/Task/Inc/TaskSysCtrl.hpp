@@ -8,6 +8,20 @@ struct Dart_Config_t
     float tension_tq_outpost;
 };
 
+struct Dart_Base_Table_Point_t
+{
+    int id;
+    float distance;
+    float yaw_offset;
+    float tension_tq;
+};
+
+struct Dart_Base_Aim_t
+{
+    float yaw_offset;
+    float tension_tq;
+};
+
 struct RefereeInfo_t
 {
     uint32_t game_status;
@@ -34,7 +48,11 @@ enum DOOR_STATUS
 class DartLibrary
 {
 public:
+    static constexpr uint16_t BASE_DISTANCE_TABLE_MAX = 128;
+
     Dart_Config_t dart[17];
+    Dart_Base_Table_Point_t base_distance_table[BASE_DISTANCE_TABLE_MAX];
+    uint16_t base_distance_table_len;
     int sequence[4];
     int current_shot_number;
     int current_dart_id;
@@ -68,6 +86,7 @@ public:
         dart[15] = {15, 0.0f, 0.0f, 0.0f}; 
         dart[16] = {16, 0.0f, 0.0f, 0.0f};
 
+        base_distance_table_len = 0;
         sequence[0] = 1;
         sequence[1] = 2;
         sequence[2] = 3;
@@ -118,6 +137,76 @@ public:
         }
   
     };
+
+    void Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, uint16_t table_len)
+    {
+        base_distance_table_len = table_len;
+        if (base_distance_table_len > BASE_DISTANCE_TABLE_MAX)
+        {
+            base_distance_table_len = BASE_DISTANCE_TABLE_MAX;
+        }
+
+        for (uint16_t i = 0; i < base_distance_table_len; i++)
+        {
+            base_distance_table[i] = table[i];
+        }
+    }
+
+    Dart_Base_Aim_t Get_Base_Aim_By_Distance(int id, float distance) const
+    {
+        int dart_id = (id >= 1 && id <= 16) ? id : 0;
+        Dart_Base_Aim_t aim = {dart[dart_id].yaw_offset, dart[dart_id].tension_tq_base};
+        if (dart_id == 0 || distance <= 0.0f || base_distance_table_len == 0)
+        {
+            return aim;
+        }
+
+        const Dart_Base_Table_Point_t* lower = nullptr;
+        const Dart_Base_Table_Point_t* upper = nullptr;
+
+        for (uint16_t i = 0; i < base_distance_table_len; i++)
+        {
+            const Dart_Base_Table_Point_t* point = &base_distance_table[i];
+            if (point->id != dart_id)
+            {
+                continue;
+            }
+
+            if (point->distance <= distance &&
+                (lower == nullptr || point->distance > lower->distance))
+            {
+                lower = point;
+            }
+
+            if (point->distance >= distance &&
+                (upper == nullptr || point->distance < upper->distance))
+            {
+                upper = point;
+            }
+        }
+
+        if (lower == nullptr && upper == nullptr)
+        {
+            return aim;
+        }
+        if (lower == nullptr)
+        {
+            return {upper->yaw_offset, upper->tension_tq};
+        }
+        if (upper == nullptr)
+        {
+            return {lower->yaw_offset, lower->tension_tq};
+        }
+        if (upper->distance == lower->distance)
+        {
+            return {lower->yaw_offset, lower->tension_tq};
+        }
+
+        float k = (distance - lower->distance) / (upper->distance - lower->distance);
+        aim.yaw_offset = lower->yaw_offset + (upper->yaw_offset - lower->yaw_offset) * k;
+        aim.tension_tq = lower->tension_tq + (upper->tension_tq - lower->tension_tq) * k;
+        return aim;
+    }
 
 
     DART_SLOT Get_Prepare_Slot() const
