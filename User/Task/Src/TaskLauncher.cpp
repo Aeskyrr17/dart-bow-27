@@ -46,6 +46,8 @@ msg_motorfdb_t debug_motorfdb{};
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.7f;
     const float string_deadzone = 500.0f;
+    const float string_relax_k = 0.95f; //回拉的系数
+    const float string_relax_spd = 0.3f; //回拉时副弦慢速放松，norm
 
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -24.8f;
@@ -321,6 +323,13 @@ msg_motorfdb_t debug_motorfdb{};
                     case SYN_TRIGGER_READY:
                     {
                         motorctrl.synbelt_pos = syn_pos_3;
+                        motorctrl.string_able = false;
+
+                        float string_relax_tension = cmd.tension * string_relax_k;
+                        bool string_L_relax_ok = sensor.string_L_force <= string_relax_tension;
+                        bool string_R_relax_ok = sensor.string_R_force <= string_relax_tension;
+                        motorctrl.string_L_spd = string_L_relax_ok ? 0.0f : string_relax_spd;
+                        motorctrl.string_R_spd = string_R_relax_ok ? 0.0f : string_relax_spd;
 
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_3) <= syn_pos_deadzone;
 

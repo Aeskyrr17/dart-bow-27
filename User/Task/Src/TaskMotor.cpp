@@ -39,8 +39,8 @@ TaskMotors motor;
 
 #define MOTOR_DEBUG
 
-PID str_L_tqpid(0.015f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID str_R_tqpid(0.015f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_L_tqpid(0.012f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_R_tqpid(0.012f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID syn_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -82,6 +82,7 @@ float debug_syn_tq;
     float string_L_spd = 0.0f;
     float string_R_spd = 0.0f;
     const uint16_t string_max_current = 5000;
+    const float string_open_loop_max_spd = 400.0f;
     const float string_force_limit = 1000000.0f;
     const uint32_t gantry_alive_check_period = 100;
     const uint8_t gantry_alive_lost_limit = 3;
@@ -141,11 +142,11 @@ float debug_syn_tq;
         {
             if (motorctrl.string_L_spd > 0.03)
             {
-                string_L_spd = 400.0f;
+                string_L_spd = Numeric::LimitABS(motorctrl.string_L_spd, 1.0f) * string_open_loop_max_spd;
             }
             else if (motorctrl.string_L_spd < -0.03)
             {
-                string_L_spd = -400.0f;
+                string_L_spd = Numeric::LimitABS(motorctrl.string_L_spd, 1.0f) * string_open_loop_max_spd;
             }
             else 
                 string_L_spd = 0.0f;     
@@ -153,11 +154,11 @@ float debug_syn_tq;
 
             if (motorctrl.string_R_spd > 0.03)
             {
-                string_R_spd = 400.0f;
+                string_R_spd = Numeric::LimitABS(motorctrl.string_R_spd, 1.0f) * string_open_loop_max_spd;
             }
             else if (motorctrl.string_R_spd < -0.03)
             {
-                string_R_spd = -400.0f;
+                string_R_spd = Numeric::LimitABS(motorctrl.string_R_spd, 1.0f) * string_open_loop_max_spd;
             }
             else 
                 string_R_spd = 0.0f;     

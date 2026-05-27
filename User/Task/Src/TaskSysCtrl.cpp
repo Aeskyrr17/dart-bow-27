@@ -45,15 +45,15 @@ msg_cmd_t cmd{};
     msg_visionrx_t vision_rx{};
 
     //
-    dart_lib.dart[1] = {1, -0.8f,650000.0f, 720000.0f};
+    dart_lib.dart[1] = {1, -0.8f,660000.0f, 720000.0f};
     //1p，前后散布比较大，左右还好
     dart_lib.dart[2] = {2, -1.2f,670000.0f, 720000.0f};
-    dart_lib.dart[3] = {3, -0.68f,640000.0f, 720000.0f};
+    dart_lib.dart[3] = {3, -0.68f,660000.0f, 720000.0f};
     dart_lib.dart[4] = {4, -1.2f,670000.0f, 720000.0f};
     dart_lib.dart[5] = {5, -0.9f,645000.0f, 500000.0f};
     dart_lib.dart[6] = {6, -0.75f,655000.0f, 500000.0f};
     dart_lib.dart[7] = {7,  0.00f,820000.0f, 500000.0f};
-    dart_lib.dart[8] = {8,  -0.7f,655000.0f, 500000.0f};
+    dart_lib.dart[8] = {8,  -0.7f,660000.0f, 500000.0f};
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
     dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
     dart_lib.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
@@ -63,10 +63,10 @@ msg_cmd_t cmd{};
     dart_lib.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
     dart_lib.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
 
-    dart_lib.sequence[0] = 5;
-    dart_lib.sequence[1] = 6;
+    dart_lib.sequence[0] = 1;
+    dart_lib.sequence[1] = 8;
     dart_lib.sequence[2] = 3;
-    dart_lib.sequence[3] = 8;
+    dart_lib.sequence[3] = 4;
 
     const float pre_tension = 340000.0f; //调整预张紧的值
 
