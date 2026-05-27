@@ -292,7 +292,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_remotor.right_x</member>
-			<member name="last_addr" type="uint32">0x20008830</member>
+			<member name="last_addr" type="uint32">0x200088F8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -341,7 +341,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_remotor.right_y</member>
-			<member name="last_addr" type="uint32">0x20008834</member>
+			<member name="last_addr" type="uint32">0x200088FC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -439,7 +439,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">motor.synbeltMotor.positionPid.fdb</member>
-			<member name="last_addr" type="uint32">0x20009E48</member>
+			<member name="last_addr" type="uint32">0x20009E6C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -488,7 +488,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">motor.synbeltMotor.positionPid.ref</member>
-			<member name="last_addr" type="uint32">0x20009E44</member>
+			<member name="last_addr" type="uint32">0x20009E68</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -537,7 +537,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">motor.synbeltMotor.positionPid.kd</member>
-			<member name="last_addr" type="uint32">0x20009E30</member>
+			<member name="last_addr" type="uint32">0x20009E54</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -586,7 +586,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">motor.synbeltMotor.positionPid.ki</member>
-			<member name="last_addr" type="uint32">0x20009E2C</member>
+			<member name="last_addr" type="uint32">0x20009E50</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -635,7 +635,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">motor.synbeltMotor.positionPid.kp</member>
-			<member name="last_addr" type="uint32">0x20009E28</member>
+			<member name="last_addr" type="uint32">0x20009E4C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -684,7 +684,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_syn_tq</member>
-			<member name="last_addr" type="uint32">0x2000A238</member>
+			<member name="last_addr" type="uint32">0x2000A25C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -733,7 +733,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">force.force_L</member>
-			<member name="last_addr" type="uint32">0x2000AB04</member>
+			<member name="last_addr" type="uint32">0x2000AB44</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -782,7 +782,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">force.force_R</member>
-			<member name="last_addr" type="uint32">0x2000AB08</member>
+			<member name="last_addr" type="uint32">0x2000AB48</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -831,7 +831,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">cmd.tension</member>
-			<member name="last_addr" type="uint32">0x200093D4</member>
+			<member name="last_addr" type="uint32">0x2000B5D0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -880,7 +880,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_visionrx.yaw</member>
-			<member name="last_addr" type="uint32">0x20003DE9</member>
+			<member name="last_addr" type="uint32">0x20003E51</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -929,7 +929,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_visionrx.stable_state</member>
-			<member name="last_addr" type="uint32">0x20003DF6</member>
+			<member name="last_addr" type="uint32">0x20003E5E</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -978,7 +978,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">debug_visionrx.distance</member>
-			<member name="last_addr" type="uint32">0x20003DE5</member>
+			<member name="last_addr" type="uint32">0x20003E4D</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1027,7 +1027,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visionrx.distance_reserve</member>
-			<member name="last_addr" type="uint32">0x20003DED</member>
+			<member name="last_addr" type="uint32">0x20003E55</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1076,7 +1076,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visionrx.flag_reserve</member>
-			<member name="last_addr" type="uint32">0x20003DF5</member>
+			<member name="last_addr" type="uint32">0x20003E5D</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1125,7 +1125,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visionrx.header</member>
-			<member name="last_addr" type="uint32">0x20003DE4</member>
+			<member name="last_addr" type="uint32">0x20003E4C</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1174,7 +1174,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visionrx.angle_reserve</member>
-			<member name="last_addr" type="uint32">0x20003DF1</member>
+			<member name="last_addr" type="uint32">0x20003E59</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1223,7 +1223,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.enable</member>
-			<member name="last_addr" type="uint32">0x2000B528</member>
+			<member name="last_addr" type="uint32">0x2000B57C</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1272,7 +1272,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.light_lost</member>
-			<member name="last_addr" type="uint32">0x2000B52A</member>
+			<member name="last_addr" type="uint32">0x2000B57E</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1321,7 +1321,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.yaw_ok</member>
-			<member name="last_addr" type="uint32">0x2000B529</member>
+			<member name="last_addr" type="uint32">0x2000B57D</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1370,7 +1370,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.current_dart_id</member>
-			<member name="last_addr" type="uint32">0x2000B51C</member>
+			<member name="last_addr" type="uint32">0x2000B570</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1419,7 +1419,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.current_shot_number</member>
-			<member name="last_addr" type="uint32">0x2000B518</member>
+			<member name="last_addr" type="uint32">0x2000B56C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1517,7 +1517,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.last_fire_finished</member>
-			<member name="last_addr" type="uint32">0x2000B522</member>
+			<member name="last_addr" type="uint32">0x2000B576</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1566,7 +1566,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee</member>
-			<member name="last_addr" type="uint32">0x2000B52C</member>
+			<member name="last_addr" type="uint32">0x2000B580</member>
 			<member name="byte_size" type="sint32">8</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1615,7 +1615,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.chosen_target</member>
-			<member name="last_addr" type="uint32">0x2000B531</member>
+			<member name="last_addr" type="uint32">0x2000B585</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1664,7 +1664,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.game_status</member>
-			<member name="last_addr" type="uint32">0x2000B52C</member>
+			<member name="last_addr" type="uint32">0x2000B580</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1713,7 +1713,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.last_launch_station_status</member>
-			<member name="last_addr" type="uint32">0x2000B533</member>
+			<member name="last_addr" type="uint32">0x2000B587</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1762,7 +1762,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.launch_station_status</member>
-			<member name="last_addr" type="uint32">0x2000B532</member>
+			<member name="last_addr" type="uint32">0x2000B586</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1811,7 +1811,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.shooting_remaining_time</member>
-			<member name="last_addr" type="uint32">0x2000B530</member>
+			<member name="last_addr" type="uint32">0x2000B584</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1860,7 +1860,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].tension_tq_base</member>
-			<member name="last_addr" type="uint32">0x2000B400</member>
+			<member name="last_addr" type="uint32">0x2000B454</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1909,7 +1909,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].tension_tq_outpost</member>
-			<member name="last_addr" type="uint32">0x2000B404</member>
+			<member name="last_addr" type="uint32">0x2000B458</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1958,7 +1958,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].yaw_offset</member>
-			<member name="last_addr" type="uint32">0x2000B3FC</member>
+			<member name="last_addr" type="uint32">0x2000B450</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2007,7 +2007,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.fired_count_this_open</member>
-			<member name="last_addr" type="uint32">0x2000B524</member>
+			<member name="last_addr" type="uint32">0x2000B578</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2056,7 +2056,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.checksum</member>
-			<member name="last_addr" type="uint32">0x20003E10</member>
+			<member name="last_addr" type="uint32">0x20003E78</member>
 			<member name="byte_size" type="sint32">2</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2105,7 +2105,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.DartNumber</member>
-			<member name="last_addr" type="uint32">0x20003E0B</member>
+			<member name="last_addr" type="uint32">0x20003E73</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2154,7 +2154,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.header</member>
-			<member name="last_addr" type="uint32">0x20003E08</member>
+			<member name="last_addr" type="uint32">0x20003E70</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2203,7 +2203,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.offset</member>
-			<member name="last_addr" type="uint32">0x20003E0C</member>
+			<member name="last_addr" type="uint32">0x20003E74</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2252,7 +2252,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.start_state</member>
-			<member name="last_addr" type="uint32">0x20003E09</member>
+			<member name="last_addr" type="uint32">0x20003E71</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2301,7 +2301,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">debug_visiontx.target_id</member>
-			<member name="last_addr" type="uint32">0x20003E0A</member>
+			<member name="last_addr" type="uint32">0x20003E72</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>

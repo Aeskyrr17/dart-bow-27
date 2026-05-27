@@ -44,7 +44,7 @@ msg_motorfdb_t debug_motorfdb{};
 
 
     const float gantry_pos_deadzone = 0.03f;
-    const float syn_pos_deadzone = 0.05f;
+    const float syn_pos_deadzone = 0.7f;
     const float string_deadzone = 500.0f;
 
     const float syn_pos_0 = 0.0f;  
@@ -327,7 +327,7 @@ msg_motorfdb_t debug_motorfdb{};
 
                         // if (trig_lock_delay.Reach(syn_reset, 500, prep_state_changed) 
                         //     && sensor.is_trigger_locked)
-                        if (trig_lock_delay.Reach(syn_reset, 500, prep_state_changed))
+                        if (trig_lock_delay.Reach(syn_reset, 250, prep_state_changed))
                         {
                             launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
                         };

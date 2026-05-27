@@ -182,6 +182,31 @@ VOID USBD_CDC_ACM_ParameterChange(VOID *cdc_acm_instance)
 /* USER CODE BEGIN 2 */
 uint32_t new_data_ = 0;
 
+typedef struct
+{
+  volatile ULONG thread_input;
+  volatile ULONG entry_count;
+  volatile ULONG loop_count;
+  volatile ULONG configured_count;
+  volatile ULONG not_configured_count;
+  volatile ULONG before_transfer_count;
+  volatile ULONG after_transfer_count;
+  volatile ULONG sleep_count;
+  volatile ULONG device_state;
+  volatile ULONG cdc_acm_ptr;
+  volatile ULONG actual_length;
+  volatile UINT transfer_status;
+  volatile UINT phase;
+} USBX_CDC_ACM_ThreadWatch_t;
+
+typedef struct
+{
+  USBX_CDC_ACM_ThreadWatch_t read;
+  USBX_CDC_ACM_ThreadWatch_t write;
+} USBX_CDC_ACM_Watch_t;
+
+volatile USBX_CDC_ACM_Watch_t usbx_cdc_acm_watch;
+
 struct msg_visionrx_t debug_visionrx;
 /**
   * @brief  Function implementing USBX_DEVICE_CDC_ACM_Read_TASK.
@@ -191,9 +216,13 @@ struct msg_visionrx_t debug_visionrx;
 VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
 {
   ULONG actual_length;
+  UINT read_status;
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   UX_PARAMETER_NOT_USED(thread_input);
+  usbx_cdc_acm_watch.read.thread_input = thread_input;
+  usbx_cdc_acm_watch.read.entry_count++;
+  usbx_cdc_acm_watch.read.phase = 1;
 
   struct msg_visionrx_t msg_visionrx;
 
@@ -201,12 +230,26 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   // tx_thread_sleep(TX_WAIT_FOREVER);
   while (1)
   {
+    usbx_cdc_acm_watch.read.loop_count++;
+    usbx_cdc_acm_watch.read.device_state = device->ux_slave_device_state;
+    usbx_cdc_acm_watch.read.cdc_acm_ptr = (ULONG)cdc_acm;
+    usbx_cdc_acm_watch.read.phase = 2;
+
     if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
     {
+      usbx_cdc_acm_watch.read.configured_count++;
+      usbx_cdc_acm_watch.read.phase = 3;
       // cdc_acm -> ux_slave_class_cdc_acm_transmission_status = UX_FALSE;
-      ux_device_class_cdc_acm_read(cdc_acm,
-                                           (UCHAR *)UserRxBufferFS,
-                                           64, &actual_length);
+      actual_length = 0;
+      usbx_cdc_acm_watch.read.before_transfer_count++;
+      usbx_cdc_acm_watch.read.phase = 4;
+      read_status = ux_device_class_cdc_acm_read(cdc_acm,
+                                                 (UCHAR *)UserRxBufferFS,
+                                                 64, &actual_length);
+      usbx_cdc_acm_watch.read.transfer_status = read_status;
+      usbx_cdc_acm_watch.read.actual_length = actual_length;
+      usbx_cdc_acm_watch.read.after_transfer_count++;
+      usbx_cdc_acm_watch.read.phase = 5;
 
       if (actual_length >= sizeof(msg_visionrx))
       {
@@ -216,7 +259,14 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
       }
         // tx_thread_sleep(1); //测试过有没有这个1都能正常收发
     }
+    else
+    {
+      usbx_cdc_acm_watch.read.not_configured_count++;
+      usbx_cdc_acm_watch.read.phase = 10;
+    }
+    usbx_cdc_acm_watch.read.phase = 6;
     om_publish(visionrx_topic, &msg_visionrx, sizeof(msg_visionrx), true, false);
+    usbx_cdc_acm_watch.read.sleep_count++;
     tx_thread_sleep(2);
 
   }
@@ -233,24 +283,46 @@ struct msg_visiontx_t debug_visiontx;
   */
 VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input) 
 {
-  ULONG actual_length, buffsize, buffptr;
+  ULONG actual_length;
+  UINT write_status;
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
-  om_suber_t *visiontx_suber = om_subscribe(om_find_topic("visiontx",UINT32_MAX));
+  om_suber_t *visiontx_suber;
 
   UX_PARAMETER_NOT_USED(thread_input);
+  usbx_cdc_acm_watch.write.thread_input = thread_input;
+  usbx_cdc_acm_watch.write.entry_count++;
+  usbx_cdc_acm_watch.write.phase = 1;
+  usbx_cdc_acm_watch.write.phase = 11;
+  visiontx_suber = om_subscribe(om_find_topic("visiontx",UINT32_MAX));
+  usbx_cdc_acm_watch.write.phase = 12;
   tx_thread_sleep(10);
   while (1)
   {
+    usbx_cdc_acm_watch.write.loop_count++;
+    usbx_cdc_acm_watch.write.device_state = device->ux_slave_device_state;
+    usbx_cdc_acm_watch.write.cdc_acm_ptr = (ULONG)cdc_acm;
+    usbx_cdc_acm_watch.write.phase = 2;
+
     om_suber_export(visiontx_suber, &msg_visiontx, sizeof(msg_visiontx));
+    usbx_cdc_acm_watch.write.phase = 3;
     tx_thread_sleep(1);
+    usbx_cdc_acm_watch.write.sleep_count++;
     if ((device->ux_slave_device_state == UX_DEVICE_CONFIGURED) && (cdc_acm != UX_NULL))
     {
+      usbx_cdc_acm_watch.write.configured_count++;
       Append_CRC16_Check_Sum((uint8_t *)&msg_visiontx, sizeof(msg_visiontx));
 
       memcpy(&debug_visiontx, &msg_visiontx, sizeof(msg_visiontx));
 
-      ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_visiontx , sizeof(msg_visiontx) , &actual_length);
+      actual_length = 0;
+      usbx_cdc_acm_watch.write.before_transfer_count++;
+      usbx_cdc_acm_watch.write.phase = 4;
+      write_status = ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_visiontx , sizeof(msg_visiontx) , &actual_length);
+      usbx_cdc_acm_watch.write.transfer_status = write_status;
+      usbx_cdc_acm_watch.write.actual_length = actual_length;
+      usbx_cdc_acm_watch.write.after_transfer_count++;
+      usbx_cdc_acm_watch.write.phase = 5;
       // new_data_ = 10;
       // if (new_data_) {
       //   ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , new_data_ , &actual_length);
@@ -260,6 +332,11 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
       //   uint8_t test_data_ = 10;
       //   ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , test_data_ , &actual_length);
       // }
+    }
+    else
+    {
+      usbx_cdc_acm_watch.write.not_configured_count++;
+      usbx_cdc_acm_watch.write.phase = 10;
     }
   }
 }
