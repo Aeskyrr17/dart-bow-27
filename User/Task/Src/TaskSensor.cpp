@@ -31,7 +31,7 @@ uint8_t u3_rx_buffer[FORCE_DATA_RX_SIZE];
 static uint8_t u3_rx_done = 0;
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// #define USING_G4_FORCE_SENSOR
+#define USING_G4_FORCE_SENSOR
 
 
 struct FORCE

@@ -65,7 +65,7 @@ extern "C" void TaskBooster(void)
 
     tx_thread_create(&SensorThread, TX_NAME("SensorThread"), SensorThreadFun, 0x1234,
                      SensorThreadStack, sizeof(SensorThreadStack),
-                     9, 9, TX_NO_TIME_SLICE, TX_AUTO_START);
+                     3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     tx_thread_create(&AliveThread, TX_NAME("AliveThread"), AliveThreadFun, 0x1234,
                      AliveThreadStack, sizeof(AliveThreadStack),

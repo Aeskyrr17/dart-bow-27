@@ -70,7 +70,7 @@ msg_cmd_t cmd{};
 
     const float pre_tension = 340000.0f; //调整预张紧的值
 
-
+    
 
     for (;;)
     {

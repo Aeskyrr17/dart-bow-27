@@ -831,7 +831,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">cmd.tension</member>
-			<member name="last_addr" type="uint32">0x2000B5D0</member>
+			<member name="last_addr" type="uint32">0x2000B5D8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1223,7 +1223,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.enable</member>
-			<member name="last_addr" type="uint32">0x2000B57C</member>
+			<member name="last_addr" type="uint32">0x2000B584</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1272,7 +1272,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.light_lost</member>
-			<member name="last_addr" type="uint32">0x2000B57E</member>
+			<member name="last_addr" type="uint32">0x2000B586</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1321,7 +1321,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.autoAim.yaw_ok</member>
-			<member name="last_addr" type="uint32">0x2000B57D</member>
+			<member name="last_addr" type="uint32">0x2000B585</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1370,7 +1370,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.current_dart_id</member>
-			<member name="last_addr" type="uint32">0x2000B570</member>
+			<member name="last_addr" type="uint32">0x2000B578</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1419,7 +1419,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.current_shot_number</member>
-			<member name="last_addr" type="uint32">0x2000B56C</member>
+			<member name="last_addr" type="uint32">0x2000B574</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1517,7 +1517,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.last_fire_finished</member>
-			<member name="last_addr" type="uint32">0x2000B576</member>
+			<member name="last_addr" type="uint32">0x2000B57E</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1566,7 +1566,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee</member>
-			<member name="last_addr" type="uint32">0x2000B580</member>
+			<member name="last_addr" type="uint32">0x2000B588</member>
 			<member name="byte_size" type="sint32">8</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1615,7 +1615,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.chosen_target</member>
-			<member name="last_addr" type="uint32">0x2000B585</member>
+			<member name="last_addr" type="uint32">0x2000B58D</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1664,7 +1664,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.game_status</member>
-			<member name="last_addr" type="uint32">0x2000B580</member>
+			<member name="last_addr" type="uint32">0x2000B588</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1713,7 +1713,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.last_launch_station_status</member>
-			<member name="last_addr" type="uint32">0x2000B587</member>
+			<member name="last_addr" type="uint32">0x2000B58F</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1762,7 +1762,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.launch_station_status</member>
-			<member name="last_addr" type="uint32">0x2000B586</member>
+			<member name="last_addr" type="uint32">0x2000B58E</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1811,7 +1811,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.referee.shooting_remaining_time</member>
-			<member name="last_addr" type="uint32">0x2000B584</member>
+			<member name="last_addr" type="uint32">0x2000B58C</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1860,7 +1860,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].tension_tq_base</member>
-			<member name="last_addr" type="uint32">0x2000B454</member>
+			<member name="last_addr" type="uint32">0x2000B45C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1909,7 +1909,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].tension_tq_outpost</member>
-			<member name="last_addr" type="uint32">0x2000B458</member>
+			<member name="last_addr" type="uint32">0x2000B460</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1958,7 +1958,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.dart[0].yaw_offset</member>
-			<member name="last_addr" type="uint32">0x2000B450</member>
+			<member name="last_addr" type="uint32">0x2000B458</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2007,7 +2007,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">dart_lib.fired_count_this_open</member>
-			<member name="last_addr" type="uint32">0x2000B578</member>
+			<member name="last_addr" type="uint32">0x2000B580</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2350,7 +2350,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">g4_force.L</member>
-			<member name="last_addr" type="uint32">0x2000AB10</member>
+			<member name="last_addr" type="uint32">0x2000AB50</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2399,7 +2399,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">g4_force.R</member>
-			<member name="last_addr" type="uint32">0x2000AB14</member>
+			<member name="last_addr" type="uint32">0x2000AB54</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2519,6 +2519,8 @@
 			<member name="item28" type="CObject_ptr">ObjId0207</member>
 			<member name="item29" type="CObject_ptr">ObjId0208</member>
 			<member name="item30" type="CObject_ptr">ObjId0209</member>
+			<member name="item31" type="CObject_ptr">ObjId0228</member>
+			<member name="item32" type="CObject_ptr">ObjId0229</member>
 		</object>
 		<object name="ObjId0019" type="CObList"/>
 		<object name="ObjId0020" type="CObList">
@@ -3166,10 +3168,12 @@
 			<member name="graph_x_min_auto" type="sint32">1</member>
 			<member name="graph_x_max_auto" type="sint32">1</member>
 			<member name="graph_break_line" type="sint32">0</member>
-			<member name="graph_var_count" type="sint32">2</member>
-			<member name="var_count" type="sint32">2</member>
+			<member name="graph_var_count" type="sint32">4</member>
+			<member name="var_count" type="sint32">4</member>
 			<member name="var0_info" type="CPrjItemRS_VarInfo">ObjId0232</member>
 			<member name="var1_info" type="CPrjItemRS_VarInfo">ObjId0233</member>
+			<member name="var2_info" type="CPrjItemRS_VarInfo">ObjId0240</member>
+			<member name="var3_info" type="CPrjItemRS_VarInfo">ObjId0241</member>
 			<member name="yblock0_info" type="CPrjItemRS_YBlockInfo">ObjId0234</member>
 			<member name="yblock1_info" type="CPrjItemRS_YBlockInfo">ObjId0235</member>
 			<member name="yblock2_info" type="CPrjItemRS_YBlockInfo">ObjId0236</member>
@@ -3188,10 +3192,22 @@
 			<member name="color" type="uint32">0x2E2DED</member>
 		</object>
 		<object name="ObjId0233" type="CPrjItemRS_VarInfo">
-			<member name="variable" type="CObject_ptr">ObjId0089</member>
+			<member name="variable" type="CObject_ptr">ObjId0090</member>
 			<member name="visible" type="sint32">1</member>
 			<member name="y_block" type="sint32">0</member>
 			<member name="color" type="uint32">0xA95918</member>
+		</object>
+		<object name="ObjId0240" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0229</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">1</member>
+			<member name="color" type="uint32">0x227DF3</member>
+		</object>
+		<object name="ObjId0241" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0090</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">1</member>
+			<member name="color" type="uint32">0x912C66</member>
 		</object>
 		<object name="ObjId0234" type="CPrjItemRS_YBlockInfo">
 			<member name="join_class" type="sint32">0</member>
@@ -3301,39 +3317,39 @@
 			<member name="forecolor" type="uint32">0x0</member>
 		</object>
 		<object name="ObjId0031" type="CObArray" length="6">
-			<member name="index0" type="CObject_ptr">ObjId0210</member>
-			<member name="index1" type="CObject_ptr">ObjId0211</member>
-			<member name="index2" type="CObject_ptr">ObjId0212</member>
-			<member name="index3" type="CObject_ptr">ObjId0213</member>
-			<member name="index4" type="CObject_ptr">ObjId0214</member>
-			<member name="index5" type="CObject_ptr">ObjId0215</member>
+			<member name="index0" type="CObject_ptr">ObjId0242</member>
+			<member name="index1" type="CObject_ptr">ObjId0243</member>
+			<member name="index2" type="CObject_ptr">ObjId0244</member>
+			<member name="index3" type="CObject_ptr">ObjId0245</member>
+			<member name="index4" type="CObject_ptr">ObjId0246</member>
+			<member name="index5" type="CObject_ptr">ObjId0247</member>
 		</object>
-		<object name="ObjId0210" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0242" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
 			<member name="column_width" type="sint32">554</member>
 			<member name="column_ix" type="sint32">0</member>
 		</object>
-		<object name="ObjId0211" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0243" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
 			<member name="column_width" type="sint32">120</member>
 			<member name="column_ix" type="sint32">1</member>
 		</object>
-		<object name="ObjId0212" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0244" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
 			<member name="column_width" type="sint32">120</member>
 			<member name="column_ix" type="sint32">2</member>
 		</object>
-		<object name="ObjId0213" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0245" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
 			<member name="column_width" type="sint32">70</member>
 			<member name="column_ix" type="sint32">3</member>
 		</object>
-		<object name="ObjId0214" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0246" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">1</member>
 			<member name="column_width" type="sint32">200</member>
 			<member name="column_ix" type="sint32">4</member>
 		</object>
-		<object name="ObjId0215" type="CPrjItemBlock_ColInfo">
+		<object name="ObjId0247" type="CPrjItemBlock_ColInfo">
 			<member name="column_visible" type="sint32">0</member>
 			<member name="column_width" type="sint32">120</member>
 			<member name="column_ix" type="sint32">5</member>
@@ -3401,6 +3417,10 @@
 			<member name="value29" type="CObject_ptr">ObjId0224</member>
 			<member name="key30" type="CObject_ptr">ObjId0209</member>
 			<member name="value30" type="CObject_ptr">ObjId0226</member>
+			<member name="key31" type="CObject_ptr">ObjId0228</member>
+			<member name="value31" type="CObject_ptr">ObjId0248</member>
+			<member name="key32" type="CObject_ptr">ObjId0229</member>
+			<member name="value32" type="CObject_ptr">ObjId0250</member>
 		</object>
 		<object name="ObjId0078" type="CPrjItemBlock_VarInfo">
 			<member name="row_height" type="sint32">15</member>
@@ -3557,6 +3577,16 @@
 			<member name="row_cell_formats" type="CObArrayEx">ObjId0227</member>
 		</object>
 		<object name="ObjId0227" type="CObArray" length="0"/>
+		<object name="ObjId0248" type="CPrjItemBlock_VarInfo">
+			<member name="row_height" type="sint32">15</member>
+			<member name="row_cell_formats" type="CObArrayEx">ObjId0249</member>
+		</object>
+		<object name="ObjId0249" type="CObArray" length="0"/>
+		<object name="ObjId0250" type="CPrjItemBlock_VarInfo">
+			<member name="row_height" type="sint32">15</member>
+			<member name="row_cell_formats" type="CObArrayEx">ObjId0251</member>
+		</object>
+		<object name="ObjId0251" type="CObArray" length="0"/>
 		<object name="ObjId0039" type="CFlashProgDlg">
 			<member name="is_default" type="sint32">1</member>
 			<member name="csw_addr" type="string">fprgCSW</member>
