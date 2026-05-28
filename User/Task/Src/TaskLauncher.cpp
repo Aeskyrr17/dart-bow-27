@@ -46,13 +46,13 @@ msg_motorfdb_t debug_motorfdb{};
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.7f;
     const float string_deadzone = 500.0f;
-    const float string_relax_k = 0.95f; //回拉的系数
-    const float string_relax_spd = 0.3f; //回拉时副弦慢速放松，norm
+    const float string_relax_spd = 0.5f; //副弦慢速放松，norm
+    const float string_relax_min_tension = 300000.0f;
 
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -24.8f;
     const float syn_pos_2 = -17.8f;
-    const float syn_pos_3 = -36.75f;
+    const float syn_pos_3 = -36.70f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 2.08f;
 
@@ -60,6 +60,7 @@ msg_motorfdb_t debug_motorfdb{};
     const float string_force_error_limit = 100000000.0f; //? 暂时没有使用,测试数据
     const float syn_tq_error_limit = 10.0f;
     const float string_force_jump_limit = 500000.0f;
+    const ULONG string_relax_ticks = 1500;
     const ULONG syn_tq_error_ticks = 5000;
     const ULONG string_force_jump_ticks = 1000;
 
@@ -80,6 +81,7 @@ msg_motorfdb_t debug_motorfdb{};
     delay_t ready_fire_delay{};
     delay_t firing_hold_delay{};
     delay_t syn_tq_error_delay{};
+    delay_t string_relax_delay{};
     delay_t string_force_jump_delay{};
 
     for (;;) 
@@ -217,7 +219,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
-                    launcher.prep_state = SYN_1;
+                    launcher.prep_state = RETRACT;
                 }
                 else if (cmd.action == DART_TRIGGER_CLOSE)
                 {
@@ -246,7 +248,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
-                    launcher.prep_state = SYN_1;
+                    launcher.prep_state = RETRACT;
                 }
                 break;
 
@@ -263,7 +265,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
-                    launcher.prep_state = SYN_1;
+                    launcher.prep_state = RETRACT;
                 }
                 else if (cmd.action == DART_RELAX)
                 {
@@ -276,6 +278,20 @@ msg_motorfdb_t debug_motorfdb{};
 
                 switch (current_prep_state)
                 {
+                    case RETRACT:
+                    {
+                        motorctrl.synbelt_mode = POS;
+                        motorctrl.synbelt_pos +=0 ;
+                        motorctrl.string_able = false;
+                        motorctrl.string_L_spd = (sensor.string_L_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
+                        motorctrl.string_R_spd = (sensor.string_R_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
+
+                        if (string_relax_delay.Reach(1500, prep_state_changed))
+                        {
+                            launcher.prep_state = SYN_1;
+                        }
+                        break;
+                    }
                     case SYN_1:
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos = syn_pos_1;
@@ -324,12 +340,6 @@ msg_motorfdb_t debug_motorfdb{};
                     {
                         motorctrl.synbelt_pos = syn_pos_3;
                         motorctrl.string_able = false;
-
-                        float string_relax_tension = cmd.tension * string_relax_k;
-                        bool string_L_relax_ok = sensor.string_L_force <= string_relax_tension;
-                        bool string_R_relax_ok = sensor.string_R_force <= string_relax_tension;
-                        motorctrl.string_L_spd = string_L_relax_ok ? 0.0f : string_relax_spd;
-                        motorctrl.string_R_spd = string_R_relax_ok ? 0.0f : string_relax_spd;
 
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_3) <= syn_pos_deadzone;
 

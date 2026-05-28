@@ -26,7 +26,8 @@ typedef enum
 
 typedef enum
 {
-    SYN_1 = 0,
+    RETRACT = 0,
+    SYN_1,
     GANTRY_1,
     SYN_2,
     GANTRY_2,

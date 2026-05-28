@@ -24,7 +24,7 @@ msg_remoter_t remoter{};
 msg_cmd_t cmd{};
 
 #define FORCE_TABLING
-//! 测试的时候用dart_lib里面的固定值
+//! 测试的时候用dart_lib里面的固定值    
 
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
@@ -48,15 +48,18 @@ msg_cmd_t cmd{};
     msg_visionrx_t vision_rx{};
 
     //
-    dart_lib.dart[1] = {1, -0.8f,660000.0f, 720000.0f};
+    dart_lib.dart[1] = {1, -1.0f,740000.0f, 720000.0f};
     //1p，前后散布比较大，左右还好
-    dart_lib.dart[2] = {2, -1.2f,670000.0f, 720000.0f};
-    dart_lib.dart[3] = {3, -0.68f,660000.0f, 720000.0f};
-    dart_lib.dart[4] = {4, -1.2f,670000.0f, 720000.0f};
-    dart_lib.dart[5] = {5, -0.9f,645000.0f, 500000.0f};
+    dart_lib.dart[2] = {2, -1.0f,745000.0f, 720000.0f};
+    dart_lib.dart[3] = {3, -1.0f,750000.0f, 720000.0f};
+    dart_lib.dart[4] = {4, -1.0f,760000.0f, 720000.0f};
+
+
+    dart_lib.dart[5] = {5, -0.5f,645000.0f, 500000.0f};
     dart_lib.dart[6] = {6, -0.75f,655000.0f, 500000.0f};
-    dart_lib.dart[7] = {7,  0.00f,820000.0f, 500000.0f};
-    dart_lib.dart[8] = {8,  -0.7f,660000.0f, 500000.0f};
+    dart_lib.dart[7] = {7,  -0.10f,820000.0f, 500000.0f};
+    dart_lib.dart[8] = {8,  -0.12f,660000.0f, 500000.0f};
+
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
     dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
     dart_lib.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
@@ -87,12 +90,12 @@ msg_cmd_t cmd{};
     dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
 
     dart_lib.sequence[0] = 1;
-    dart_lib.sequence[1] = 8;
+    dart_lib.sequence[1] = 2;
     dart_lib.sequence[2] = 3;
     dart_lib.sequence[3] = 4;
 
-    const float pre_tension = 340000.0f; //调整预张紧的值
-
+    const float pre_tension = 330000.0f; //调整预张紧的值
+    cmd.pre_tension = pre_tension;
     
 
     for (;;)
@@ -122,7 +125,6 @@ msg_cmd_t cmd{};
 
         //更新tension和yaw数据
         int id = dart_lib.current_dart_id;
-        Dart_Base_Aim_t base_aim = dart_lib.Get_Base_Aim_By_Distance(id, vision_rx.distance);
         float my_offset;
         float my_tension;
         if (dart_lib.referee.chosen_target == 0) //前哨站
@@ -136,6 +138,7 @@ msg_cmd_t cmd{};
             my_offset = dart_lib.dart[id].yaw_offset;
             my_tension = dart_lib.dart[id].tension_tq_base;
 #else
+            Dart_Base_Aim_t base_aim = dart_lib.Get_Base_Aim_By_Distance(id, vision_rx.distance);
             my_offset = base_aim.yaw_offset;
             my_tension = base_aim.tension_tq;
 #endif

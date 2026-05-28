@@ -167,6 +167,7 @@ struct msg_cmd_t
 
     float yaw;              //约定为-1~1
     float tension;
+    float pre_tension;
     float rc_syn;
     float rc_string_L;
     float rc_string_R;
