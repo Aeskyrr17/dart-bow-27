@@ -36,6 +36,7 @@ struct AutoAim_t
     bool enable;
     bool yaw_ok;
     bool light_lost; //视觉看不到绿灯
+    bool running;
 };
 enum DOOR_STATUS
 {
@@ -107,6 +108,8 @@ public:
 
         autoAim.enable = false;
         autoAim.yaw_ok = false;
+        autoAim.light_lost = false;
+        autoAim.running = false;
     }
 
     void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)

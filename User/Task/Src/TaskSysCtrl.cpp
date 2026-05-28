@@ -24,6 +24,9 @@ msg_remoter_t remoter{};
 msg_cmd_t cmd{};
 
 #define FORCE_TABLING
+#define AUTO_AIM_ON_POWER_UP 1
+//! AUTO_AIM_ON_POWER_UP=1: 直接run autoAim after power-on until remoter intervenes.
+//! AUTO_AIM_ON_POWER_UP=0: 先用遥控器remoter Up/Up latches autoAim before going offline.
 //! 测试的时候用dart_lib里面的固定值    
 
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
@@ -112,7 +115,21 @@ msg_cmd_t cmd{};
         // dart_lib.is_door_open = (dart_lib.referee.launch_station_status == 0) && 
         //                         (vision_rx.distance > 10.0f) && (vision_rx.distance < 50.0f);
         dart_lib.UPDATE_DOOR_STATUS(&vision_rx);
+        dart_lib.autoAim.running = false;
         dart_lib.Update_Current_Dart_Id();
+
+        const bool autoAim_request = (!remoter.offline && remoter.left_sw == Up && remoter.right_sw == Up);
+#if AUTO_AIM_ON_POWER_UP
+        const bool remoter_intervention = (!remoter.offline && !autoAim_request);
+        dart_lib.autoAim.enable = !remoter_intervention;
+        const bool autoAim_control = dart_lib.autoAim.enable;
+#else
+        if (!remoter.offline)
+        {
+            dart_lib.autoAim.enable = autoAim_request;
+        }
+        const bool autoAim_control = dart_lib.autoAim.enable && (remoter.offline || autoAim_request);
+#endif
 
         // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
         // vision_rx.distance = 25.0f;
@@ -159,30 +176,15 @@ msg_cmd_t cmd{};
         // vision_tx.target_id = 0; //! 前哨站
 
         //遥控器offline保护和visionrx数据异常的灯控提示 //?! remoteroffline 可能需要删除
-        if (remoter.offline)
-        // {
-        //     cmd.action = DART_RELAX;
-        //     dart_lib.Update_Fired_State(&lch2sys);
-        //     dart_lib.Update_History(&lch2sys);
-        //     om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
-        //     om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
-        //     tx_thread_sleep(1);
-        //     continue;
-        // }
-        if (remoter.offline){
-            if (dart_lib.referee.game_status == 4)
-            {
-                continue;
-            }
-            else {
-                cmd.action = DART_RELAX;
-                dart_lib.Update_Fired_State(&lch2sys);
-                dart_lib.Update_History(&lch2sys);
-                om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
-                om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
-                tx_thread_sleep(1);
-                continue;
-            }
+        if (remoter.offline && !autoAim_control)
+        {
+            cmd.action = DART_RELAX;
+            dart_lib.Update_Fired_State(&lch2sys);
+            dart_lib.Update_History(&lch2sys);
+            om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
+            om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
+            tx_thread_sleep(1);
+            continue;
         }
         if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f || vision_rx.yaw == 0.0f || vision_rx.checksum == 0)
         {
@@ -191,7 +193,21 @@ msg_cmd_t cmd{};
 
 
         //先判断edge判断的fire
-        if (remoter.left_sw == Mid && remoter.right_sw == M2U)
+        if (autoAim_control)
+        {
+            if (dart_lib.referee.game_status == 4 &&
+                (dart_lib.door_status == DOOR_OPEN || dart_lib.door_status == DOOR_OPENING) &&
+                dart_lib.fired_count_this_open < 2)
+            {
+                Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, my_tension, my_offset);
+            }
+            else
+            {
+                cmd.action = DART_PRE_TENSION;
+                cmd.tension = pre_tension;
+            }
+        }
+        else if (remoter.left_sw == Mid && remoter.right_sw == M2U)
         {
             cmd.action = DART_FIRE;
             cmd.yaw = target_yaw;
@@ -244,21 +260,6 @@ msg_cmd_t cmd{};
                 // cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
             }
         }
-        else if (remoter.left_sw == Up && remoter.right_sw == Up)
-        {
-            if (dart_lib.referee.game_status == 4 && 
-                (dart_lib.door_status == DOOR_OPEN || dart_lib.door_status == DOOR_OPENING) && 
-                dart_lib.fired_count_this_open < 2)
-            {
-                Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, my_tension, my_offset);
-            }
-            else
-            {
-                cmd.action = DART_PRE_TENSION;
-                cmd.tension = pre_tension;
-            }
-
-        }
         else
         {
             cmd.action = DART_RELAX;
@@ -284,6 +285,7 @@ msg_cmd_t cmd{};
  */
 void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartLibrary* dart,  msg_cmd_t* cmd, float tension, float yaw)
 {
+    dart->autoAim.running = true;
     //比赛开始之前都不执行自动模式
     // if (dart->referee.game_status != 4)
     // {
