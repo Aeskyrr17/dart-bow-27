@@ -26,6 +26,10 @@ extern TX_THREAD AliveThread;
 extern uint8_t AliveThreadStack[512];
 extern void AliveThreadFun(ULONG thread_input);
 
+extern TX_THREAD LogThread;
+extern uint8_t LogThreadStack[1024];
+extern void LogThreadFun(ULONG thread_input);
+
 extern TX_SEMAPHORE MotorAlive;
 extern TX_SEMAPHORE CANErrorSem;
 extern TX_SEMAPHORE VisionErrorSem;
@@ -70,4 +74,8 @@ extern "C" void TaskBooster(void)
     tx_thread_create(&AliveThread, TX_NAME("AliveThread"), AliveThreadFun, 0x1234,
                      AliveThreadStack, sizeof(AliveThreadStack),
                      19, 19, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    tx_thread_create(&LogThread, TX_NAME("LogThread"), LogThreadFun, 0x1234,
+                     LogThreadStack, sizeof(LogThreadStack),
+                     18, 18, TX_NO_TIME_SLICE, TX_AUTO_START);
 }
