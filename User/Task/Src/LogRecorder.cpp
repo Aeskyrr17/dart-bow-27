@@ -54,7 +54,7 @@ extern Launcher_Cxt_t launcher;
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(motorctrl_suber, &motorctrl, false);
 
-        
+        logger.header = 0xD5;
         logger.state = static_cast<uint8_t>(launcher.fsm_state);
         logger.prepare_state = static_cast<uint8_t>(launcher.prep_state);
         logger.launch_station_status = dart_lib.referee.launch_station_status;

@@ -133,7 +133,7 @@ struct msg_visiontx_t
 
 struct logger_t
 {
-    uint8_t header = 0xD5;
+    uint8_t header;
     uint8_t state;
     uint8_t prepare_state;
     uint8_t launch_station_status;
