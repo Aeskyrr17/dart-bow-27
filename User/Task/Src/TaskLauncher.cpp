@@ -46,8 +46,8 @@ msg_motorfdb_t debug_motorfdb{};
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.7f;
     const float string_deadzone = 500.0f;
-    const float string_relax_spd = 0.5f; //副弦慢速放松，norm
-    const float string_relax_min_tension = 300000.0f;
+    const float string_relax_spd = 1.0f; //副弦慢速放松，norm
+    const float string_relax_min_tension = 280000.0f;
 
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -24.8f;
@@ -286,7 +286,7 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.string_L_spd = (sensor.string_L_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
                         motorctrl.string_R_spd = (sensor.string_R_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
 
-                        if (string_relax_delay.Reach(1500, prep_state_changed))
+                        if (string_relax_delay.Reach(1700, prep_state_changed))
                         {
                             launcher.prep_state = SYN_1;
                         }

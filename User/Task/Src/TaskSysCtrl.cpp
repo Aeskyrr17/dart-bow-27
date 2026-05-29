@@ -24,7 +24,7 @@ msg_remoter_t remoter{};
 msg_cmd_t cmd{};
 
 #define FORCE_TABLING
-#define AUTO_AIM_ON_POWER_UP 1
+#define AUTO_AIM_ON_POWER_UP 0
 //! AUTO_AIM_ON_POWER_UP=1: 直接run autoAim after power-on until remoter intervenes.
 //! AUTO_AIM_ON_POWER_UP=0: 先用遥控器remoter Up/Up latches autoAim before going offline.
 //! 测试的时候用dart_lib里面的固定值    
@@ -51,17 +51,19 @@ msg_cmd_t cmd{};
     msg_visionrx_t vision_rx{};
 
     //
-    dart_lib.dart[1] = {1, -1.0f,740000.0f, 720000.0f};
+    dart_lib.dart[1] = {1, -0.4f,645000.0f, 720000.0f};//烂了
     //1p，前后散布比较大，左右还好
-    dart_lib.dart[2] = {2, -1.0f,745000.0f, 720000.0f};
-    dart_lib.dart[3] = {3, -1.0f,750000.0f, 720000.0f};
-    dart_lib.dart[4] = {4, -1.0f,760000.0f, 720000.0f};
+    dart_lib.dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
+
+    dart_lib.dart[3] = {3, -0.19f,652000.0f, 720000.0f};//2 //有跳变，偏右上
+    dart_lib.dart[4] = {4, -0.18f,652000.0f, 720000.0f};//7中
 
 
-    dart_lib.dart[5] = {5, -0.5f,645000.0f, 500000.0f};
-    dart_lib.dart[6] = {6, -0.75f,655000.0f, 500000.0f};
-    dart_lib.dart[7] = {7,  -0.10f,820000.0f, 500000.0f};
-    dart_lib.dart[8] = {8,  -0.12f,660000.0f, 500000.0f};
+    dart_lib.dart[5] = {5, -0.30f,655000.0f, 500000.0f};//4
+    dart_lib.dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
+
+    dart_lib.dart[7] = {7,  -0.18f,666000.0f, 500000.0f};//3
+    dart_lib.dart[8] = {8,  -0.12f,664000.0f, 500000.0f};
 
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
     dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
@@ -92,12 +94,12 @@ msg_cmd_t cmd{};
     };
     dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
 
-    dart_lib.sequence[0] = 1;
-    dart_lib.sequence[1] = 2;
-    dart_lib.sequence[2] = 3;
-    dart_lib.sequence[3] = 4;
+    dart_lib.sequence[0] = 4;
+    dart_lib.sequence[1] = 5;
+    dart_lib.sequence[2] = 7;
+    dart_lib.sequence[3] = 8;
 
-    const float pre_tension = 330000.0f; //调整预张紧的值
+    const float pre_tension = 300000.0f; //调整预张紧的值
     cmd.pre_tension = pre_tension;
     
 
@@ -132,7 +134,7 @@ msg_cmd_t cmd{};
 #endif
 
         // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
-        // vision_rx.distance = 25.0f;
+        vision_rx.distance = 25.0f;
         // dart_lib.referee.game_status = 4;
         // dart_lib.door_status = DOOR_OPEN;
         // dart_lib.referee.chosen_target = 1;
