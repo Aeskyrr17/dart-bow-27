@@ -111,6 +111,10 @@ struct msg_visionrx_t
     float angle_reserve;
     uint8_t flag_reserve;
     uint8_t stable_state;//0不稳定，1稳定
+    uint8_t light_detected; //0: unknown/no target /盲区内
+                            //1: green light visible and aim data valid 
+                            //2: door open but green light occluded //绿灯被遮
+                            //3: door not fully open/blocked
     uint16_t checksum; // 校验和
     
 }__attribute__((packed));
@@ -124,6 +128,21 @@ struct msg_visiontx_t
     uint8_t DartNumber;//1,2,3,4
     // uint8_t selected_target_id;
     float offset;
+    uint16_t checksum;
+} __attribute__((packed));
+
+struct logger_t
+{
+    uint8_t header = 0xD5;
+    uint8_t state;
+    uint8_t prepare_state;
+    uint8_t launch_station_status;
+    bool is_fire_finished;
+    uint8_t fired_count_this_open;
+    uint8_t current_shot_number;
+    uint8_t current_dart_id;
+    float string_L_force;
+    float string_R_force;
     uint16_t checksum;
 } __attribute__((packed));
 

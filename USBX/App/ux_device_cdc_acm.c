@@ -275,6 +275,8 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
 
 struct msg_visiontx_t msg_visiontx;
 struct msg_visiontx_t debug_visiontx;
+struct logger_t msg_log;
+struct logger_t debug_log;
 
 /**
   * @brief  Function implementing usbx_cdc_acm_write_thread_entry.
@@ -288,6 +290,7 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
   UX_SLAVE_DEVICE *device = &_ux_system_slave->ux_system_slave_device;
 
   om_suber_t *visiontx_suber;
+  om_suber_t *log_suber;
 
   UX_PARAMETER_NOT_USED(thread_input);
   usbx_cdc_acm_watch.write.thread_input = thread_input;
@@ -295,6 +298,7 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
   usbx_cdc_acm_watch.write.phase = 1;
   usbx_cdc_acm_watch.write.phase = 11;
   visiontx_suber = om_subscribe(om_find_topic("visiontx",UINT32_MAX));
+  log_suber = om_subscribe(om_find_topic("log",UINT32_MAX));
   usbx_cdc_acm_watch.write.phase = 12;
   tx_thread_sleep(10);
   while (1)
@@ -304,7 +308,8 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
     usbx_cdc_acm_watch.write.cdc_acm_ptr = (ULONG)cdc_acm;
     usbx_cdc_acm_watch.write.phase = 2;
 
-    om_suber_export(visiontx_suber, &msg_visiontx, sizeof(msg_visiontx));
+    om_suber_export(visiontx_suber, &msg_visiontx, false);
+    om_suber_export(log_suber, &msg_log, false);
     usbx_cdc_acm_watch.write.phase = 3;
     tx_thread_sleep(1);
     usbx_cdc_acm_watch.write.sleep_count++;
@@ -323,6 +328,18 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
       usbx_cdc_acm_watch.write.actual_length = actual_length;
       usbx_cdc_acm_watch.write.after_transfer_count++;
       usbx_cdc_acm_watch.write.phase = 5;
+
+      Append_CRC16_Check_Sum((uint8_t *)&msg_log, sizeof(msg_log));
+      memcpy(&debug_log, &msg_log, sizeof(msg_log));
+
+      actual_length = 0;
+      usbx_cdc_acm_watch.write.before_transfer_count++;
+      usbx_cdc_acm_watch.write.phase = 6;
+      write_status = ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_log , sizeof(msg_log) , &actual_length);
+      usbx_cdc_acm_watch.write.transfer_status = write_status;
+      usbx_cdc_acm_watch.write.actual_length = actual_length;
+      usbx_cdc_acm_watch.write.after_transfer_count++;
+      usbx_cdc_acm_watch.write.phase = 7;
       // new_data_ = 10;
       // if (new_data_) {
       //   ux_device_class_cdc_acm_write(cdc_acm, UserRxBufferFS , new_data_ , &actual_length);
