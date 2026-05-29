@@ -50,9 +50,9 @@ msg_motorfdb_t debug_motorfdb{};
     const float string_relax_min_tension = 280000.0f;
 
     const float syn_pos_0 = 0.0f;  
-    const float syn_pos_1 = -24.8f;
+    const float syn_pos_1 = -25.2f;
     const float syn_pos_2 = -17.8f;
-    const float syn_pos_3 = -36.70f;
+    const float syn_pos_3 = -36.75f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 2.08f;
 
@@ -117,6 +117,7 @@ msg_motorfdb_t debug_motorfdb{};
         //直接处理yaw
         motorctrl.yaw_spd = cmd.yaw;
 
+        //todo: 处理error信息[to test]
         bool string_force_error = (Numeric::abs(sensor.string_L_force) > string_force_error_limit) ||
                                   (Numeric::abs(sensor.string_R_force) > string_force_error_limit);
         bool string_force_jump_error = false;
@@ -149,13 +150,15 @@ msg_motorfdb_t debug_motorfdb{};
                string_force_jump_error = false;
 
 
-        //处理cmd
+        //处理cmd以及各个fsm的优先级及切换
         if (string_force_error || syn_tq_error || string_force_jump_error)
         {
             launcher.fsm_state = ERROR_STOP;
         }
         else if (launcher.fsm_state != ERROR_STOP &&
                  launcher.fsm_state != FIRING &&
+                 launcher.fsm_state != PREPARING &&
+                 launcher.fsm_state != READY &&
                  cmd.action == DART_PRE_TENSION)
         {
             launcher.fsm_state = PRE_TENSION;

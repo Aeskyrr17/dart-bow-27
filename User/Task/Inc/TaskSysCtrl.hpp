@@ -1,3 +1,4 @@
+#include "DelayHelper.hpp"
 #include "magicmsgs.hpp"
 
 struct Dart_Config_t
@@ -37,6 +38,14 @@ struct AutoAim_t
     bool yaw_ok;
     bool light_lost; //视觉看不到绿灯
     bool running;
+    bool autoaim_allow; //是否允许进入准备状态
+    bool last_autoaim_allow;
+    bool referee_launch_closed_stable;
+    bool vision_door_closed_stable;
+    delay_t door_open_delay{};
+    delay_t referee_launch_closed_delay{};
+    delay_t vision_door_closed_delay{};
+
 };
 enum DOOR_STATUS
 {
@@ -110,36 +119,78 @@ public:
         autoAim.yaw_ok = false;
         autoAim.light_lost = false;
         autoAim.running = false;
+        autoAim.autoaim_allow = false;
+        autoAim.last_autoaim_allow = false;
+        autoAim.referee_launch_closed_stable = false;
+        autoAim.vision_door_closed_stable = false;
     }
 
+    // void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
+    // {
+    //     if (referee.launch_station_status == 1)
+    //     {
+    //         door_status = DOOR_CLOSED;
+    //     }
+    //     else if (rx->distance > 10.0f && rx->distance < 50.0f && referee.launch_station_status == 0)
+    //     {
+    //         door_status = DOOR_OPEN;
+    //     }
+    //     else if (referee.launch_station_status == 2 )
+    //     {
+    //         if (last_door_status == DOOR_CLOSED || last_door_status == DOOR_OPENING)
+    //         {
+    //             door_status = DOOR_OPENING;
+    //         }
+    //         else if (last_door_status == DOOR_OPEN || last_door_status == DOOR_CLOSING)
+    //         {
+    //             door_status = DOOR_CLOSING;
+    //         }
+    //         else
+    //         {
+    //             door_status = DOOR_CLOSED;
+    //         }
+
+    //     }
+  
+    // };
     void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
     {
-        if (referee.launch_station_status == 1)
-        {
-            door_status = DOOR_CLOSED;
-        }
-        else if (rx->distance > 10.0f && rx->distance < 50.0f && referee.launch_station_status == 0)
+        if (rx->light_detected == 1 || rx->light_detected == 2)
         {
             door_status = DOOR_OPEN;
         }
-        else if (referee.launch_station_status == 2 )
+        else if (rx->light_detected == 0 || rx->light_detected == 3 ) 
         {
-            if (last_door_status == DOOR_CLOSED || last_door_status == DOOR_OPENING)
-            {
-                door_status = DOOR_OPENING;
-            }
-            else if (last_door_status == DOOR_OPEN || last_door_status == DOOR_CLOSING)
-            {
-                door_status = DOOR_CLOSING;
-            }
-            else
-            {
-                door_status = DOOR_CLOSED;
-            }
-
+            door_status = DOOR_CLOSED;
         }
-  
-    };
+
+    }
+
+    void Update_AutoAim_Prepare_Allowed()
+    {
+
+        if (autoAim.door_open_delay.ReachStable(door_status == DOOR_OPEN, 10))
+        {
+            autoAim.autoaim_allow = true;
+        }
+
+        bool vision_door_closed = door_status == DOOR_CLOSED;
+        if (!vision_door_closed)
+        {
+            autoAim.vision_door_closed_stable = false;
+            autoAim.vision_door_closed_delay.Reset();
+        }
+        else if (!autoAim.vision_door_closed_stable &&
+                 autoAim.vision_door_closed_delay.ReachStable(true, 10))
+        {
+            autoAim.vision_door_closed_stable = true;
+        }
+
+        if (autoAim.vision_door_closed_stable)
+        {
+            autoAim.autoaim_allow = false;
+        }
+    }
 
     void Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, uint16_t table_len)
     {
@@ -258,10 +309,20 @@ public:
             fired_count_this_open++;
         }
 
-        if (last_door_status == DOOR_CLOSING && door_status == DOOR_CLOSED)
+        // if (last_door_status == DOOR_CLOSING && door_status == DOOR_CLOSED)
+        // {
+        //     fired_count_this_open = 0;
+        // }
+        //用判断stable后的视觉逻辑来重置发射计数
+        if (!autoAim.autoaim_allow && autoAim.last_autoaim_allow)
         {
             fired_count_this_open = 0;
         }
+        //直接用视觉数据
+        // if (last_door_status != DOOR_CLOSED && door_status == DOOR_CLOSED)
+        // {
+        //     fired_count_this_open = 0;
+        // }
 
     }
 
@@ -269,5 +330,6 @@ public:
     {
         last_door_status = door_status;
         last_fire_finished = msg->is_fire_finished;
+        autoAim.last_autoaim_allow = autoAim.autoaim_allow;
     }
 };

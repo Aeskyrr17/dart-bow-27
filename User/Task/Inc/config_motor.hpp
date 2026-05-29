@@ -529,7 +529,7 @@ class TaskMotors
         this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
         this->gantryMotor.torqueSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
-        this->gantry_max_spd = 8.0f;
+        this->gantry_max_spd = 4.0f;
 
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
