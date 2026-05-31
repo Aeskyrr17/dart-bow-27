@@ -103,11 +103,11 @@ const bool auto_aim_on_power_up = false;
     dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
 
     dart_lib.sequence[0] = 3;
-    dart_lib.sequence[1] = 5;
-    dart_lib.sequence[2] = 7;
+    dart_lib.sequence[1] = 4;
+    dart_lib.sequence[2] = 5;
     dart_lib.sequence[3] = 8;
 
-    const float pre_tension = 300000.0f; //调整预张紧的值
+    const float pre_tension = 320000.0f; //调整预张紧的值
     cmd.pre_tension = pre_tension;
     
 
@@ -155,13 +155,16 @@ const bool auto_aim_on_power_up = false;
         }
 
         // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // vision_rx.distance = 25.0f;
         // dart_lib.referee.game_status = 4;
         // dart_lib.door_status = DOOR_OPEN;
         dart_lib.referee.chosen_target = 1;
         // dart_lib.referee.chosen_target = 0; //前哨
         
-        dart_lib.autoAim.light_lost = (vision_rx.light_detected == 0 && vision_rx.distance == -1);
 
         //更新tension和yaw数据
         int id = dart_lib.current_dart_id;
@@ -194,7 +197,25 @@ const bool auto_aim_on_power_up = false;
         vision_tx.offset = my_offset;
         vision_tx.DartNumber = id;
         vision_tx.target_id = dart_lib.referee.chosen_target;
-        vision_tx.start_state = dart_lib.referee.game_status;
+
+        if (dart_lib.referee.game_status == 4 || dart_lib.game_status_ladar == 1 || 
+            (dart_lib.referee.shooting_remaining_time <= 30 && dart_lib.referee.shooting_remaining_time > 1))       
+        {
+            vision_tx.start_state = 4;
+            dart_lib.game_status_stable = 4;
+            vision_tx.start_state_char = 'R';
+        }
+        else {
+            dart_lib.game_status_stable = 0;
+            // vision_tx.start_state = dart_lib.referee.game_status;
+            vision_tx.start_state = 0;
+            vision_tx.start_state_char = '\0';
+            // vision_tx.start_state_char = dart_lib.game_status_char;
+        }
+                //! 开比赛
+        // vision_tx.start_state = 4;
+    
+        // vision_tx.start_state = dart_lib.referee.game_status;
         // vision_tx.target_id = 1;
         // vision_tx.target_id = 0; //! 前哨站
 
@@ -214,11 +235,10 @@ const bool auto_aim_on_power_up = false;
             tx_semaphore_put(&VisionErrorSem);
         }
 
-
         //先判断edge判断的fire
         if (autoAim_control)
         {
-            if (dart_lib.referee.game_status == 4 &&
+            if (dart_lib.game_status_stable == 4 &&
                 dart_lib.autoAim.autoaim_allow &&
                 dart_lib.fired_count_this_open < 2)
             {
@@ -330,6 +350,11 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     // cmd->yaw = yaw;
 
     dart->autoAim.yaw_ok = false;
+    if (rx->yaw == 666)
+    {
+        cmd->yaw = 0;
+        return;
+    }
 
     if      (rx->yaw > 0.08f)
     {
@@ -384,5 +409,23 @@ void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
     // {
     //     dart->fired_count_this_open = 0;
     // }
+    const RoboInteractData_t* payload = &referee_rx->RoboInteractData;
+    if (payload->data_cmd_id != 0x0201)
+    {
+        return;
+    }
+
+    const bool is_blue =
+        payload->sender_id == BlueRadar &&
+        (payload->receiver_id == BlueSentry || payload->receiver_id == BlueDart);
+    const bool is_red =
+        payload->sender_id == RedRadar &&
+        (payload->receiver_id == RedSentry || payload->receiver_id == RedDart);
+    if (!is_blue && !is_red)
+    {
+        return;
+    }
+
+    dart->game_status_ladar = payload->event == 1;
 }
 

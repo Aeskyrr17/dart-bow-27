@@ -41,17 +41,22 @@ struct AutoAim_t
     bool autoaim_allow; //是否允许进入准备状态
     bool last_autoaim_allow;
     bool referee_launch_closed_stable;
+    bool referee_launch_open_stable;
+    bool vision_door_open_stable;
     bool vision_door_closed_stable;
     delay_t door_open_delay{};
+    delay_t door_closed_delay{};
     delay_t referee_launch_closed_delay{};
+    delay_t referee_launch_open_delay{};
+    delay_t vision_door_open_delay{};
     delay_t vision_door_closed_delay{};
 
 };
 enum DOOR_STATUS
 {
-    DOOR_OPENING,
+    // DOOR_OPENING,
     DOOR_OPEN,
-    DOOR_CLOSING,
+    // DOOR_CLOSING,
     DOOR_CLOSED,
     // DOOR_UNKNOWN
 };
@@ -71,6 +76,11 @@ public:
 
     bool last_fire_finished;
     int fired_count_this_open;
+
+    uint8_t game_status_stable;
+
+    uint8_t game_status_ladar; //为了处理裁判系统不稳定的问题
+    char game_status_char;
 
     AutoAim_t autoAim;
     RefereeInfo_t referee;
@@ -109,6 +119,9 @@ public:
         last_fire_finished = false;
         fired_count_this_open = 0;
 
+        game_status_ladar = false;
+        game_status_char = '\0';
+
         referee.game_status = 0;
         referee.shooting_remaining_time = 0;
         referee.chosen_target = 0;
@@ -122,7 +135,9 @@ public:
         autoAim.autoaim_allow = false;
         autoAim.last_autoaim_allow = false;
         autoAim.referee_launch_closed_stable = false;
+        autoAim.referee_launch_open_stable = false;
         autoAim.vision_door_closed_stable = false;
+        autoAim.vision_door_open_stable = false;
     }
 
     // void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
@@ -153,6 +168,11 @@ public:
     //     }
   
     // };
+    void Update_game_status()
+        {
+
+    }
+
     void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
     {
         if (rx->light_detected == 1 || rx->light_detected == 2)
@@ -164,32 +184,103 @@ public:
             door_status = DOOR_CLOSED;
         }
 
-    }
+        // if (autoAim.vision_door_open_delay.ReachStable(door_status == DOOR_OPEN, 10))
+        // {
+        //     autoAim.vision_door_open_stable = true;
+        // }
+        // else{
+        //     autoAim.vision_door_open_stable = false;
+        // }
+        // Direct open-state judgement disabled; use stable latch below.
+        // if (door_status == DOOR_OPEN)
+        // {
+        //     autoAim.vision_door_open_stable = true;
+        // }
+        // else
+        // {
+        //     autoAim.vision_door_open_stable = false;
+        // }
 
-    void Update_AutoAim_Prepare_Allowed()
-    {
-
-        if (autoAim.door_open_delay.ReachStable(door_status == DOOR_OPEN, 10))
+        if (door_status != DOOR_OPEN)
         {
-            autoAim.autoaim_allow = true;
+            autoAim.vision_door_open_stable = false;
+            autoAim.vision_door_open_delay.Reset();
+        }
+        else if (!autoAim.vision_door_open_stable &&
+                 autoAim.vision_door_open_delay.ReachStable(true, 10))
+        {
+            autoAim.vision_door_open_stable = true;
         }
 
-        bool vision_door_closed = door_status == DOOR_CLOSED;
-        if (!vision_door_closed)
+
+        if (door_status != DOOR_CLOSED)
         {
             autoAim.vision_door_closed_stable = false;
             autoAim.vision_door_closed_delay.Reset();
         }
         else if (!autoAim.vision_door_closed_stable &&
-                 autoAim.vision_door_closed_delay.ReachStable(true, 10))
+                 autoAim.vision_door_closed_delay.ReachStable(true, 700))
         {
             autoAim.vision_door_closed_stable = true;
         }
 
-        if (autoAim.vision_door_closed_stable)
+        if (referee.launch_station_status != 0)
+        {
+            autoAim.referee_launch_open_stable = false;
+            autoAim.referee_launch_open_delay.Reset();
+        }
+        else if (!autoAim.referee_launch_open_stable &&
+                 autoAim.referee_launch_open_delay.ReachStable(true, 10))
+        {
+            autoAim.referee_launch_open_stable = true;
+        }
+
+        if (referee.launch_station_status != 1)
+        {
+            autoAim.referee_launch_closed_stable = false;
+            autoAim.referee_launch_closed_delay.Reset();
+        }
+        else if (!autoAim.referee_launch_closed_stable &&
+                 autoAim.referee_launch_closed_delay.ReachStable(true, 10))
+        {
+            autoAim.referee_launch_closed_stable = true;
+        }
+    }
+
+    void Update_AutoAim_Prepare_Allowed()
+    {
+
+        if (autoAim.door_open_delay.ReachStable(autoAim.vision_door_open_stable || autoAim.referee_launch_open_stable, 25))
+        {
+            if (!autoAim.autoaim_allow)
+            {
+                fired_count_this_open = 0;
+            }
+            autoAim.autoaim_allow = true;
+        }
+        if (autoAim.door_closed_delay.ReachStable(autoAim.referee_launch_closed_stable && autoAim.vision_door_closed_stable, 25))
         {
             autoAim.autoaim_allow = false;
         }
+
+        // bool vision_door_closed = door_status == DOOR_CLOSED;
+        // if (!vision_door_closed)
+        // {
+        //     autoAim.vision_door_closed_stable = false;
+        //     autoAim.vision_door_closed_delay.Reset();
+        // }
+        // else if (!autoAim.vision_door_closed_stable &&
+        //          autoAim.vision_door_closed_delay.ReachStable(true, 10))
+        // {
+        //     autoAim.vision_door_closed_stable = true;
+        // }
+
+        // if (autoAim.vision_door_closed_stable)
+        // {
+        //     autoAim.autoaim_allow = false;
+        // }
+
+        
     }
 
     void Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, uint16_t table_len)
@@ -314,10 +405,11 @@ public:
         //     fired_count_this_open = 0;
         // }
         //用判断stable后的视觉逻辑来重置发射计数
-        if (!autoAim.autoaim_allow && autoAim.last_autoaim_allow)
-        {
-            fired_count_this_open = 0;
-        }
+        // Reset moved to the next door-open allow edge.
+        // if (!autoAim.autoaim_allow && autoAim.last_autoaim_allow)
+        // {
+        //     fired_count_this_open = 0;
+        // }
         //直接用视觉数据
         // if (last_door_status != DOOR_CLOSED && door_status == DOOR_CLOSED)
         // {

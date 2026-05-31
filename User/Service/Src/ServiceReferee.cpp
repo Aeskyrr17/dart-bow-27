@@ -150,6 +150,7 @@ RefereeRingBuffer referee_fifo;
 
                         case RefereeID::RoboInteractData:
                             memcpy(&RoboInteractData, msg_ptr, sizeof(RoboInteractData));
+                            referee.RoboInteractData = RoboInteractData;
                             break;
 
                         case RefereeID::PowerHeatData:

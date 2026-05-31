@@ -321,6 +321,7 @@ struct RoboInteractData_t
     uint16_t data_cmd_id;
     uint16_t sender_id;
     uint16_t receiver_id;
+    uint8_t event;
 } __attribute__((packed));
 
 enum RobotId

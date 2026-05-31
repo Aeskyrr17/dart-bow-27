@@ -124,6 +124,7 @@ struct msg_visiontx_t
 {
     uint8_t header; //0x5A
     uint8_t start_state;
+    char  start_state_char;
     uint8_t target_id; //0-outpost 1-base
     uint8_t DartNumber;//1,2,3,4
     // uint8_t selected_target_id;
@@ -320,5 +321,16 @@ struct msg_referee_t
     GameStatus_t GameStatus;
     DartInfo_t DartInfo;
     DartClientCmd_t DartClientCmd;
+    RoboInteractData_t RoboInteractData;
 };
+
+// Radar custom 0x0301 payload, data_cmd_id must be 0x0201.
+struct OutpostStatusMsg
+{
+    uint16_t data_cmd_id;   // 0x0201
+    uint16_t sender_id;     // Blue radar 109 / Red radar 9
+    uint16_t receiver_id;   // Blue sentry 107, dart 108 / Red sentry 7, dart 8
+    uint8_t event;
+} __attribute__((packed));
+
 #endif
