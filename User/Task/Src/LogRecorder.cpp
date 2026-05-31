@@ -62,6 +62,13 @@ extern Launcher_Cxt_t launcher;
         logger.fired_count_this_open = static_cast<uint8_t>(dart_lib.fired_count_this_open);
         logger.current_shot_number = static_cast<uint8_t>(dart_lib.current_shot_number);
         logger.current_dart_id = static_cast<uint8_t>(dart_lib.current_dart_id);
+        logger.door_status = static_cast<uint8_t>(dart_lib.door_status);
+        logger.last_light_detected = 0;
+        logger.vision_light_detected = vision_rx.light_detected;
+        logger.vision_stable_state = vision_rx.stable_state;
+        logger.door_session_active = 0;
+        logger.autoaim_allow = dart_lib.autoAim.autoaim_allow;
+        logger.door_close_inhibit_active = 0;
         logger.string_L_force = sensor.string_L_force;
         logger.string_R_force = sensor.string_R_force;
 

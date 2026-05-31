@@ -174,7 +174,7 @@ RefereeRingBuffer referee_fifo;
             }
         }
         om_publish(referee_topic,&referee,sizeof(msg_referee_t), true, false);
-        tx_semaphore_ceiling_put(&RefereeThreadSem, 1);
+        tx_semaphore_put(&RefereeThreadSem);
         tx_thread_sleep(1);
     }
 }

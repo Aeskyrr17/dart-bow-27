@@ -141,6 +141,13 @@ struct logger_t
     uint8_t fired_count_this_open;
     uint8_t current_shot_number;
     uint8_t current_dart_id;
+    uint8_t door_status;
+    uint8_t last_light_detected;
+    uint8_t vision_light_detected;
+    uint8_t vision_stable_state;
+    bool door_session_active;
+    bool autoaim_allow;
+    bool door_close_inhibit_active;
     float string_L_force;
     float string_R_force;
     uint16_t checksum;

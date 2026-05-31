@@ -57,7 +57,7 @@ const bool auto_aim_on_power_up = false;
     //1p，前后散布比较大，左右还好
     dart_lib.dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
 
-    dart_lib.dart[3] = {3, -0.19f,652000.0f, 720000.0f};//2 //有跳变，偏右上
+    dart_lib.dart[3] = {3, -0.19f,690000.0f, 720000.0f};//2 //有跳变，偏右上
     dart_lib.dart[4] = {4, -0.18f,652000.0f, 720000.0f};//7中
     // dart_lib.dart[1] = {1, -0.4f,450000.0f, 720000.0f};//烂了
     // //1p，前后散布比较大，左右还好
@@ -67,11 +67,11 @@ const bool auto_aim_on_power_up = false;
     // dart_lib.dart[4] = {4, -0.18f,400000.0f, 720000.0f};//7中
 
 
-    dart_lib.dart[5] = {5, -0.30f,655000.0f, 500000.0f};//4
+    dart_lib.dart[5] = {5, -0.30f,690000.0f, 500000.0f};//4
     dart_lib.dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
 
-    dart_lib.dart[7] = {7,  -0.18f,666000.0f, 500000.0f};//3
-    dart_lib.dart[8] = {8,  -0.12f,664000.0f, 500000.0f};
+    dart_lib.dart[7] = {7,  -0.18f,690000.0f, 500000.0f};//3
+    dart_lib.dart[8] = {8,  -0.12f,690000.0f, 500000.0f};
 
     dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
     dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
@@ -102,7 +102,7 @@ const bool auto_aim_on_power_up = false;
     };
     dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
 
-    dart_lib.sequence[0] = 4;
+    dart_lib.sequence[0] = 3;
     dart_lib.sequence[1] = 5;
     dart_lib.sequence[2] = 7;
     dart_lib.sequence[3] = 8;
