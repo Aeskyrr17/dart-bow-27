@@ -368,6 +368,71 @@ void DartLibrary::Update_History(msg_launcher2sysctrl_t* msg)
     runtime.autoAim.last_autoaim_allow = runtime.autoAim.autoaim_allow;
 }
 
+void Init_Dart_Config(DartConfig* config)
+{
+    //24.08
+    //
+    config->dart[1] = {1, -0.4f,645000.0f, 720000.0f};//烂了
+    //1p，前后散布比较大，左右还好
+    config->dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
+
+    config->dart[3] = {3, -0.08f,700000.0f, 720000.0f};//2 //有跳变，偏右上//!
+    config->dart[4] = {4, -0.08f,687500.0f, 720000.0f};//7中//!
+    // dart_lib.dart[1] = {1, -0.4f,450000.0f, 720000.0f};//烂了
+    // //1p，前后散布比较大，左右还好
+    // dart_lib.dart[2] = {2, -0.4f,400000.0f, 720000.0f}; //烂了
+
+    // dart_lib.dart[3] = {3, -0.19f,400000.0f, 720000.0f};//2 //有跳变，偏右上
+    // dart_lib.dart[4] = {4, -0.18f,400000.0f, 720000.0f};//7中
+
+
+    config->dart[5] = {5, -0.10f,685000.0f, 500000.0f};//4//!
+    config->dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
+
+    config->dart[7] = {7,  -0.18f,690000.0f, 500000.0f};//3
+    config->dart[8] = {8,  -0.08f,684000.0f, 500000.0f};//!
+
+    config->dart[9] = {9,  0.00f,690000.0f, 500000.0f};
+    config->dart[10] = {10, 0.00f,690000.0f, 500000.0f};
+    config->dart[11] = {11, 0.00f,690000.0f, 500000.0f};
+    config->dart[12] = {12, 0.00f,690000.0f, 500000.0f};
+    config->dart[13] = {13, 0.00f,690000.0f, 500000.0f};
+    config->dart[14] = {14, 0.00f,690000.0f, 500000.0f};
+    config->dart[15] = {15, 0.00f,690000.0f, 500000.0f};
+    config->dart[16] = {16, 0.00f,690000.0f, 500000.0f};
+
+    const Dart_Base_Table_Point_t base_distance_table[] = {
+        {1,  25.0f, -0.8f,  660000.0f},
+        {2,  25.0f, -1.2f,  670000.0f},
+        {3,  25.0f, -0.68f, 660000.0f},
+        {4,  25.0f, -1.2f,  670000.0f},
+        {5,  25.0f, -0.9f,  645000.0f},
+        {6,  25.0f, -0.75f, 655000.0f},
+        {7,  25.0f,  0.00f, 820000.0f},
+        {8,  25.0f, -0.7f,  660000.0f},
+        {9,  25.0f,  0.00f, 690000.0f},
+        {10, 25.0f,  0.00f, 690000.0f},
+        {11, 25.0f,  0.00f, 690000.0f},
+        {12, 25.0f,  0.00f, 690000.0f},
+        {13, 25.0f,  0.00f, 690000.0f},
+        {14, 25.0f,  0.00f, 690000.0f},
+        {15, 25.0f,  0.00f, 690000.0f},
+        {16, 25.0f,  0.00f, 690000.0f},
+    };
+    config->base_distance_table_len = sizeof(base_distance_table) / sizeof(base_distance_table[0]);
+    for (uint16_t i = 0; i < config->base_distance_table_len; i++)
+    {
+        config->base_distance_table[i] = base_distance_table[i];
+    }
+
+    config->sequence[0] = 3;
+    config->sequence[1] = 4;
+    config->sequence[2] = 5;
+    config->sequence[3] = 8;
+
+    config->pre_tension = 320000.0f; //调整预张紧的值
+}
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -389,65 +454,8 @@ void DartLibrary::Update_History(msg_launcher2sysctrl_t* msg)
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
-
-    //24.08
-    //
-    dart_lib.config.dart[1] = {1, -0.4f,645000.0f, 720000.0f};//烂了
-    //1p，前后散布比较大，左右还好
-    dart_lib.config.dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
-
-    dart_lib.config.dart[3] = {3, -0.08f,700000.0f, 720000.0f};//2 //有跳变，偏右上//!
-    dart_lib.config.dart[4] = {4, -0.08f,687500.0f, 720000.0f};//7中//!
-    // dart_lib.dart[1] = {1, -0.4f,450000.0f, 720000.0f};//烂了
-    // //1p，前后散布比较大，左右还好
-    // dart_lib.dart[2] = {2, -0.4f,400000.0f, 720000.0f}; //烂了
-
-    // dart_lib.dart[3] = {3, -0.19f,400000.0f, 720000.0f};//2 //有跳变，偏右上
-    // dart_lib.dart[4] = {4, -0.18f,400000.0f, 720000.0f};//7中
-
-
-    dart_lib.config.dart[5] = {5, -0.10f,685000.0f, 500000.0f};//4//!
-    dart_lib.config.dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
-
-    dart_lib.config.dart[7] = {7,  -0.18f,690000.0f, 500000.0f};//3
-    dart_lib.config.dart[8] = {8,  -0.08f,684000.0f, 500000.0f};//!
-
-    dart_lib.config.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[12] = {12, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[13] = {13, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[14] = {14, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
-    dart_lib.config.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
-
-    const Dart_Base_Table_Point_t base_distance_table[] = {
-        {1,  25.0f, -0.8f,  660000.0f},
-        {2,  25.0f, -1.2f,  670000.0f},
-        {3,  25.0f, -0.68f, 660000.0f},
-        {4,  25.0f, -1.2f,  670000.0f},
-        {5,  25.0f, -0.9f,  645000.0f},
-        {6,  25.0f, -0.75f, 655000.0f},
-        {7,  25.0f,  0.00f, 820000.0f},
-        {8,  25.0f, -0.7f,  660000.0f},
-        {9,  25.0f,  0.00f, 690000.0f},
-        {10, 25.0f,  0.00f, 690000.0f},
-        {11, 25.0f,  0.00f, 690000.0f},
-        {12, 25.0f,  0.00f, 690000.0f},
-        {13, 25.0f,  0.00f, 690000.0f},
-        {14, 25.0f,  0.00f, 690000.0f},
-        {15, 25.0f,  0.00f, 690000.0f},
-        {16, 25.0f,  0.00f, 690000.0f},
-    };
-    dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
-
-    dart_lib.config.sequence[0] = 3;
-    dart_lib.config.sequence[1] = 4;
-    dart_lib.config.sequence[2] = 5;
-    dart_lib.config.sequence[3] = 8;
-
-    const float pre_tension = 320000.0f; //调整预张紧的值
-    cmd.pre_tension = pre_tension;
+    Init_Dart_Config(&dart_lib.config);
+    cmd.pre_tension = dart_lib.config.pre_tension;
     
 
     for (;;)
@@ -586,7 +594,7 @@ void DartLibrary::Update_History(msg_launcher2sysctrl_t* msg)
             else
             {
                 cmd.action = DART_PRE_TENSION;
-                cmd.tension = pre_tension;
+                cmd.tension = dart_lib.config.pre_tension;
             }
         }
         else if (remoter.left_sw == Mid && remoter.right_sw == M2U)
