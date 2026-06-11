@@ -1,3 +1,5 @@
+#pragma once
+
 #include "DelayHelper.hpp"
 #include "magicmsgs.hpp"
 
@@ -60,17 +62,24 @@ enum DOOR_STATUS
     DOOR_CLOSED,
     // DOOR_UNKNOWN
 };
-class DartLibrary
-{
-public:
-    static constexpr uint16_t BASE_DISTANCE_TABLE_MAX = 128;
 
+struct DartConfig
+{
     Dart_Config_t dart[17];
-    Dart_Base_Table_Point_t base_distance_table[BASE_DISTANCE_TABLE_MAX];
+
+    Dart_Base_Table_Point_t base_distance_table[128];
     uint16_t base_distance_table_len;
+
     int sequence[4];
+
+    float pre_tension;
+};
+
+struct DartRuntime
+{
     int current_shot_number;
     int current_dart_id;
+
     DOOR_STATUS door_status;
     DOOR_STATUS last_door_status;
 
@@ -78,66 +87,76 @@ public:
     int fired_count_this_open;
 
     uint8_t game_status_stable;
-
     uint8_t game_status_ladar; //为了处理裁判系统不稳定的问题
     char game_status_char;
 
     AutoAim_t autoAim;
     RefereeInfo_t referee;
+
     msg_visionrx_t vision_rx;//!? 暂时没有使用
+};
+
+class DartLibrary
+{
+public:
+    static constexpr uint16_t BASE_DISTANCE_TABLE_MAX = 128;
+
+    DartConfig config;
+    DartRuntime runtime;
 
     DartLibrary()
     {
-        dart[0] = {0, 0.0f, 0.0f, 0.0f};
-        dart[1] = {1, 0.0f, 0.0f, 0.0f};
-        dart[2] = {2, 0.0f, 0.0f, 0.0f};
-        dart[3] = {3, 0.0f, 0.0f, 0.0f};
-        dart[4] = {4, 0.0f, 0.0f, 0.0f};
-        dart[5] = {5, 0.0f, 0.0f, 0.0f};
-        dart[6] = {6, 0.0f, 0.0f, 0.0f};
-        dart[7] = {7, 0.0f, 0.0f, 0.0f};
-        dart[8] = {8, 0.0f, 0.0f, 0.0f};
-        dart[9] = {9, 0.0f, 0.0f, 0.0f};
-        dart[10] = {10, 0.0f, 0.0f, 0.0f};
-        dart[11] = {11, 0.0f, 0.0f, 0.0f};
-        dart[12] = {12, 0.0f, 0.0f, 0.0f};
-        dart[13] = {13, 0.0f, 0.0f, 0.0f};
-        dart[14] = {14, 0.0f, 0.0f, 0.0f};
-        dart[15] = {15, 0.0f, 0.0f, 0.0f}; 
-        dart[16] = {16, 0.0f, 0.0f, 0.0f};
+        config.dart[0] = {0, 0.0f, 0.0f, 0.0f};
+        config.dart[1] = {1, 0.0f, 0.0f, 0.0f};
+        config.dart[2] = {2, 0.0f, 0.0f, 0.0f};
+        config.dart[3] = {3, 0.0f, 0.0f, 0.0f};
+        config.dart[4] = {4, 0.0f, 0.0f, 0.0f};
+        config.dart[5] = {5, 0.0f, 0.0f, 0.0f};
+        config.dart[6] = {6, 0.0f, 0.0f, 0.0f};
+        config.dart[7] = {7, 0.0f, 0.0f, 0.0f};
+        config.dart[8] = {8, 0.0f, 0.0f, 0.0f};
+        config.dart[9] = {9, 0.0f, 0.0f, 0.0f};
+        config.dart[10] = {10, 0.0f, 0.0f, 0.0f};
+        config.dart[11] = {11, 0.0f, 0.0f, 0.0f};
+        config.dart[12] = {12, 0.0f, 0.0f, 0.0f};
+        config.dart[13] = {13, 0.0f, 0.0f, 0.0f};
+        config.dart[14] = {14, 0.0f, 0.0f, 0.0f};
+        config.dart[15] = {15, 0.0f, 0.0f, 0.0f}; 
+        config.dart[16] = {16, 0.0f, 0.0f, 0.0f};
 
-        base_distance_table_len = 0;
-        sequence[0] = 1;
-        sequence[1] = 2;
-        sequence[2] = 3;
-        sequence[3] = 4;
+        config.base_distance_table_len = 0;
+        config.sequence[0] = 1;
+        config.sequence[1] = 2;
+        config.sequence[2] = 3;
+        config.sequence[3] = 4;
+        config.pre_tension = 0.0f;
 
-        current_shot_number = 1;
-        current_dart_id = sequence[0];
-        door_status = DOOR_CLOSED;
-        last_door_status = DOOR_CLOSED;
-        last_fire_finished = false;
-        fired_count_this_open = 0;
+        runtime.current_shot_number = 1;
+        runtime.current_dart_id = config.sequence[0];
+        runtime.door_status = DOOR_CLOSED;
+        runtime.last_door_status = DOOR_CLOSED;
+        runtime.last_fire_finished = false;
+        runtime.fired_count_this_open = 0;
 
-        game_status_ladar = false;
-        game_status_char = '\0';
+        runtime.game_status_ladar = false;
+        runtime.game_status_char = '\0';
 
-        referee.game_status = 0;
-        referee.shooting_remaining_time = 0;
-        referee.chosen_target = 0;
-        referee.launch_station_status = 1;
-        referee.last_launch_station_status = 1;
+        runtime.referee.game_status = 0;
+        runtime.referee.shooting_remaining_time = 0;
+        runtime.referee.chosen_target = 0;
+        runtime.referee.launch_station_status = 1;
+        runtime.referee.last_launch_station_status = 1;
 
-        autoAim.enable = false;
-        autoAim.yaw_ok = false;
-        autoAim.light_lost = false;
-        autoAim.running = false;
-        autoAim.autoaim_allow = false;
-        autoAim.last_autoaim_allow = false;
-        autoAim.referee_launch_closed_stable = false;
-        autoAim.referee_launch_open_stable = false;
-        autoAim.vision_door_closed_stable = false;
-        autoAim.vision_door_open_stable = false;
+        runtime.autoAim.enable = false;
+        runtime.autoAim.yaw_ok = false;
+        runtime.autoAim.light_lost = false;
+        runtime.autoAim.running = false;
+        runtime.autoAim.autoaim_allow = false;
+        runtime.autoAim.last_autoaim_allow = false;
+        runtime.autoAim.referee_launch_closed_stable = false;
+        runtime.autoAim.referee_launch_open_stable = false;
+        runtime.autoAim.vision_door_closed_stable = false;
+        runtime.autoAim.vision_door_open_stable = false;
     }
 
     // void UPDATE_DOOR_STATUS(msg_visionrx_t* rx)
@@ -177,11 +196,11 @@ public:
     {
         if (rx->light_detected == 1 || rx->light_detected == 2)
         {
-            door_status = DOOR_OPEN;
+            runtime.door_status = DOOR_OPEN;
         }
         else if (rx->light_detected == 0 || rx->light_detected == 3 ) 
         {
-            door_status = DOOR_CLOSED;
+            runtime.door_status = DOOR_CLOSED;
         }
 
         // if (autoAim.vision_door_open_delay.ReachStable(door_status == DOOR_OPEN, 10))
@@ -201,66 +220,66 @@ public:
         //     autoAim.vision_door_open_stable = false;
         // }
 
-        if (door_status != DOOR_OPEN)
+        if (runtime.door_status != DOOR_OPEN)
         {
-            autoAim.vision_door_open_stable = false;
-            autoAim.vision_door_open_delay.Reset();
+            runtime.autoAim.vision_door_open_stable = false;
+            runtime.autoAim.vision_door_open_delay.Reset();
         }
-        else if (!autoAim.vision_door_open_stable &&
-                 autoAim.vision_door_open_delay.ReachStable(true, 10))
+        else if (!runtime.autoAim.vision_door_open_stable &&
+                 runtime.autoAim.vision_door_open_delay.ReachStable(true, 10))
         {
-            autoAim.vision_door_open_stable = true;
-        }
-
-
-        if (door_status != DOOR_CLOSED)
-        {
-            autoAim.vision_door_closed_stable = false;
-            autoAim.vision_door_closed_delay.Reset();
-        }
-        else if (!autoAim.vision_door_closed_stable &&
-                 autoAim.vision_door_closed_delay.ReachStable(true, 700))
-        {
-            autoAim.vision_door_closed_stable = true;
+            runtime.autoAim.vision_door_open_stable = true;
         }
 
-        if (referee.launch_station_status != 0)
+
+        if (runtime.door_status != DOOR_CLOSED)
         {
-            autoAim.referee_launch_open_stable = false;
-            autoAim.referee_launch_open_delay.Reset();
+            runtime.autoAim.vision_door_closed_stable = false;
+            runtime.autoAim.vision_door_closed_delay.Reset();
         }
-        else if (!autoAim.referee_launch_open_stable &&
-                 autoAim.referee_launch_open_delay.ReachStable(true, 10))
+        else if (!runtime.autoAim.vision_door_closed_stable &&
+                 runtime.autoAim.vision_door_closed_delay.ReachStable(true, 700))
         {
-            autoAim.referee_launch_open_stable = true;
+            runtime.autoAim.vision_door_closed_stable = true;
         }
 
-        if (referee.launch_station_status != 1)
+        if (runtime.referee.launch_station_status != 0)
         {
-            autoAim.referee_launch_closed_stable = false;
-            autoAim.referee_launch_closed_delay.Reset();
+            runtime.autoAim.referee_launch_open_stable = false;
+            runtime.autoAim.referee_launch_open_delay.Reset();
         }
-        else if (!autoAim.referee_launch_closed_stable &&
-                 autoAim.referee_launch_closed_delay.ReachStable(true, 10))
+        else if (!runtime.autoAim.referee_launch_open_stable &&
+                 runtime.autoAim.referee_launch_open_delay.ReachStable(true, 10))
         {
-            autoAim.referee_launch_closed_stable = true;
+            runtime.autoAim.referee_launch_open_stable = true;
+        }
+
+        if (runtime.referee.launch_station_status != 1)
+        {
+            runtime.autoAim.referee_launch_closed_stable = false;
+            runtime.autoAim.referee_launch_closed_delay.Reset();
+        }
+        else if (!runtime.autoAim.referee_launch_closed_stable &&
+                 runtime.autoAim.referee_launch_closed_delay.ReachStable(true, 10))
+        {
+            runtime.autoAim.referee_launch_closed_stable = true;
         }
     }
 
     void Update_AutoAim_Prepare_Allowed()
     {
 
-        if (autoAim.door_open_delay.ReachStable(autoAim.vision_door_open_stable || autoAim.referee_launch_open_stable, 25))
+        if (runtime.autoAim.door_open_delay.ReachStable(runtime.autoAim.vision_door_open_stable || runtime.autoAim.referee_launch_open_stable, 25))
         {
-            if (!autoAim.autoaim_allow)
+            if (!runtime.autoAim.autoaim_allow)
             {
-                fired_count_this_open = 0;
+                runtime.fired_count_this_open = 0;
             }
-            autoAim.autoaim_allow = true;
+            runtime.autoAim.autoaim_allow = true;
         }
-        if (autoAim.door_closed_delay.ReachStable(autoAim.referee_launch_closed_stable && autoAim.vision_door_closed_stable, 25))
+        if (runtime.autoAim.door_closed_delay.ReachStable(runtime.autoAim.referee_launch_closed_stable && runtime.autoAim.vision_door_closed_stable, 25))
         {
-            autoAim.autoaim_allow = false;
+            runtime.autoAim.autoaim_allow = false;
         }
 
         // bool vision_door_closed = door_status == DOOR_CLOSED;
@@ -285,23 +304,23 @@ public:
 
     void Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, uint16_t table_len)
     {
-        base_distance_table_len = table_len;
-        if (base_distance_table_len > BASE_DISTANCE_TABLE_MAX)
+        config.base_distance_table_len = table_len;
+        if (config.base_distance_table_len > BASE_DISTANCE_TABLE_MAX)
         {
-            base_distance_table_len = BASE_DISTANCE_TABLE_MAX;
+            config.base_distance_table_len = BASE_DISTANCE_TABLE_MAX;
         }
 
-        for (uint16_t i = 0; i < base_distance_table_len; i++)
+        for (uint16_t i = 0; i < config.base_distance_table_len; i++)
         {
-            base_distance_table[i] = table[i];
+            config.base_distance_table[i] = table[i];
         }
     }
 
     Dart_Base_Aim_t Get_Base_Aim_By_Distance(int id, float distance) const
     {
         int dart_id = (id >= 1 && id <= 16) ? id : 0;
-        Dart_Base_Aim_t aim = {dart[dart_id].yaw_offset, dart[dart_id].tension_tq_base};
-        if (dart_id == 0 || distance <= 0.0f || base_distance_table_len == 0)
+        Dart_Base_Aim_t aim = {config.dart[dart_id].yaw_offset, config.dart[dart_id].tension_tq_base};
+        if (dart_id == 0 || distance <= 0.0f || config.base_distance_table_len == 0)
         {
             return aim;
         }
@@ -309,9 +328,9 @@ public:
         const Dart_Base_Table_Point_t* lower = nullptr;
         const Dart_Base_Table_Point_t* upper = nullptr;
 
-        for (uint16_t i = 0; i < base_distance_table_len; i++)
+        for (uint16_t i = 0; i < config.base_distance_table_len; i++)
         {
-            const Dart_Base_Table_Point_t* point = &base_distance_table[i];
+            const Dart_Base_Table_Point_t* point = &config.base_distance_table[i];
             if (point->id != dart_id)
             {
                 continue;
@@ -356,7 +375,7 @@ public:
 
     DART_SLOT Get_Prepare_Slot() const
     {
-        switch (current_shot_number)
+        switch (runtime.current_shot_number)
         {
             case 1:
                 return DART_SLOT_NONE;
@@ -373,21 +392,21 @@ public:
 
     void Update_Current_Dart_Id()
     {
-        if (current_shot_number >= 1 && current_shot_number <= 4)
+        if (runtime.current_shot_number >= 1 && runtime.current_shot_number <= 4)
         {
-            current_dart_id = sequence[current_shot_number - 1];
+            runtime.current_dart_id = config.sequence[runtime.current_shot_number - 1];
         }
         else
         {
-            current_dart_id = 0;
+            runtime.current_dart_id = 0;
         }
     }
 
     void Update_Current_State(msg_launcher2sysctrl_t* msg)
     {
-        if (msg->is_fire_finished && !last_fire_finished)
+        if (msg->is_fire_finished && !runtime.last_fire_finished)
         {
-            current_shot_number++;
+            runtime.current_shot_number++;
             Update_Current_Dart_Id();
         }
 
@@ -395,9 +414,9 @@ public:
 
     void Update_Fired_State(msg_launcher2sysctrl_t* msg)
     {
-        if (msg->is_fire_finished && !last_fire_finished)
+        if (msg->is_fire_finished && !runtime.last_fire_finished)
         {
-            fired_count_this_open++;
+            runtime.fired_count_this_open++;
         }
 
         // if (last_door_status == DOOR_CLOSING && door_status == DOOR_CLOSED)
@@ -420,8 +439,8 @@ public:
 
     void Update_History(msg_launcher2sysctrl_t* msg)
     {
-        last_door_status = door_status;
-        last_fire_finished = msg->is_fire_finished;
-        autoAim.last_autoaim_allow = autoAim.autoaim_allow;
+        runtime.last_door_status = runtime.door_status;
+        runtime.last_fire_finished = msg->is_fire_finished;
+        runtime.autoAim.last_autoaim_allow = runtime.autoAim.autoaim_allow;
     }
 };

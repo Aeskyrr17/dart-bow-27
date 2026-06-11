@@ -53,12 +53,12 @@ const bool auto_aim_on_power_up = false;
 
     //24.08
     //
-    dart_lib.dart[1] = {1, -0.4f,645000.0f, 720000.0f};//烂了
+    dart_lib.config.dart[1] = {1, -0.4f,645000.0f, 720000.0f};//烂了
     //1p，前后散布比较大，左右还好
-    dart_lib.dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
+    dart_lib.config.dart[2] = {2, -0.4f,645000.0f, 720000.0f}; //烂了
 
-    dart_lib.dart[3] = {3, -0.08f,700000.0f, 720000.0f};//2 //有跳变，偏右上//!
-    dart_lib.dart[4] = {4, -0.08f,687500.0f, 720000.0f};//7中//!
+    dart_lib.config.dart[3] = {3, -0.08f,700000.0f, 720000.0f};//2 //有跳变，偏右上//!
+    dart_lib.config.dart[4] = {4, -0.08f,687500.0f, 720000.0f};//7中//!
     // dart_lib.dart[1] = {1, -0.4f,450000.0f, 720000.0f};//烂了
     // //1p，前后散布比较大，左右还好
     // dart_lib.dart[2] = {2, -0.4f,400000.0f, 720000.0f}; //烂了
@@ -67,20 +67,20 @@ const bool auto_aim_on_power_up = false;
     // dart_lib.dart[4] = {4, -0.18f,400000.0f, 720000.0f};//7中
 
 
-    dart_lib.dart[5] = {5, -0.10f,685000.0f, 500000.0f};//4//!
-    dart_lib.dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
+    dart_lib.config.dart[5] = {5, -0.10f,685000.0f, 500000.0f};//4//!
+    dart_lib.config.dart[6] = {6, -0.2f,655000.0f, 500000.0f};//先不用 碳杆长了
 
-    dart_lib.dart[7] = {7,  -0.18f,690000.0f, 500000.0f};//3
-    dart_lib.dart[8] = {8,  -0.08f,684000.0f, 500000.0f};//!
+    dart_lib.config.dart[7] = {7,  -0.18f,690000.0f, 500000.0f};//3
+    dart_lib.config.dart[8] = {8,  -0.08f,684000.0f, 500000.0f};//!
 
-    dart_lib.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[12] = {12, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[13] = {13, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[14] = {14, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
-    dart_lib.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[9] = {9,  0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[10] = {10, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[11] = {11, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[12] = {12, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[13] = {13, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[14] = {14, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[15] = {15, 0.00f,690000.0f, 500000.0f};
+    dart_lib.config.dart[16] = {16, 0.00f,690000.0f, 500000.0f};
 
     const Dart_Base_Table_Point_t base_distance_table[] = {
         {1,  25.0f, -0.8f,  660000.0f},
@@ -102,10 +102,10 @@ const bool auto_aim_on_power_up = false;
     };
     dart_lib.Set_Base_Distance_Table(base_distance_table, sizeof(base_distance_table) / sizeof(base_distance_table[0]));
 
-    dart_lib.sequence[0] = 3;
-    dart_lib.sequence[1] = 4;
-    dart_lib.sequence[2] = 5;
-    dart_lib.sequence[3] = 8;
+    dart_lib.config.sequence[0] = 3;
+    dart_lib.config.sequence[1] = 4;
+    dart_lib.config.sequence[2] = 5;
+    dart_lib.config.sequence[3] = 8;
 
     const float pre_tension = 320000.0f; //调整预张紧的值
     cmd.pre_tension = pre_tension;
@@ -123,17 +123,17 @@ const bool auto_aim_on_power_up = false;
 
         // if (vision_rx.distance > 15.0f && vision_rx.distance < 50.0f && vision_rx.light_detected)
         // {
-        //     dart_lib.door_status = DOOR_OPEN;
+        //     dart_lib.runtime.door_status = DOOR_OPEN;
         // }
         // else 
         // {
-        //     dart_lib.door_status = DOOR_CLOSED;
+        //     dart_lib.runtime.door_status = DOOR_CLOSED;
         
         // }
         dart_lib.Update_Current_State(&lch2sys);
         dart_lib.UPDATE_DOOR_STATUS(&vision_rx);
         dart_lib.Update_AutoAim_Prepare_Allowed();
-        dart_lib.autoAim.running = false;
+        dart_lib.runtime.autoAim.running = false;
         dart_lib.Update_Fired_State(&lch2sys);
         dart_lib.Update_Current_Dart_Id();
 
@@ -142,16 +142,16 @@ const bool auto_aim_on_power_up = false;
         if (auto_aim_on_power_up)
         {
             const bool remoter_intervention = (!remoter.offline && !autoAim_request);
-            dart_lib.autoAim.enable = !remoter_intervention;
-            autoAim_control = dart_lib.autoAim.enable;
+            dart_lib.runtime.autoAim.enable = !remoter_intervention;
+            autoAim_control = dart_lib.runtime.autoAim.enable;
         }
         else
         {
             if (!remoter.offline)
             {
-                dart_lib.autoAim.enable = autoAim_request;
+                dart_lib.runtime.autoAim.enable = autoAim_request;
             }
-            autoAim_control = dart_lib.autoAim.enable && (remoter.offline || autoAim_request);
+            autoAim_control = dart_lib.runtime.autoAim.enable && (remoter.offline || autoAim_request);
         }
 
         // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
@@ -160,26 +160,26 @@ const bool auto_aim_on_power_up = false;
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // vision_rx.distance = 25.0f;
-        // dart_lib.referee.game_status = 4;
-        // dart_lib.door_status = DOOR_OPEN;
-        dart_lib.referee.chosen_target = 1;
-        // dart_lib.referee.chosen_target = 0; //前哨
+        // dart_lib.runtime.referee.game_status = 4;
+        // dart_lib.runtime.door_status = DOOR_OPEN;
+        dart_lib.runtime.referee.chosen_target = 1;
+        // dart_lib.runtime.referee.chosen_target = 0; //前哨
         
 
         //更新tension和yaw数据
-        int id = dart_lib.current_dart_id;
+        int id = dart_lib.runtime.current_dart_id;
         float my_offset;
         float my_tension;
-        if (dart_lib.referee.chosen_target == 0) //前哨站
+        if (dart_lib.runtime.referee.chosen_target == 0) //前哨站
         {
-            my_offset = dart_lib.dart[id].yaw_offset;
-            my_tension = dart_lib.dart[id].tension_tq_outpost;
+            my_offset = dart_lib.config.dart[id].yaw_offset;
+            my_tension = dart_lib.config.dart[id].tension_tq_outpost;
         }
         else 
         {
 #ifdef FORCE_TABLING
-            my_offset = dart_lib.dart[id].yaw_offset;
-            my_tension = dart_lib.dart[id].tension_tq_base;
+            my_offset = dart_lib.config.dart[id].yaw_offset;
+            my_tension = dart_lib.config.dart[id].tension_tq_base;
 #else
             Dart_Base_Aim_t base_aim = dart_lib.Get_Base_Aim_By_Distance(id, vision_rx.distance);
             my_offset = base_aim.yaw_offset;
@@ -190,32 +190,32 @@ const bool auto_aim_on_power_up = false;
 
         cmd.tension = my_tension;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
-        cmd.current_shot_number = dart_lib.current_shot_number;
+        cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
         //处理vision_tx数据
         vision_tx.header = 0x5A;
         vision_tx.offset = my_offset;
         vision_tx.DartNumber = id;
-        vision_tx.target_id = dart_lib.referee.chosen_target;
+        vision_tx.target_id = dart_lib.runtime.referee.chosen_target;
 
-        if (dart_lib.referee.game_status == 4 || dart_lib.game_status_ladar == 1 || 
-            (dart_lib.referee.shooting_remaining_time <= 30 && dart_lib.referee.shooting_remaining_time > 1))       
+        if (dart_lib.runtime.referee.game_status == 4 || dart_lib.runtime.game_status_ladar == 1 || 
+            (dart_lib.runtime.referee.shooting_remaining_time <= 30 && dart_lib.runtime.referee.shooting_remaining_time > 1))       
         {
             vision_tx.start_state = 4;
-            dart_lib.game_status_stable = 4;
+            dart_lib.runtime.game_status_stable = 4;
             vision_tx.start_state_char = 'R';
         }
         else {
-            dart_lib.game_status_stable = 0;
-            // vision_tx.start_state = dart_lib.referee.game_status;
+            dart_lib.runtime.game_status_stable = 0;
+            // vision_tx.start_state = dart_lib.runtime.referee.game_status;
             vision_tx.start_state = 0;
             vision_tx.start_state_char = '\0';
-            // vision_tx.start_state_char = dart_lib.game_status_char;
+            // vision_tx.start_state_char = dart_lib.runtime.game_status_char;
         }
                 //! 开比赛
         // vision_tx.start_state = 4;
     
-        // vision_tx.start_state = dart_lib.referee.game_status;
+        // vision_tx.start_state = dart_lib.runtime.referee.game_status;
         // vision_tx.target_id = 1;
         // vision_tx.target_id = 0; //! 前哨站
 
@@ -238,9 +238,9 @@ const bool auto_aim_on_power_up = false;
         //先判断edge判断的fire
         if (autoAim_control)
         {
-            if (dart_lib.game_status_stable == 4 &&
-                dart_lib.autoAim.autoaim_allow &&
-                dart_lib.fired_count_this_open < 2)
+            if (dart_lib.runtime.game_status_stable == 4 &&
+                dart_lib.runtime.autoAim.autoaim_allow &&
+                dart_lib.runtime.fired_count_this_open < 2)
             {
                 Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, my_tension, my_offset);
             }
@@ -328,15 +328,15 @@ const bool auto_aim_on_power_up = false;
  */
 void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartLibrary* dart,  msg_cmd_t* cmd, float tension, float yaw)
 {
-    dart->autoAim.running = true;
+    dart->runtime.autoAim.running = true;
     //比赛开始之前都不执行自动模式
-    // if (dart->referee.game_status != 4)
+    // if (dart->runtime.referee.game_status != 4)
     // {
     //     cmd->action = DART_RELAX;
     //     return;
     // }
 
-    if (!(dart->current_shot_number >= 1 && dart->current_shot_number <= 4))
+    if (!(dart->runtime.current_shot_number >= 1 && dart->runtime.current_shot_number <= 4))
     {
         cmd->action = DART_RELAX;
         cmd->tension = tension;
@@ -349,7 +349,7 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     cmd->tension = tension;
     // cmd->yaw = yaw;
 
-    dart->autoAim.yaw_ok = false;
+    dart->runtime.autoAim.yaw_ok = false;
     if (rx->yaw == 666)
     {
         cmd->yaw = 0;
@@ -382,12 +382,12 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     }
     else if (rx->yaw <= 0.015f && rx->yaw >= -0.015f)
     {
-        dart->autoAim.yaw_ok = true;
+        dart->runtime.autoAim.yaw_ok = true;
     };
 
-    if ((dart->door_status == DOOR_OPEN &&
-        dart->fired_count_this_open < 2 &&
-        dart->autoAim.yaw_ok &&
+    if ((dart->runtime.door_status == DOOR_OPEN &&
+        dart->runtime.fired_count_this_open < 2 &&
+        dart->runtime.autoAim.yaw_ok &&
         rx->stable_state == 1))
     {
         cmd->action = DART_FIRE;
@@ -397,17 +397,17 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
 
 void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
 {
-    dart->referee.last_launch_station_status = dart->referee.launch_station_status;
-    dart->referee.game_status =  referee_rx->GameStatus.Game_progress;
-    // dart->referee.game_status = 4;
-    dart->referee.shooting_remaining_time =  referee_rx->DartInfo.dart_remaining_time;
-    dart->referee.chosen_target = ( referee_rx->DartInfo.dart_info >> 6) & 0x07;
-    dart->referee.launch_station_status =  referee_rx->DartClientCmd.dart_launch_opening_status;
+    dart->runtime.referee.last_launch_station_status = dart->runtime.referee.launch_station_status;
+    dart->runtime.referee.game_status =  referee_rx->GameStatus.Game_progress;
+    // dart->runtime.referee.game_status = 4;
+    dart->runtime.referee.shooting_remaining_time =  referee_rx->DartInfo.dart_remaining_time;
+    dart->runtime.referee.chosen_target = ( referee_rx->DartInfo.dart_info >> 6) & 0x07;
+    dart->runtime.referee.launch_station_status =  referee_rx->DartClientCmd.dart_launch_opening_status;
 
-    // if (dart->referee.launch_station_status == 0 &&
-    //     dart->referee.last_launch_station_status != 0)
+    // if (dart->runtime.referee.launch_station_status == 0 &&
+    //     dart->runtime.referee.last_launch_station_status != 0)
     // {
-    //     dart->fired_count_this_open = 0;
+    //     dart->runtime.fired_count_this_open = 0;
     // }
     const RoboInteractData_t* payload = &referee_rx->RoboInteractData;
     if (payload->data_cmd_id != 0x0201)
@@ -426,6 +426,6 @@ void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
         return;
     }
 
-    dart->game_status_ladar = payload->event == 1;
+    dart->runtime.game_status_ladar = payload->event == 1;
 }
 
