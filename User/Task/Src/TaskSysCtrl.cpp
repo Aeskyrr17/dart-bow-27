@@ -465,6 +465,72 @@ AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_dista
     return target;
 }
 
+void Build_Remoter_Command(
+    const msg_remoter_t& remoter,
+    float target_yaw,
+    float tension,
+    msg_cmd_t* cmd)
+{
+    if (remoter.left_sw == Mid && remoter.right_sw == M2U)
+    {
+        cmd->action = DART_FIRE;
+        cmd->yaw = target_yaw;
+        cmd->tension = tension;
+    }
+    else if (remoter.left_sw == Down)
+    {
+        if (remoter.right_sw == Down)
+        {
+            cmd->action = DART_RELAX;
+        }
+        else if (remoter.right_sw == Mid)
+        {
+            cmd->action = DART_SYN_ADJUST;
+            cmd->rc_syn =  remoter.right_y * 0.01f;
+        }
+        else if (remoter.right_sw == Up)
+        {
+            cmd->action = DART_STRING_ADJUST;
+            cmd->rc_string_L = remoter.left_y;
+            cmd->rc_string_R = remoter.right_y;
+        }
+    }
+    else if (remoter.left_sw == Mid)
+    {
+        if (remoter.right_sw == Down)
+        {
+            cmd->action = DART_YAW_ADJUST;
+            cmd->yaw = remoter.right_x;
+            if (remoter.left_x > 0.7f || remoter.left_x < -0.7f)
+            {
+                cmd->action = DART_TRIGGER_OPEN;
+            }
+            else {
+                cmd->action = DART_TRIGGER_CLOSE;
+            }
+        }
+        else if (remoter.right_sw == Mid) 
+        {
+            cmd->action = DART_PREPARE;
+            cmd->yaw = target_yaw;
+            cmd->tension = tension;
+
+        }
+        else if (remoter.right_sw == Up)
+        {
+            cmd->action = DART_FIRE;
+            cmd->yaw = target_yaw;
+            cmd->tension = tension;
+            // cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
+        }
+    }
+    else
+    {
+        cmd->action = DART_RELAX;
+
+    }
+}
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -612,63 +678,9 @@ AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_dista
                 cmd.tension = dart_lib.config.pre_tension;
             }
         }
-        else if (remoter.left_sw == Mid && remoter.right_sw == M2U)
-        {
-            cmd.action = DART_FIRE;
-            cmd.yaw = target_yaw;
-            cmd.tension = current_aim_target.tension;
-        }
-        else if (remoter.left_sw == Down)
-        {
-            if (remoter.right_sw == Down)
-            {
-                cmd.action = DART_RELAX;
-            }
-            else if (remoter.right_sw == Mid)
-            {
-                cmd.action = DART_SYN_ADJUST;
-                cmd.rc_syn =  remoter.right_y * 0.01f;
-            }
-            else if (remoter.right_sw == Up)
-            {
-                cmd.action = DART_STRING_ADJUST;
-                cmd.rc_string_L = remoter.left_y;
-                cmd.rc_string_R = remoter.right_y;
-            }
-        }
-        else if (remoter.left_sw == Mid)
-        {
-            if (remoter.right_sw == Down)
-            {
-                cmd.action = DART_YAW_ADJUST;
-                cmd.yaw = remoter.right_x;
-                if (remoter.left_x > 0.7f || remoter.left_x < -0.7f)
-                {
-                    cmd.action = DART_TRIGGER_OPEN;
-                }
-                else {
-                    cmd.action = DART_TRIGGER_CLOSE;
-                }
-            }
-            else if (remoter.right_sw == Mid) 
-            {
-                cmd.action = DART_PREPARE;
-                cmd.yaw = target_yaw;
-                cmd.tension = current_aim_target.tension;
-
-            }
-            else if (remoter.right_sw == Up)
-            {
-                cmd.action = DART_FIRE;
-                cmd.yaw = target_yaw;
-                cmd.tension = current_aim_target.tension;
-                // cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
-            }
-        }
         else
         {
-            cmd.action = DART_RELAX;
-
+            Build_Remoter_Command(remoter, target_yaw, current_aim_target.tension, &cmd);
         }
 
         // dart_lib.Update_Fired_State(&lch2sys);
