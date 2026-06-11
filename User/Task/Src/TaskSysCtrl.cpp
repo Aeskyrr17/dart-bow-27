@@ -566,6 +566,7 @@ void Resolve_Final_Command(
 {
     UNUSED(initial_input); 
 
+    // ===== 1. Topic setup =====
     om_topic_t *cmd_topic = om_config_topic(nullptr, "ca", "cmd", sizeof(msg_cmd_t));
     // msg_cmd_t cmd{};
 
@@ -583,12 +584,14 @@ void Resolve_Final_Command(
     om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx",UINT32_MAX));
     msg_visionrx_t vision_rx{};
 
+    // ===== 2. Dart config initialization =====
     Init_Dart_Config(&dart_lib.config);
     cmd.pre_tension = dart_lib.config.pre_tension;
     
 
     for (;;)
     {
+        // ===== 3. Clear command and read inputs =====
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(sensor_suber, &sensor, false);
@@ -606,6 +609,7 @@ void Resolve_Final_Command(
         //     dart_lib.runtime.door_status = DOOR_CLOSED;
         
         // }
+        // ===== 4. Update runtime state =====
         dart_lib.Update_Current_State(&lch2sys);
         dart_lib.UPDATE_DOOR_STATUS(&vision_rx);
         dart_lib.Update_AutoAim_Prepare_Allowed();
@@ -613,6 +617,7 @@ void Resolve_Final_Command(
         dart_lib.Update_Fired_State(&lch2sys);
         dart_lib.Update_Current_Dart_Id();
 
+        // ===== 5. Compute control-mode latch =====
         const bool autoAim_request = (!remoter.offline && remoter.left_sw == Up && remoter.right_sw == Up);
         bool autoAim_control = false;
         if (auto_aim_on_power_up)
@@ -630,6 +635,7 @@ void Resolve_Final_Command(
             autoAim_control = dart_lib.runtime.autoAim.enable && (remoter.offline || autoAim_request);
         }
 
+        // ===== 6. Apply debug overrides =====
         // ! !!!!!！！！！！！！！！！！！！！！！！!测试代码
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -642,6 +648,7 @@ void Resolve_Final_Command(
         // dart_lib.runtime.referee.chosen_target = 0; //前哨
         
 
+        // ===== 7. Resolve aim target =====
         //更新tension和yaw数据
         int id = dart_lib.runtime.current_dart_id;
         current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
@@ -651,6 +658,7 @@ void Resolve_Final_Command(
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
         cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
+        // ===== 8. Build vision tx =====
         //处理vision_tx数据
         vision_tx.header = 0x5A;
         vision_tx.offset = current_aim_target.yaw_offset;
@@ -678,6 +686,7 @@ void Resolve_Final_Command(
         // vision_tx.target_id = 1;
         // vision_tx.target_id = 0; //! 前哨站
 
+        // ===== 9. Resolve final command =====
         //遥控器offline保护和visionrx数据异常的灯控提示 //?! remoteroffline 可能需要删除
         const bool remoter_offline_safety = remoter.offline && !autoAim_control;
         if (remoter_offline_safety)
@@ -705,6 +714,7 @@ void Resolve_Final_Command(
                 &cmd);
         }
 
+        // ===== 10. Update history and publish outputs =====
         // dart_lib.Update_Fired_State(&lch2sys);
         dart_lib.Update_History(&lch2sys);
 
