@@ -531,6 +531,37 @@ void Build_Remoter_Command(
     }
 }
 
+void Resolve_Final_Command(
+    bool autoAim_control,
+    const msg_remoter_t& remoter,
+    const msg_visionrx_t& vision_rx,
+    const msg_sensor_t& sensor,
+    DartLibrary* dart,
+    float target_yaw,
+    float tension,
+    msg_cmd_t* cmd)
+{
+    // Future host-control arbitration can be inserted here.
+    if (autoAim_control)
+    {
+        if (dart->runtime.game_status_stable == 4 &&
+            dart->runtime.autoAim.autoaim_allow &&
+            dart->runtime.fired_count_this_open < 2)
+        {
+            Run_Auto_Control(&vision_rx, &sensor, dart, cmd, tension, current_aim_target.yaw_offset);
+        }
+        else
+        {
+            cmd->action = DART_PRE_TENSION;
+            cmd->tension = dart->config.pre_tension;
+        }
+    }
+    else
+    {
+        Build_Remoter_Command(remoter, target_yaw, tension, cmd);
+    }
+}
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -648,39 +679,30 @@ void Build_Remoter_Command(
         // vision_tx.target_id = 0; //! 前哨站
 
         //遥控器offline保护和visionrx数据异常的灯控提示 //?! remoteroffline 可能需要删除
-        if (remoter.offline && !autoAim_control)
+        const bool remoter_offline_safety = remoter.offline && !autoAim_control;
+        if (remoter_offline_safety)
         {
             cmd.action = DART_RELAX;
+            // Preserve existing behavior exactly: this is intentionally called again on the offline path.
             dart_lib.Update_Fired_State(&lch2sys);
-            dart_lib.Update_History(&lch2sys);
-            om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
-            om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t), true, false);
-            tx_thread_sleep(1);
-            continue;
-        }
-        if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f ||  vision_rx.checksum == 0)
-        {
-            tx_semaphore_put(&VisionErrorSem);
-        }
-
-        //先判断edge判断的fire
-        if (autoAim_control)
-        {
-            if (dart_lib.runtime.game_status_stable == 4 &&
-                dart_lib.runtime.autoAim.autoaim_allow &&
-                dart_lib.runtime.fired_count_this_open < 2)
-            {
-                Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, current_aim_target.tension, current_aim_target.yaw_offset);
-            }
-            else
-            {
-                cmd.action = DART_PRE_TENSION;
-                cmd.tension = dart_lib.config.pre_tension;
-            }
         }
         else
         {
-            Build_Remoter_Command(remoter, target_yaw, current_aim_target.tension, &cmd);
+            if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f ||  vision_rx.checksum == 0)
+            {
+                tx_semaphore_put(&VisionErrorSem);
+            }
+
+            //先判断edge判断的fire
+            Resolve_Final_Command(
+                autoAim_control,
+                remoter,
+                vision_rx,
+                sensor,
+                &dart_lib,
+                target_yaw,
+                current_aim_target.tension,
+                &cmd);
         }
 
         // dart_lib.Update_Fired_State(&lch2sys);
