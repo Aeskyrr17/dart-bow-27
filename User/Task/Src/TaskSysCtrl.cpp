@@ -23,6 +23,14 @@ DartLibrary dart_lib;
 msg_remoter_t remoter{};
 msg_cmd_t cmd{};
 
+struct AimTarget
+{
+    float yaw_offset;
+    float tension;
+};
+
+AimTarget current_aim_target{};
+
 #define FORCE_TABLING
 const bool auto_aim_on_power_up = false;
 //! true: 直接run autoAim直到遥控器干预。
@@ -433,6 +441,30 @@ void Init_Dart_Config(DartConfig* config)
     config->pre_tension = 320000.0f; //调整预张紧的值
 }
 
+AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance)
+{
+    int id = dart.runtime.current_dart_id;
+    AimTarget target;
+    if (dart.runtime.referee.chosen_target == 0) //前哨站
+    {
+        target.yaw_offset = dart.config.dart[id].yaw_offset;
+        target.tension = dart.config.dart[id].tension_tq_outpost;
+    }
+    else 
+    {
+#ifdef FORCE_TABLING
+        target.yaw_offset = dart.config.dart[id].yaw_offset;
+        target.tension = dart.config.dart[id].tension_tq_base;
+#else
+        Dart_Base_Aim_t base_aim = dart.Get_Base_Aim_By_Distance(id, vision_distance);
+        target.yaw_offset = base_aim.yaw_offset;
+        target.tension = base_aim.tension_tq;
+#endif
+    }
+
+    return target;
+}
+
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -515,33 +547,16 @@ void Init_Dart_Config(DartConfig* config)
 
         //更新tension和yaw数据
         int id = dart_lib.runtime.current_dart_id;
-        float my_offset;
-        float my_tension;
-        if (dart_lib.runtime.referee.chosen_target == 0) //前哨站
-        {
-            my_offset = dart_lib.config.dart[id].yaw_offset;
-            my_tension = dart_lib.config.dart[id].tension_tq_outpost;
-        }
-        else 
-        {
-#ifdef FORCE_TABLING
-            my_offset = dart_lib.config.dart[id].yaw_offset;
-            my_tension = dart_lib.config.dart[id].tension_tq_base;
-#else
-            Dart_Base_Aim_t base_aim = dart_lib.Get_Base_Aim_By_Distance(id, vision_rx.distance);
-            my_offset = base_aim.yaw_offset;
-            my_tension = base_aim.tension_tq;
-#endif
-        }
+        current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
         float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
 
-        cmd.tension = my_tension;
+        cmd.tension = current_aim_target.tension;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
         cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
         //处理vision_tx数据
         vision_tx.header = 0x5A;
-        vision_tx.offset = my_offset;
+        vision_tx.offset = current_aim_target.yaw_offset;
         vision_tx.DartNumber = id;
         vision_tx.target_id = dart_lib.runtime.referee.chosen_target;
 
@@ -589,7 +604,7 @@ void Init_Dart_Config(DartConfig* config)
                 dart_lib.runtime.autoAim.autoaim_allow &&
                 dart_lib.runtime.fired_count_this_open < 2)
             {
-                Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, my_tension, my_offset);
+                Run_Auto_Control(&vision_rx, &sensor, &dart_lib, &cmd, current_aim_target.tension, current_aim_target.yaw_offset);
             }
             else
             {
@@ -601,7 +616,7 @@ void Init_Dart_Config(DartConfig* config)
         {
             cmd.action = DART_FIRE;
             cmd.yaw = target_yaw;
-            cmd.tension = my_tension;
+            cmd.tension = current_aim_target.tension;
         }
         else if (remoter.left_sw == Down)
         {
@@ -639,14 +654,14 @@ void Init_Dart_Config(DartConfig* config)
             {
                 cmd.action = DART_PREPARE;
                 cmd.yaw = target_yaw;
-                cmd.tension = my_tension;
+                cmd.tension = current_aim_target.tension;
 
             }
             else if (remoter.right_sw == Up)
             {
                 cmd.action = DART_FIRE;
                 cmd.yaw = target_yaw;
-                cmd.tension = my_tension;
+                cmd.tension = current_aim_target.tension;
                 // cmd.tension = pre_tension; //! todo: 这个pre_tension的逻辑可能需要调整
             }
         }
