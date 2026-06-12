@@ -15,24 +15,15 @@ TX_THREAD SysctrlThread;
 uint8_t SysctrlThreadStack[2048] = {0};
 TX_SEMAPHORE VisionErrorSem;
 
-void Run_Auto_Control(const msg_visionrx_t* rx, const msg_sensor_t* sensor, DartLibrary* dart, msg_cmd_t* cmd, float tension, float yaw);
+void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart, msg_cmd_t* cmd);
 void Update_referee_data(msg_referee_t* rawdata, DartLibrary* dart);
 
 DartLibrary dart_lib;
 
-struct AimTarget
-{
-    float yaw_offset;
-    float tension;
-};
-
-AimTarget current_aim_target{};
-
+DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance);
 void Init_Dart_Config(DartLibrary* dart);
-AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance);
-void Build_Remoter_Command(const msg_remoter_t& remoter,float target_yaw,float tension,msg_cmd_t* cmd);
-void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
-                            const msg_sensor_t& sensor,DartLibrary* dart,float target_yaw,float tension,msg_cmd_t* cmd);
+void Build_Remoter_Command(const msg_remoter_t& remoter,float tension,msg_cmd_t* cmd);
+void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx, DartLibrary* dart,msg_cmd_t* cmd);
 
 #define FORCE_TABLING
 //! 测试的时候用dart_lib里面的固定值
@@ -90,10 +81,8 @@ void Init_Dart_Config(DartLibrary* dart)
 
     dart->Set_Base_Distance_Table(
         base_distance_table,
-        static_cast<uint16_t>(
-            sizeof(base_distance_table) /
-            sizeof(base_distance_table[0])
-        )
+        static_cast<uint16_t> 
+        (sizeof(base_distance_table) / sizeof(base_distance_table[0]))
     );
 
     // sequence 的下标表示第几发；
@@ -119,8 +108,6 @@ void Init_Dart_Config(DartLibrary* dart)
 
     om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
     msg_remoter_t remoter{};
-    om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor",UINT32_MAX));
-    msg_sensor_t sensor{};
     om_suber_t *lch2sys_suber = om_subscribe(om_find_topic("lch2sys",UINT32_MAX));
     msg_launcher2sysctrl_t lch2sys{};
     om_suber_t *referee_suber = om_subscribe(om_find_topic("referee", UINT32_MAX));
@@ -135,7 +122,6 @@ void Init_Dart_Config(DartLibrary* dart)
     {
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
         om_suber_export(remoter_suber, &remoter, false);
-        om_suber_export(sensor_suber, &sensor, false);
         om_suber_export(lch2sys_suber, &lch2sys, false);
         om_suber_export(visionrx_suber,&vision_rx,false);
         om_suber_export(referee_suber,&referee_pack,false);
@@ -152,7 +138,7 @@ void Init_Dart_Config(DartLibrary* dart)
         //遥控器离弦的自动模式锁存逻辑：上电后Up/Up开启autoAim，下电后保持，直到遥控器干预才关闭autoAim
         const bool autoAim_request = (!remoter.offline && remoter.left_sw == Up && remoter.right_sw == Up);
         bool autoAim_control = false;
-        if (auto_aim_on_power_up)
+        if (auto_aim_on_power_up) //直接上电开启autoAim，不需要Up/Up锁存
         {
             const bool remoter_intervention = (!remoter.offline && !autoAim_request);
             dart_lib.runtime.autoAim.enable = !remoter_intervention;
@@ -179,16 +165,15 @@ void Init_Dart_Config(DartLibrary* dart)
 
         //更新tension和yaw数据
         int id = dart_lib.runtime.current_dart_id;
-        current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
-        float target_yaw = remoter.right_x;  //target_yaw是速度，这里只为手控模式提供。
+        dart_lib.runtime.current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
 
-        cmd.tension = current_aim_target.tension;
+        cmd.tension = dart_lib.runtime.current_aim_target.tension;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
         cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
         //处理vision_tx数据
         vision_tx.header = 0x5A;
-        vision_tx.offset = current_aim_target.yaw_offset;
+        vision_tx.offset = dart_lib.runtime.current_aim_target.yaw_offset;
         vision_tx.DartNumber = id;
         vision_tx.target_id = dart_lib.runtime.referee.chosen_target;
 
@@ -214,18 +199,19 @@ void Init_Dart_Config(DartLibrary* dart)
         }
         else
         {
-            if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f ||  vision_rx.checksum == 0)
-            {
-                tx_semaphore_put(&VisionErrorSem);
-            }
-
             //先判断edge判断的fire
-            Resolve_Final_Command(autoAim_control, remoter, vision_rx, sensor,
-                &dart_lib, target_yaw, current_aim_target.tension, &cmd);
+            Resolve_Final_Command(autoAim_control, remoter, vision_rx,
+                &dart_lib, &cmd);
         }
 
         //Update history and publish outputs
         dart_lib.Update_History(&lch2sys);
+
+        //处理vision_rx数据异常的LED提示
+        if (vision_rx.header != 0xA5 || vision_rx.distance == 0.0f ||  vision_rx.checksum == 0)
+        {
+            tx_semaphore_put(&VisionErrorSem);
+        }
 
         om_publish(cmd_topic, &cmd, sizeof(msg_cmd_t), true, false);
         om_publish(visiontx_topic, &vision_tx, sizeof(msg_visiontx_t),true, false);
@@ -237,12 +223,12 @@ void Init_Dart_Config(DartLibrary* dart)
  * @brief 根据当前固定值或表中视觉距离解析出当前的的目标tension和yaw
  * @param dart 
  * @param vision_distance 
- * @return AimTarget 
+ * @return DartRuntime::AimTarget
  */
-AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance)
+DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance)
 {
     int id = dart.runtime.current_dart_id;
-    AimTarget target;
+    DartRuntime::AimTarget target;
     if (dart.runtime.referee.chosen_target == 0) //前哨站
     {
         target.yaw_offset = dart.config.dart[id].yaw_offset;
@@ -266,16 +252,15 @@ AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_dista
 /**
  * @brief 处理遥控器输入，生成对应的cmd命令
  * @param remoter 
- * @param target_yaw 
  * @param tension 
  * @param cmd 
  */
-void Build_Remoter_Command(const msg_remoter_t& remoter, float target_yaw, float tension, msg_cmd_t* cmd)
+void Build_Remoter_Command(const msg_remoter_t& remoter, float tension, msg_cmd_t* cmd)
 {
     if (remoter.left_sw == Mid && remoter.right_sw == M2U)
     {
         cmd->action = DART_FIRE;
-        cmd->yaw = target_yaw;
+        cmd->yaw = remoter.right_x;
         cmd->tension = tension;
     }
     else if (remoter.left_sw == Down)
@@ -313,14 +298,14 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float target_yaw, float
         else if (remoter.right_sw == Mid)
         {
             cmd->action = DART_PREPARE;
-            cmd->yaw = target_yaw;
+            cmd->yaw = remoter.right_x;
             cmd->tension = tension;
 
         }
         else if (remoter.right_sw == Up)
         {
             cmd->action = DART_FIRE;
-            cmd->yaw = target_yaw;
+            cmd->yaw = remoter.right_x;
             cmd->tension = tension;
         }
     }
@@ -337,14 +322,11 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float target_yaw, float
  * @param autoAim_control 
  * @param remoter 
  * @param vision_rx 
- * @param sensor 
  * @param dart 
- * @param target_yaw 
- * @param tension 
  * @param cmd 
  */
-void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,const msg_sensor_t& sensor,
-                            DartLibrary* dart,float target_yaw,float tension,msg_cmd_t* cmd)
+void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
+                            DartLibrary* dart,msg_cmd_t* cmd)
 {
     // Future host-control arbitration can be inserted here.
     if (autoAim_control)
@@ -353,7 +335,7 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
             dart->runtime.autoAim.autoaim_allow &&
             dart->runtime.fired_count_this_open < 2)
         {
-            Run_Auto_Control(&vision_rx, &sensor, dart, cmd, tension, current_aim_target.yaw_offset);
+            Run_Auto_Control(&vision_rx, dart, cmd);
         }
         else
         {
@@ -363,7 +345,7 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
     }
     else
     {
-        Build_Remoter_Command(remoter, target_yaw, tension, cmd);
+        Build_Remoter_Command(remoter, dart->runtime.current_aim_target.tension, cmd);
     }
 }
 
@@ -373,7 +355,7 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
  * @brief Auto Mode，主要的视觉自动逻辑，更新cmd命令，进行最终的发射条件判断
  * 调整yaw，根据各条件判断是否可以发射
  */
-void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartLibrary* dart,  msg_cmd_t* cmd, float tension, float yaw)
+void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cmd)
 {
     dart->runtime.autoAim.running = true;
     //比赛开始之前都不执行自动模式
@@ -386,15 +368,13 @@ void Run_Auto_Control(const msg_visionrx_t* rx,const msg_sensor_t* sensor, DartL
     if (!(dart->runtime.current_shot_number >= 1 && dart->runtime.current_shot_number <= 4))
     {
         cmd->action = DART_RELAX;
-        cmd->tension = tension;
-        // cmd->yaw = yaw;
+        cmd->tension = dart->runtime.current_aim_target.tension;
         cmd->yaw = 0;
         return;
     }
 
     cmd->action = DART_PREPARE;
-    cmd->tension = tension;
-    // cmd->yaw = yaw;
+    cmd->tension = dart->runtime.current_aim_target.tension;
 
     dart->runtime.autoAim.yaw_ok = false;
     if (rx->yaw == 666)
@@ -507,6 +487,7 @@ DartLibrary::DartLibrary()
 
     runtime.current_shot_number = 1;
     runtime.current_dart_id = config.sequence[0];
+    runtime.current_aim_target = {0.0f, 0.0f};
     runtime.vision_door_status = DOOR_CLOSED;
     runtime.last_vision_door_status = DOOR_CLOSED;
     runtime.last_fire_finished = false;

@@ -88,8 +88,15 @@ struct DartConfig
  */
 struct DartRuntime
 {
+    struct AimTarget
+    {
+        float yaw_offset;
+        float tension;
+    };
+
     int current_shot_number;        //<当前是第几发，范围1-4
     int current_dart_id;            //<当前正在发射的飞镖id
+    AimTarget current_aim_target;   //<当前飞镖解析出的瞄准参数
 
     DOOR_STATUS vision_door_status;        //<当前视觉判断门的状态
     DOOR_STATUS last_vision_door_status;   //<上一次视觉判断的门状态
