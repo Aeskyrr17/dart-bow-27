@@ -72,6 +72,7 @@ enum DOOR_STATUS
 
 struct DartConfig
 {
+    uint16_t config_revision;
     Dart_Config_t dart[17]; //飞镖id从1-16，0号位不使用
 
     Dart_Base_Table_Point_t base_distance_table[128]; //打表数据，最多128条

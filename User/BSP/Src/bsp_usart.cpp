@@ -59,9 +59,11 @@ void USART_Init()
   __HAL_DMA_ENABLE_IT(&hdma_uart7_rx, DMA_IT_TC);
   __HAL_DMA_DISABLE_IT(&hdma_uart7_tx, DMA_IT_HT);
   __HAL_DMA_ENABLE_IT(&hdma_uart7_tx, DMA_IT_TC);
-  // __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST); // 清空缓存，消除接收错位
+  __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST); // 清空缓存，消除接收错位
   HAL_UART_Receive_DMA(&huart7, g4_rx_buffer, G4_FORCE_RX_DATA_SIZE);
 
+
+  
   // usart2
   // __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
   // __HAL_DMA_ENABLE_IT(&hdma_usart2_rx, DMA_IT_TC);
