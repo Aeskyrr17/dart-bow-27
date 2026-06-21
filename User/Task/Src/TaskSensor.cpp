@@ -86,8 +86,8 @@ void Force_R_Request080();
     sensor.is_coil_reset = false;
     sensor.is_door_open = false;
     sensor.is_string_tight = false;
-    sensor.string_L_force = 0.0f;
-    sensor.string_R_force = 0.0f;
+    sensor.string_L_force_kg = 0.0f;
+    sensor.string_R_force_kg = 0.0f;
 
     uint32_t g4_force_lost_ticks = 0;
 
@@ -132,8 +132,9 @@ void Force_R_Request080();
                 g4_force_lost_ticks = 0;
             }
         }
-        sensor.string_L_force = (float)g4_force.L;
-        sensor.string_R_force = (float)g4_force.R;
+        // G4力传感器原始值约定：690000 -> 69kg，这里统一发布kg。
+        sensor.string_L_force_kg = (float)g4_force.L / 10000.0f;
+        sensor.string_R_force_kg = (float)g4_force.R / 10000.0f;
 
         om_publish(sensor_topic, &sensor, sizeof(msg_sensor_t), true, false);
         tx_thread_sleep(1);
@@ -143,8 +144,8 @@ void Force_R_Request080();
         Force_L_Request080();
         Force_R_Request080();
 
-        sensor.string_L_force = force.force_L;
-        sensor.string_R_force = force.force_R;
+        sensor.string_L_force_kg = (float)force.force_L / 10000.0f;
+        sensor.string_R_force_kg = (float)force.force_R / 10000.0f;
 
         om_publish(sensor_topic, &sensor, sizeof(msg_sensor_t), true, false);
 

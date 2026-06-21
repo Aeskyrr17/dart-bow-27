@@ -7,12 +7,12 @@ struct Dart_Config_t
 {
     int id;
     float yaw_offset;
-    float tension_tq_base;
-    float tension_tq_outpost;
+    float tension_kg_base;
+    float tension_kg_outpost;
 };
 
 /**
- * @brief 用于打表的结构体，包含了每个dart在不同距离下的yaw_offset和tension_tq
+ * @brief 用于打表的结构体，包含了每个dart在不同距离下的yaw_offset和tension_kg
  * 通过插值的方式可以得到更准确的aim参数
  */
 struct Dart_Base_Table_Point_t
@@ -20,13 +20,13 @@ struct Dart_Base_Table_Point_t
     int id;
     float distance;
     float yaw_offset;
-    float tension_tq;
+    float tension_kg;
 };
 
 struct Dart_Base_Aim_t
 {
     float yaw_offset;
-    float tension_tq;
+    float tension_kg;
 };
 
 /**
@@ -79,7 +79,7 @@ struct DartConfig
 
     int sequence[4]; //发射顺序，长度为4，值为1-16的dart id
 
-    float pre_tension;
+    float pre_tension_kg;
 };
 
 /**
@@ -91,7 +91,7 @@ struct DartRuntime
     struct AimTarget
     {
         float yaw_offset;
-        float tension;
+        float tension_kg;
     };
 
     int current_shot_number;        //<当前是第几发，范围1-4

@@ -149,8 +149,8 @@ struct logger_t
     bool door_session_active;
     bool autoaim_allow;
     bool door_close_inhibit_active;
-    float string_L_force;
-    float string_R_force;
+    float string_L_force_kg;
+    float string_R_force_kg;
     uint16_t checksum;
 } __attribute__((packed));
 
@@ -193,8 +193,8 @@ struct msg_cmd_t
     uint8_t current_shot_number;
 
     float yaw;              //约定为-1~1
-    float tension;
-    float pre_tension;
+    float tension_kg;
+    float pre_tension_kg;
     float rc_syn;
     float rc_string_L;
     float rc_string_R;
@@ -248,8 +248,8 @@ struct msg_motor_ctrl_t
     float string_L_spd;
     float string_R_spd;
 
-    float string_L_tq;
-    float string_R_tq;
+    float string_L_tension_kg;
+    float string_R_tension_kg;
 
     bool string_able;
 
@@ -290,8 +290,8 @@ struct msg_sensor_t
     bool is_launchplat_return;  //发射台是否归位
     bool is_fire_done;          //是否发射完成，可能不需要
     bool is_dart_loaded;        //飞镖装填完毕
-    float string_L_force;       //左副弦力矩
-    float string_R_force;       //右副弦力矩
+    float string_L_force_kg;    //左副弦拉力，单位kg
+    float string_R_force_kg;    //右副弦拉力，单位kg
     bool is_trigger_locked;     //扳机是否锁定
 };
 

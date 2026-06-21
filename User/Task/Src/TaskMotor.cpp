@@ -39,8 +39,8 @@ TaskMotors motor;
 
 #define MOTOR_DEBUG
 
-PID str_L_tqpid(0.012f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID str_R_tqpid(0.012f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_L_tension_pid(120.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_R_tension_pid(120.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID syn_pos_pid(5.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -83,7 +83,7 @@ float debug_syn_tq;
     float string_R_spd = 0.0f;
     const uint16_t string_max_current = 5000;
     const float string_open_loop_max_spd = 400.0f;
-    const float string_force_limit = 1000000.0f;
+    const float string_force_limit_kg = 100.0f;
     const uint32_t gantry_alive_check_period = 100;
     const uint8_t gantry_alive_lost_limit = 3;
     uint32_t gantry_alive_check_count = 0;
@@ -117,22 +117,22 @@ float debug_syn_tq;
 
         if (motorctrl.string_able)
         {
-            str_L_tqpid.ref = motorctrl.string_L_tq;
-            str_L_tqpid.fdb = sensor.string_L_force;
+            str_L_tension_pid.ref = motorctrl.string_L_tension_kg;
+            str_L_tension_pid.fdb = sensor.string_L_force_kg;
 
-            str_L_tqpid.UpdateResult();
-            float cmd_spd_L = Numeric::abs(str_L_tqpid.result);
-            if (str_L_tqpid.result > 0.0f)
+            str_L_tension_pid.UpdateResult();
+            float cmd_spd_L = Numeric::abs(str_L_tension_pid.result);
+            if (str_L_tension_pid.result > 0.0f)
                 string_L_spd = -cmd_spd_L;
             else
                 string_L_spd = cmd_spd_L;
 
-            str_R_tqpid.ref = motorctrl.string_R_tq;
-            str_R_tqpid.fdb = sensor.string_R_force;
+            str_R_tension_pid.ref = motorctrl.string_R_tension_kg;
+            str_R_tension_pid.fdb = sensor.string_R_force_kg;
 
-            str_R_tqpid.UpdateResult();
-            float cmd_spd_R = Numeric::abs(str_R_tqpid.result);
-            if (str_R_tqpid.result > 0.0f)
+            str_R_tension_pid.UpdateResult();
+            float cmd_spd_R = Numeric::abs(str_R_tension_pid.result);
+            if (str_R_tension_pid.result > 0.0f)
                 string_R_spd = -cmd_spd_R;
             else
                 string_R_spd = cmd_spd_R;
@@ -166,11 +166,11 @@ float debug_syn_tq;
         }
 
         // 
-        if (sensor.string_L_force > string_force_limit && string_L_spd < 0.0f)
+        if (sensor.string_L_force_kg > string_force_limit_kg && string_L_spd < 0.0f)
         {
             string_L_spd = 0.0f;
         }
-        if (sensor.string_R_force > string_force_limit && string_R_spd < 0.0f)
+        if (sensor.string_R_force_kg > string_force_limit_kg && string_R_spd < 0.0f)
         {
             string_R_spd = 0.0f;
         }

@@ -45,9 +45,9 @@ msg_motorfdb_t debug_motorfdb{};
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.7f;
-    const float string_deadzone = 500.0f;
+    const float string_tension_deadzone_kg = 0.05f;
     const float string_relax_spd = 1.0f; //副弦慢速放松，norm
-    const float string_relax_min_tension = 290000.0f;
+    const float string_relax_min_tension_kg = 29.0f;
 
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -25.2f;
@@ -57,9 +57,9 @@ msg_motorfdb_t debug_motorfdb{};
     const float syn_pos_5 = 2.08f;
 
     const float syn_slow_spd = 7.0f;
-    const float string_force_error_limit = 100000000.0f; //? 暂时没有使用,测试数据
+    const float string_force_error_limit_kg = 10000.0f; //? 暂时没有使用,测试数据
     const float syn_tq_error_limit = 10.0f;
-    const float string_force_jump_limit = 500000.0f;
+    const float string_force_jump_limit_kg = 50.0f;
     const ULONG string_relax_ticks = 1500;
     const ULONG syn_tq_error_ticks = 5000;
     const ULONG string_force_jump_ticks = 1000;
@@ -71,9 +71,9 @@ msg_motorfdb_t debug_motorfdb{};
     bool hand_trigger_lock = true;
     // bool coil_ready_stopped = false;
     bool trigger_lock_latched = false;
-    bool string_force_fdb_valid = false;
-    float string_L_force_1s_ago = 0.0f;
-    float string_R_force_1s_ago = 0.0f;
+    bool string_force_kg_fdb_valid = false;
+    float string_L_force_kg_1s_ago = 0.0f;
+    float string_R_force_kg_1s_ago = 0.0f;
     LAUNCHER_FSM_STATE last_fsm_state = LAUNCHER_FSM_STATE_INVALID;
     PREPARE_STATE last_prep_state = PREPARE_STATE_INVALID;
 
@@ -109,8 +109,8 @@ msg_motorfdb_t debug_motorfdb{};
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
         motorctrl.synbelt_mode = POS;
         motorctrl.synbelt_spd = 0.0f;
-        motorctrl.string_L_tq = cmd.tension;
-        motorctrl.string_R_tq = cmd.tension;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
+        motorctrl.string_L_tension_kg = cmd.tension_kg;
+        motorctrl.string_R_tension_kg = cmd.tension_kg;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
         motorctrl.string_able = false;
 
 
@@ -118,32 +118,32 @@ msg_motorfdb_t debug_motorfdb{};
         motorctrl.yaw_spd = cmd.yaw;
 
         //todo: 处理error信息[to test]
-        bool string_force_error = (Numeric::abs(sensor.string_L_force) > string_force_error_limit) ||
-                                  (Numeric::abs(sensor.string_R_force) > string_force_error_limit);
+        bool string_force_error = (Numeric::abs(sensor.string_L_force_kg) > string_force_error_limit_kg) ||
+                                  (Numeric::abs(sensor.string_R_force_kg) > string_force_error_limit_kg);
         bool string_force_jump_error = false;
         bool syn_tq_error = syn_tq_error_delay.ReachStable(
             Numeric::abs(motorfdb.syn_tq_fdb) > syn_tq_error_limit,
             syn_tq_error_ticks);
 
-        if (!string_force_fdb_valid || launcher.fsm_state == FIRING)
+        if (!string_force_kg_fdb_valid || launcher.fsm_state == FIRING)
         {
-            string_force_fdb_valid = true;
-            string_L_force_1s_ago = sensor.string_L_force;
-            string_R_force_1s_ago = sensor.string_R_force;
+            string_force_kg_fdb_valid = true;
+            string_L_force_kg_1s_ago = sensor.string_L_force_kg;
+            string_R_force_kg_1s_ago = sensor.string_R_force_kg;
             string_force_jump_delay.Reset();
         }
         else
         {
             string_force_jump_error =
-                ((Numeric::abs(sensor.string_L_force - string_L_force_1s_ago) > string_force_jump_limit) ||
-                (Numeric::abs(sensor.string_R_force - string_R_force_1s_ago) > string_force_jump_limit)) 
+                ((Numeric::abs(sensor.string_L_force_kg - string_L_force_kg_1s_ago) > string_force_jump_limit_kg) ||
+                (Numeric::abs(sensor.string_R_force_kg - string_R_force_kg_1s_ago) > string_force_jump_limit_kg))
                 &&
-                string_L_force_1s_ago != 0.0f && string_R_force_1s_ago != 0.0f; //避免初始状态力传感器数据异常导致的误判
+                string_L_force_kg_1s_ago != 0.0f && string_R_force_kg_1s_ago != 0.0f; //避免初始状态力传感器数据异常导致的误判
 
             if (string_force_jump_delay.Reach(string_force_jump_ticks))
             {
-                string_L_force_1s_ago = sensor.string_L_force;
-                string_R_force_1s_ago = sensor.string_R_force;
+                string_L_force_kg_1s_ago = sensor.string_L_force_kg;
+                string_R_force_kg_1s_ago = sensor.string_R_force_kg;
             }
         }
         //! 暂时不判断力传感器的跳变
@@ -259,8 +259,8 @@ msg_motorfdb_t debug_motorfdb{};
             {
 
                 motorctrl.string_able = true;
-                motorctrl.string_L_tq = cmd.tension;
-                motorctrl.string_R_tq = cmd.tension;
+                motorctrl.string_L_tension_kg = cmd.tension_kg;
+                motorctrl.string_R_tension_kg = cmd.tension_kg;
                 motorctrl.synbelt_mode = POS;
                 motorctrl.synbelt_pos +=0 ;
 
@@ -286,8 +286,8 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos +=0 ;
                         motorctrl.string_able = false;
-                        motorctrl.string_L_spd = (sensor.string_L_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
-                        motorctrl.string_R_spd = (sensor.string_R_force > string_relax_min_tension) ? string_relax_spd : 0.0f;
+                        motorctrl.string_L_spd = (sensor.string_L_force_kg > string_relax_min_tension_kg) ? string_relax_spd : 0.0f;
+                        motorctrl.string_R_spd = (sensor.string_R_force_kg > string_relax_min_tension_kg) ? string_relax_spd : 0.0f;
 
                         if (string_relax_delay.Reach(1500, prep_state_changed))
                         {
@@ -376,8 +376,8 @@ msg_motorfdb_t debug_motorfdb{};
 
 
 
-                        bool string_L_ok = Numeric::abs(sensor.string_L_force - cmd.tension) <= string_deadzone;
-                        bool string_R_ok = Numeric::abs(sensor.string_R_force - cmd.tension) <= string_deadzone;
+                        bool string_L_ok = Numeric::abs(sensor.string_L_force_kg - cmd.tension_kg) <= string_tension_deadzone_kg;
+                        bool string_R_ok = Numeric::abs(sensor.string_R_force_kg - cmd.tension_kg) <= string_tension_deadzone_kg;
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_5) <= syn_pos_deadzone;
 
                         if (string_L_ok && string_R_ok && syn_reset)
@@ -388,8 +388,8 @@ msg_motorfdb_t debug_motorfdb{};
                         {
                             if (!string_L_ok || !string_R_ok)
                             {
-                                motorctrl.string_L_tq = cmd.tension;
-                                motorctrl.string_R_tq = cmd.tension;
+                                motorctrl.string_L_tension_kg = cmd.tension_kg;
+                                motorctrl.string_R_tension_kg = cmd.tension_kg;
                             }
                         }                           
                         break;
@@ -404,8 +404,8 @@ msg_motorfdb_t debug_motorfdb{};
             {
                 motorctrl.trigger_release = false;
                 motorctrl.string_able = true;
-                motorctrl.string_L_tq = cmd.tension;//保持力矩
-                motorctrl.string_R_tq = cmd.tension;
+                motorctrl.string_L_tension_kg = cmd.tension_kg;//保持力矩
+                motorctrl.string_R_tension_kg = cmd.tension_kg;
 
                 if (cmd.action == DART_FIRE &&
                     ready_fire_delay.Reach(750, fsm_state_changed))

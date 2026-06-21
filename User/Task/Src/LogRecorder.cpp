@@ -69,8 +69,8 @@ extern Launcher_Cxt_t launcher;
         logger.door_session_active = 0;
         logger.autoaim_allow = dart_lib.runtime.autoAim.autoaim_allow;
         logger.door_close_inhibit_active = 0;
-        logger.string_L_force = sensor.string_L_force;
-        logger.string_R_force = sensor.string_R_force;
+        logger.string_L_force_kg = sensor.string_L_force_kg;
+        logger.string_R_force_kg = sensor.string_R_force_kg;
 
         om_publish(log_topic, &logger, sizeof(logger_t), true, false);
         tx_thread_sleep(1);

@@ -22,7 +22,7 @@ DartLibrary dart_lib;
 
 DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance);
 void Init_Dart_Config(DartLibrary* dart);
-void Build_Remoter_Command(const msg_remoter_t& remoter,float tension,msg_cmd_t* cmd);
+void Build_Remoter_Command(const msg_remoter_t& remoter,float tension_kg,msg_cmd_t* cmd);
 void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx, DartLibrary* dart,msg_cmd_t* cmd);
 
 #define FORCE_TABLING
@@ -39,44 +39,44 @@ void Init_Dart_Config(DartLibrary* dart)
 {
     DartConfig& config = dart->config;
 
-    config.dart[1] = {1, -0.40f, 645000.0f, 720000.0f};
-    config.dart[2] = {2, -0.40f, 645000.0f, 720000.0f};
-    config.dart[3] = {3, -0.08f, 700000.0f, 720000.0f};
-    config.dart[4] = {4, -0.08f, 687500.0f, 720000.0f};
+    config.dart[1] = {1, -0.40f, 64.5f, 72.0f};
+    config.dart[2] = {2, -0.40f, 64.5f, 72.0f};
+    config.dart[3] = {3, -0.08f, 70.0f, 72.0f};
+    config.dart[4] = {4, -0.08f, 68.75f, 72.0f};
 
-    config.dart[5] = {5, -0.10f, 685000.0f, 500000.0f};
-    config.dart[6] = {6, -0.20f, 655000.0f, 500000.0f};
-    config.dart[7] = {7, -0.18f, 690000.0f, 500000.0f};
-    config.dart[8] = {8, -0.08f, 684000.0f, 500000.0f};
+    config.dart[5] = {5, -0.10f, 68.5f, 50.0f};
+    config.dart[6] = {6, -0.20f, 65.5f, 50.0f};
+    config.dart[7] = {7, -0.18f, 69.0f, 50.0f};
+    config.dart[8] = {8, -0.08f, 68.4f, 50.0f};
 
-    config.dart[9]  = {9,  0.00f, 690000.0f, 500000.0f};
-    config.dart[10] = {10, 0.00f, 690000.0f, 500000.0f};
-    config.dart[11] = {11, 0.00f, 690000.0f, 500000.0f};
-    config.dart[12] = {12, 0.00f, 690000.0f, 500000.0f};
+    config.dart[9]  = {9,  0.00f, 69.0f, 50.0f};
+    config.dart[10] = {10, 0.00f, 69.0f, 50.0f};
+    config.dart[11] = {11, 0.00f, 69.0f, 50.0f};
+    config.dart[12] = {12, 0.00f, 69.0f, 50.0f};
 
-    config.dart[13] = {13, 0.00f, 690000.0f, 500000.0f};
-    config.dart[14] = {14, 0.00f, 690000.0f, 500000.0f};
-    config.dart[15] = {15, 0.00f, 690000.0f, 500000.0f};
-    config.dart[16] = {16, 0.00f, 690000.0f, 500000.0f};
+    config.dart[13] = {13, 0.00f, 69.0f, 50.0f};
+    config.dart[14] = {14, 0.00f, 69.0f, 50.0f};
+    config.dart[15] = {15, 0.00f, 69.0f, 50.0f};
+    config.dart[16] = {16, 0.00f, 69.0f, 50.0f};
 
 
     const Dart_Base_Table_Point_t base_distance_table[] = {
-        {1,  25.0f, -0.80f, 660000.0f},
-        {2,  25.0f, -1.20f, 670000.0f},
-        {3,  25.0f, -0.68f, 660000.0f},
-        {4,  25.0f, -1.20f, 670000.0f},
-        {5,  25.0f, -0.90f, 645000.0f},
-        {6,  25.0f, -0.75f, 655000.0f},
-        {7,  25.0f,  0.00f, 820000.0f},
-        {8,  25.0f, -0.70f, 660000.0f},
-        {9,  25.0f,  0.00f, 690000.0f},
-        {10, 25.0f,  0.00f, 690000.0f},
-        {11, 25.0f,  0.00f, 690000.0f},
-        {12, 25.0f,  0.00f, 690000.0f},
-        {13, 25.0f,  0.00f, 690000.0f},
-        {14, 25.0f,  0.00f, 690000.0f},
-        {15, 25.0f,  0.00f, 690000.0f},
-        {16, 25.0f,  0.00f, 690000.0f},
+        {1,  25.0f, -0.80f, 66.0f},
+        {2,  25.0f, -1.20f, 67.0f},
+        {3,  25.0f, -0.68f, 66.0f},
+        {4,  25.0f, -1.20f, 67.0f},
+        {5,  25.0f, -0.90f, 64.5f},
+        {6,  25.0f, -0.75f, 65.5f},
+        {7,  25.0f,  0.00f, 82.0f},
+        {8,  25.0f, -0.70f, 66.0f},
+        {9,  25.0f,  0.00f, 69.0f},
+        {10, 25.0f,  0.00f, 69.0f},
+        {11, 25.0f,  0.00f, 69.0f},
+        {12, 25.0f,  0.00f, 69.0f},
+        {13, 25.0f,  0.00f, 69.0f},
+        {14, 25.0f,  0.00f, 69.0f},
+        {15, 25.0f,  0.00f, 69.0f},
+        {16, 25.0f,  0.00f, 69.0f},
     };
 
     dart->Set_Base_Distance_Table(
@@ -92,7 +92,7 @@ void Init_Dart_Config(DartLibrary* dart)
     config.sequence[2] = 5;
     config.sequence[3] = 8;
 
-    config.pre_tension = 320000.0f;
+    config.pre_tension_kg = 32.0f;
 }
 
 [[nonreturn]] void SysctrlThreadFun(ULONG initial_input)
@@ -163,11 +163,11 @@ void Init_Dart_Config(DartLibrary* dart)
         // dart_lib.runtime.referee.chosen_target = 0; //前哨
 
 
-        //更新tension和yaw数据
+        //更新tension_kg和yaw数据
         int id = dart_lib.runtime.current_dart_id;
         dart_lib.runtime.current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
 
-        cmd.tension = dart_lib.runtime.current_aim_target.tension;
+        cmd.tension_kg = dart_lib.runtime.current_aim_target.tension_kg;
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
         cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
@@ -220,7 +220,7 @@ void Init_Dart_Config(DartLibrary* dart)
 }
 
 /**
- * @brief 根据当前固定值或表中视觉距离解析出当前的的目标tension和yaw
+ * @brief 根据当前固定值或表中视觉距离解析出当前的的目标tension_kg和yaw
  * @param dart 
  * @param vision_distance 
  * @return DartRuntime::AimTarget
@@ -232,17 +232,17 @@ DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float
     if (dart.runtime.referee.chosen_target == 0) //前哨站
     {
         target.yaw_offset = dart.config.dart[id].yaw_offset;
-        target.tension = dart.config.dart[id].tension_tq_outpost;
+        target.tension_kg = dart.config.dart[id].tension_kg_outpost;
     }
     else
     {
 #ifdef FORCE_TABLING
         target.yaw_offset = dart.config.dart[id].yaw_offset;
-        target.tension = dart.config.dart[id].tension_tq_base;
+        target.tension_kg = dart.config.dart[id].tension_kg_base;
 #else
         Dart_Base_Aim_t base_aim = dart.Get_Base_Aim_By_Distance(id, vision_distance);
         target.yaw_offset = base_aim.yaw_offset;
-        target.tension = base_aim.tension_tq;
+        target.tension_kg = base_aim.tension_kg;
 #endif
     }
 
@@ -252,16 +252,16 @@ DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float
 /**
  * @brief 处理遥控器输入，生成对应的cmd命令
  * @param remoter 
- * @param tension 
+ * @param tension_kg
  * @param cmd 
  */
-void Build_Remoter_Command(const msg_remoter_t& remoter, float tension, msg_cmd_t* cmd)
+void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_cmd_t* cmd)
 {
     if (remoter.left_sw == Mid && remoter.right_sw == M2U)
     {
         cmd->action = DART_FIRE;
         cmd->yaw = remoter.right_x;
-        cmd->tension = tension;
+        cmd->tension_kg = tension_kg;
     }
     else if (remoter.left_sw == Down)
     {
@@ -299,14 +299,14 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension, msg_cmd_
         {
             cmd->action = DART_PREPARE;
             cmd->yaw = remoter.right_x;
-            cmd->tension = tension;
+            cmd->tension_kg = tension_kg;
 
         }
         else if (remoter.right_sw == Up)
         {
             cmd->action = DART_FIRE;
             cmd->yaw = remoter.right_x;
-            cmd->tension = tension;
+            cmd->tension_kg = tension_kg;
         }
     }
     else
@@ -340,12 +340,12 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
         else
         {
             cmd->action = DART_PRE_TENSION;
-            cmd->tension = dart->config.pre_tension;
+            cmd->tension_kg = dart->config.pre_tension_kg;
         }
     }
     else
     {
-        Build_Remoter_Command(remoter, dart->runtime.current_aim_target.tension, cmd);
+        Build_Remoter_Command(remoter, dart->runtime.current_aim_target.tension_kg, cmd);
     }
 }
 
@@ -368,13 +368,13 @@ void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cm
     if (!(dart->runtime.current_shot_number >= 1 && dart->runtime.current_shot_number <= 4))
     {
         cmd->action = DART_RELAX;
-        cmd->tension = dart->runtime.current_aim_target.tension;
+        cmd->tension_kg = dart->runtime.current_aim_target.tension_kg;
         cmd->yaw = 0;
         return;
     }
 
     cmd->action = DART_PREPARE;
-    cmd->tension = dart->runtime.current_aim_target.tension;
+    cmd->tension_kg = dart->runtime.current_aim_target.tension_kg;
 
     dart->runtime.autoAim.yaw_ok = false;
     if (rx->yaw == 666)
@@ -483,7 +483,7 @@ DartLibrary::DartLibrary()
     config.sequence[1] = 2;
     config.sequence[2] = 3;
     config.sequence[3] = 4;
-    config.pre_tension = 0.0f;
+    config.pre_tension_kg = 0.0f;
 
     runtime.current_shot_number = 1;
     runtime.current_dart_id = config.sequence[0];
@@ -600,7 +600,7 @@ void DartLibrary::Update_AutoAim_Prepare_Allowed()
 
 }
 /**
- * @brief 创建或更新飞镖距离表，表中每个点包含了对应距离的yaw_offset和tension_tq数据
+ * @brief 创建或更新飞镖距离表，表中每个点包含了对应距离的yaw_offset和tension_kg数据
  * 
  * @param table 
  * @param table_len 
@@ -620,7 +620,7 @@ void DartLibrary::Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, 
 }
 
 /**
- * @brief 查表或插值计算出对应距离的yaw_offset和tension_tq数据
+ * @brief 查表或插值计算出对应距离的yaw_offset和tension_kg数据
  * 若表中没有对应dart_id的数据，或距离数据异常，则返回dart配置中的固定值
  * 
  * @param id 
@@ -630,7 +630,7 @@ void DartLibrary::Set_Base_Distance_Table(const Dart_Base_Table_Point_t* table, 
 Dart_Base_Aim_t DartLibrary::Get_Base_Aim_By_Distance(int id, float distance) const
 {
     int dart_id = (id >= 1 && id <= 16) ? id : 0;
-    Dart_Base_Aim_t aim = {config.dart[dart_id].yaw_offset, config.dart[dart_id].tension_tq_base};
+    Dart_Base_Aim_t aim = {config.dart[dart_id].yaw_offset, config.dart[dart_id].tension_kg_base};
     if (dart_id == 0 || distance <= 0.0f || config.base_distance_table_len == 0)
     {
         return aim;
@@ -666,20 +666,20 @@ Dart_Base_Aim_t DartLibrary::Get_Base_Aim_By_Distance(int id, float distance) co
     }
     if (lower == nullptr)
     {
-        return {upper->yaw_offset, upper->tension_tq};
+        return {upper->yaw_offset, upper->tension_kg};
     }
     if (upper == nullptr)
     {
-        return {lower->yaw_offset, lower->tension_tq};
+        return {lower->yaw_offset, lower->tension_kg};
     }
     if (upper->distance == lower->distance)
     {
-        return {lower->yaw_offset, lower->tension_tq};
+        return {lower->yaw_offset, lower->tension_kg};
     }
 
     float k = (distance - lower->distance) / (upper->distance - lower->distance);
     aim.yaw_offset = lower->yaw_offset + (upper->yaw_offset - lower->yaw_offset) * k;
-    aim.tension_tq = lower->tension_tq + (upper->tension_tq - lower->tension_tq) * k;
+    aim.tension_kg = lower->tension_kg + (upper->tension_kg - lower->tension_kg) * k;
     return aim;
 }
 
