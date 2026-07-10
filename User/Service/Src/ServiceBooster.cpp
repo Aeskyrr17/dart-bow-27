@@ -39,7 +39,8 @@ UCHAR KF_PoolBuf[4096] = {0};
 
 /*OneMessage pool*/
 TX_BYTE_POOL MsgPool;
-UCHAR Msg_PoolBuf[4096] = {0};
+// UCHAR Msg_PoolBuf[4096] = {0};
+UCHAR Msg_PoolBuf[16384] = {0};
 
 [[noreturn]] void my_thread_entry(ULONG thread_input)
 {
