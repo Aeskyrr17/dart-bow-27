@@ -5,6 +5,7 @@
 #include "tx_api.h"
 #include "usart.h"
 #include "config_sensor.hpp"
+#include "HostComm.hpp"
 
 /*------------全局变量------------*/
 extern UART_HandleTypeDef huart5;
@@ -12,6 +13,7 @@ extern UART_HandleTypeDef huart7;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart10;
 extern DMA_HandleTypeDef hdma_uart5_rx;
 extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_uart7_tx;
@@ -21,6 +23,8 @@ extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern DMA_HandleTypeDef hdma_usart3_tx;
+extern DMA_HandleTypeDef hdma_usart10_rx;
+extern DMA_HandleTypeDef hdma_usart10_tx;
 
 // uart7 not used
 __attribute__((section (".RAM_D1"))) uint8_t UART7RxBuffer[256] = {0};
@@ -62,6 +66,12 @@ void USART_Init()
   __HAL_UART_SEND_REQ(&huart7, UART_RXDATA_FLUSH_REQUEST); // 清空缓存，消除接收错位
   HAL_UART_Receive_DMA(&huart7, g4_rx_buffer, G4_FORCE_RX_DATA_SIZE);
 
+  // USART10 RX starts in HostComm after its thread semaphores are ready.
+  __HAL_DMA_DISABLE_IT(&hdma_usart10_rx, DMA_IT_HT);
+  __HAL_DMA_ENABLE_IT(&hdma_usart10_rx, DMA_IT_TC);
+  __HAL_DMA_DISABLE_IT(&hdma_usart10_tx, DMA_IT_HT);
+  __HAL_DMA_ENABLE_IT(&hdma_usart10_tx, DMA_IT_TC);
+
 
   
   // usart2
@@ -95,6 +105,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     referee_fifo.push(USART1RxBuffer, Size);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1, USART1RxBuffer, 256);
   }
+  else if (huart == &huart10)
+  {
+    HostComm_RxEventCallback(Size);
+  }
   // else if (huart == &huart2)
   // {
   //   ForceSensor_RxEventCallback(huart, Size);
@@ -119,11 +133,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
 }
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart == &huart10)
+  {
+    HostComm_TxCpltCallback(huart);
+  }
+}
+
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
   if (huart == &huart7)
   {
     HAL_UART_Receive_DMA(&huart7, g4_rx_buffer, G4_FORCE_RX_DATA_SIZE);
+  }
+  else if (huart == &huart10)
+  {
+    HostComm_ErrorCallback(huart);
   }
   else if (huart == &huart2 || huart == &huart3)
   {
