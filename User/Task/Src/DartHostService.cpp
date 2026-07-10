@@ -10,6 +10,7 @@ namespace
 {
 constexpr uint8_t HOSTREQ_FIFO_LEN = 16;
 constexpr uint8_t HOSTREQ_MAX_PROCESS_PER_POLL = 4;
+constexpr ULONG HOST_FORCE_TELEMETRY_PERIOD_TICKS = 10;
 
 constexpr float HOST_YAW_MIN = -5.0f;
 constexpr float HOST_YAW_MAX = 5.0f;
@@ -139,6 +140,29 @@ void HostSendHeartbeat(om_topic_t* topic, const DartLibrary& dart, uint8_t seq)
     HostPublish(topic, tx);
 }
 
+void HostSendForceTelemetry(om_topic_t* topic, uint8_t seq,
+                            const msg_motor_ctrl_t& motorctrl,
+                            const msg_sensor_t& sensor)
+{
+    msg_hosttx_t tx{};
+    tx.valid = 1;
+    tx.type = HOST_TYPE_FAST_TELEMETRY;
+    tx.seq = seq;
+    tx.len = 21;
+    HostPutU32(&tx.payload[0], tx_time_get());
+    HostPutFloat(&tx.payload[4], motorctrl.string_L_tension_kg);
+    HostPutFloat(&tx.payload[8], motorctrl.string_R_tension_kg);
+    HostPutFloat(&tx.payload[12], sensor.string_L_force_kg);
+    HostPutFloat(&tx.payload[16], sensor.string_R_force_kg);
+    tx.payload[20] = motorctrl.string_able ? 1U : 0U;
+
+    // Telemetry is best effort so it never holds up the control thread.
+    if (topic != nullptr)
+    {
+        om_publish(topic, &tx, sizeof(tx), false, false);
+    }
+}
+
 bool HostFloatInRange(float value, float min_value, float max_value)
 {
     return std::isfinite(value) && value >= min_value && value <= max_value;
@@ -149,6 +173,12 @@ void DartHostService::Init()
 {
     hostreq_fifo_ = nullptr;
     hosttx_topic_ = nullptr;
+    sensor_suber_ = nullptr;
+    motorctrl_suber_ = nullptr;
+    latest_sensor_ = {};
+    latest_motorctrl_ = {};
+    last_force_telemetry_tick_ = 0;
+    force_telemetry_seq_ = 0;
     EnsureTopicsReady();
 }
 
@@ -159,6 +189,8 @@ void DartHostService::Poll(DartLibrary& dart, const msg_launcher2sysctrl_t& lch2
         return;
     }
 
+    UpdateForceTelemetrySources();
+
     msg_hostreq_t req{};
     for (uint8_t i = 0; i < HOSTREQ_MAX_PROCESS_PER_POLL && om_fifo_readable(hostreq_fifo_); i++)
     {
@@ -167,6 +199,8 @@ void DartHostService::Poll(DartLibrary& dart, const msg_launcher2sysctrl_t& lch2
             ProcessRequest(req, lch2sys, dart);
         }
     }
+
+    PublishForceTelemetry();
 }
 
 bool DartHostService::EnsureTopicsReady()
@@ -186,6 +220,53 @@ bool DartHostService::EnsureTopicsReady()
     }
 
     return hostreq_fifo_ != nullptr && hosttx_topic_ != nullptr;
+}
+
+void DartHostService::UpdateForceTelemetrySources()
+{
+    if (sensor_suber_ == nullptr)
+    {
+        om_topic_t* sensor_topic = om_find_topic("sensor", 0);
+        if (sensor_topic != nullptr)
+        {
+            sensor_suber_ = om_subscribe(sensor_topic);
+        }
+    }
+
+    if (motorctrl_suber_ == nullptr)
+    {
+        om_topic_t* motorctrl_topic = om_find_topic("motorctrl", 0);
+        if (motorctrl_topic != nullptr)
+        {
+            motorctrl_suber_ = om_subscribe(motorctrl_topic);
+        }
+    }
+
+    if (sensor_suber_ != nullptr)
+    {
+        om_suber_export(sensor_suber_, &latest_sensor_, false);
+    }
+    if (motorctrl_suber_ != nullptr)
+    {
+        om_suber_export(motorctrl_suber_, &latest_motorctrl_, false);
+    }
+}
+
+void DartHostService::PublishForceTelemetry()
+{
+    if (hosttx_topic_ == nullptr || sensor_suber_ == nullptr || motorctrl_suber_ == nullptr)
+    {
+        return;
+    }
+
+    const ULONG now = tx_time_get();
+    if (static_cast<ULONG>(now - last_force_telemetry_tick_) < HOST_FORCE_TELEMETRY_PERIOD_TICKS)
+    {
+        return;
+    }
+
+    last_force_telemetry_tick_ = now;
+    HostSendForceTelemetry(hosttx_topic_, force_telemetry_seq_++, latest_motorctrl_, latest_sensor_);
 }
 
 bool DartHostService::IsResetTestRoundAllowed(const msg_launcher2sysctrl_t& lch2sys) const
