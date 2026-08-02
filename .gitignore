@@ -1,6 +1,26 @@
 .venv/
 .vscode/
 .agents/
+.settings/
+.idea/
 
 build/
+cmake-build-*/
+out/
 __pycache__/
+
+# Local editor and tool state
+*.user
+*.userprefs
+*.suo
+*.swp
+*.swo
+
+# CMake/Ninja local files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+Makefile
+ninja-build.ninja
+install_manifest.txt
