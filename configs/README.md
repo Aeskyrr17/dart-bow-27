@@ -24,7 +24,7 @@
 | `remoter.source` | string | 空 | 遥控器来源，可选 `dr16`、`vt03` 或 `ps2`。 |
 | `remoter.thread_priority` | number | `2` | 遥控器线程优先级。 |
 | `remoter.rx_timeout_ticks` | number | `100` | 遥控器接收超时 tick 数。 |
-| `remoter.ps2_offline_timeout_ticks` | number | `600` | PS2 接收器无合法帧或 `0xAB` 后判定接收器离线的超时。 |
+| `remoter.ps2_offline_timeout_ticks` | number | `600` | 超过该时间未收到 PS2 正常帧或 `0xAB` 时，判定接收器离线。 |
 | `remoter.ps2_frame_timeout_ticks` | number | `20` | PS2 正常帧接收到一半时的重同步超时。 |
 | `remoter.ps2_deadzone` | number | `0.08` | PS2 摇杆归一化后的中心死区，范围为 `[0, 1)`。 |
 | `referee.thread_priority` | number | `8` | 裁判系统线程优先级。 |
@@ -49,6 +49,36 @@
 ```
 
 `bindings.remoter_uart` 负责绑定实际 UART，生成配置会把它同时导出为 `app::uart::ps2`。该 UART 必须在 `board.ioc` 中启用 RX DMA 并完成对应 RX/TX 引脚配置；PS2 驱动初始化时会把绑定端口切换为 `9600 baud, 8 data bits, no parity, 1 stop bit (8N1)`。
+
+PS2 UART 协议和按键位序以 [YFROBOT PS2 UART 说明书](https://pjfcckenlt.feishu.cn/wiki/Xnl8wHa3liFP9zkmWaXcXsWsnqc) 为准。统一遥控器状态通过 `ps2_link` 区分 `connected`、`remote_disconnected`（收到接收器每 200 ms 发送的 `0xAB`）和 `receiver_offline`（正常帧与 `0xAB` 均超时）三种状态；`ps2_buttons` 保留手柄自己的 16 位按键位图，不映射为键盘按键：
+
+| 位 | `ps2_button` | 位 | `ps2_button` |
+| --- | --- | --- | --- |
+| 15 | `square` | 7 | `left` |
+| 14 | `cross` | 6 | `down` |
+| 13 | `circle` | 5 | `right` |
+| 12 | `triangle` | 4 | `up` |
+| 11 | `r1` | 3 | `start` |
+| 10 | `l1` | 2 | `r3` |
+| 9 | `r2` | 1 | `l3` |
+| 8 | `l2` | 0 | `select` |
+
+可使用 `remoter::is_held(state.ps2_buttons, remoter::ps2_button::cross)` 判断指定按键是否按下。
+
+上层处理 `ps2_pressed` / `ps2_released` 时应同时记录 `ps2_event_count`，
+仅在计数变化时处理一次，避免同一帧的边缘被重复执行。
+
+### PS2 Live Watch 调试字段
+
+配置生成器会根据 `remoter.source` 生成 `ENABLE_PS2`。只有当
+`remoter.source` 为 `ps2`、即 `ENABLE_PS2=1` 时，
+`demo_debug_instance.remoter_unit` 才会包含 `ps2_` 前缀的调试字段，
+选择 `dr16` 或 `vt03` 时，这些字段不会进入调试结构体，也不会占用
+`demo_debug_instance` 的内存。该条件开关只裁剪 Demo Debug 字段，
+不改变统一 remoter demo 的初始化和监视流程。
+
+切换 `remoter.source` 后需要重新运行 CMake configure/build，并让 Cortex-Debug
+重新加载最新 ELF。非 PS2 固件中 Live Watch 找不到 `ps2_` 字段属于正常现象。
 
 注意：`ahrs`、`referee`、`test`、`usb` 这些分组在生成脚本中按“整组缺省”补默认值。如果某个分组里只填写一部分字段，未填写的字段不会生成，使用时应保持同组字段完整。`remoter` 分组的字段支持逐项缺省。
 

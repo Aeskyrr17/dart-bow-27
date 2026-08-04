@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.hpp"
 #include "demo_protocol.hpp"
 
 #include <cstdint>
@@ -109,6 +110,47 @@ struct remoter_unit_state : unit_test_state
 {
     bool offline = true;
     std::uint32_t source = 0;
+#if ENABLE_PS2
+    std::uint32_t ps2_link = 0;
+    std::uint16_t ps2_buttons = 0;
+    std::uint16_t ps2_raw_buttons = 0;
+    std::uint16_t ps2_pressed = 0;
+    std::uint16_t ps2_released = 0;
+    std::uint16_t ps2_pressed_seen_mask = 0;
+    std::uint16_t ps2_released_seen_mask = 0;
+    bool ps2_mapping_match = false;
+    bool ps2_mapping_pending = false;
+    bool ps2_square = false;
+    bool ps2_cross = false;
+    bool ps2_circle = false;
+    bool ps2_triangle = false;
+    bool ps2_r1 = false;
+    bool ps2_l1 = false;
+    bool ps2_r2 = false;
+    bool ps2_l2 = false;
+    bool ps2_left = false;
+    bool ps2_down = false;
+    bool ps2_right = false;
+    bool ps2_up = false;
+    bool ps2_start = false;
+    bool ps2_r3 = false;
+    bool ps2_l3 = false;
+    bool ps2_select = false;
+    std::uint8_t ps2_raw_left_x = 127;
+    std::uint8_t ps2_raw_left_y = 128;
+    std::uint8_t ps2_raw_right_x = 127;
+    std::uint8_t ps2_raw_right_y = 128;
+    std::uint32_t ps2_frame_count = 0;
+    std::uint32_t ps2_signal_count = 0;
+    std::uint32_t ps2_last_signal_tick = 0;
+    std::uint32_t ps2_raw_update_count = 0;
+    std::uint32_t ps2_upper_event_count = 0;
+    std::uint32_t ps2_button_event_count = 0;
+    std::uint32_t ps2_last_button_latency_ticks = 0;
+    std::uint32_t ps2_max_button_latency_ticks = 0;
+    std::uint32_t ps2_frame_period_ticks = 0;
+    std::uint32_t ps2_max_frame_period_ticks = 0;
+#endif
     std::uint32_t left_sw = 0;
     std::uint32_t right_sw = 0;
     std::uint32_t last_left_sw = 0;
@@ -122,42 +164,6 @@ struct remoter_unit_state : unit_test_state
     float left_y = 0.0f;
     float mouse_x = 0.0f;
     float mouse_y = 0.0f;
-};
-
-struct ps2_unit_state : unit_test_state
-{
-    bool generic_offline = true;
-    std::uint32_t link = 0;
-    std::uint32_t generic_source = 0;
-    std::uint32_t generic_update_count = 0;
-    std::uint32_t raw_update_count = 0;
-    std::uint32_t connected_frame_count = 0;
-    std::uint32_t remote_disconnected_count = 0;
-    std::uint32_t receiver_offline_count = 0;
-    std::uint32_t last_update_tick = 0;
-    std::uint32_t last_frame_period_ticks = 0;
-    std::uint32_t min_frame_period_ticks = 0;
-    std::uint32_t max_frame_period_ticks = 0;
-
-    std::uint16_t buttons = 0;
-    std::uint16_t pressed = 0;
-    std::uint16_t released = 0;
-    std::uint16_t last_pressed = 0;
-    std::uint16_t last_released = 0;
-    std::uint16_t pressed_seen_mask = 0;
-    std::uint16_t released_seen_mask = 0;
-    std::uint32_t press_event_count = 0;
-    std::uint32_t release_event_count = 0;
-
-    std::uint8_t raw_left_x = 128;
-    std::uint8_t raw_left_y = 128;
-    std::uint8_t raw_right_x = 128;
-    std::uint8_t raw_right_y = 128;
-
-    float left_x = 0.0f;
-    float left_y = 0.0f;
-    float right_x = 0.0f;
-    float right_y = 0.0f;
 };
 
 struct referee_ui_state : unit_test_state
@@ -178,7 +184,6 @@ struct debug_instance_type
     imu_unit_state imu_unit{};
     unit_test_state motor_unit{};
     remoter_unit_state remoter_unit{};
-    ps2_unit_state ps2_unit{};
     referee_ui_state referee_ui{};
 };
 
