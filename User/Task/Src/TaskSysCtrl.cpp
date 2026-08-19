@@ -276,7 +276,7 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_c
         else if (remoter.right_sw == Mid)
         {
             cmd->action = DART_SYN_ADJUST;
-            cmd->rc_syn =  remoter.right_y * 0.01f;
+            cmd->rc_syn =  - remoter.right_y * 0.01f;
         }
         else if (remoter.right_sw == Up)
         {

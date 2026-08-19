@@ -118,5 +118,4 @@ extern "C" void ServiceBooster()
         RefereeThreadFun, 0x1234, RefereeThreadStack, sizeof(RefereeThreadStack),
         10, 10, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    USART_Init();
 }

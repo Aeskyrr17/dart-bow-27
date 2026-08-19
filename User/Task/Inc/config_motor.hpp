@@ -1,5 +1,6 @@
 #pragma once
 #include "DM4310_MultiPos.hpp"
+#include "DM8009P.hpp"
 #include "DMMotor.hpp"
 #ifndef TASK_MOTOR_HPP
 #define TASK_MOTOR_HPP
@@ -494,9 +495,9 @@ class TaskMotors
 {
     public:
     DM4310_MultiPos synbeltMotor;            //同步带电机
-    DM4310 gantryMotor;         
+    DM4310 gantryMotor;  
+    DM8009P yawMotor;       
 
-    ZDTStepper yawMotor;
 
     ZDTStepper stringMotorL;
     ZDTStepper stringMotorR;
@@ -516,20 +517,28 @@ class TaskMotors
      */
     void MotorsInit()
     {
+
+        // DMMotorHandler::Instance()->registerMotor(&this->gantryMotor, &hfdcan1, 0x01);
+        // this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
+        // this->gantryMotor.torqueSet = 0.0f;
+        // DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
+        // this->gantry_max_spd = 4.0f;
+
+
+        // DMMotorHandler::Instance()->registerMotor(&this->yawMotor, &hfdcan2, 0x03);
+        // this->yawMotor.controlMode = DMMotor::POS_SPD_MODE;
+        // this->yawMotor.torqueSet = 0.0f;
+        // this->synbeltMotor.speedSet = 3.0f;
+        // DMMotorHandler::Instance()->EnableMotor_Block(&this->yawMotor);
+        
         DMMotorHandler::Instance()->registerMotor(&this->synbeltMotor, &hfdcan1, 0x02);
         this->synbeltMotor.controlMode = DMMotor::SPD_MODE;
         this->synbeltMotor.torqueSet = 0.0f;
-        DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
         // this->synbelt_max_spd = 3.0f;
         this->synbeltMotor.speedSet = 20.0f;
+        DMMotorHandler::Instance()->EnableMotor_Block(&this->synbeltMotor);
+        this->synbeltMotor.positionSet = this->synbeltMotor.motorFeedback.positionFdb;
         DMMotorHandler::Instance()->sendControlData();
-
-
-        DMMotorHandler::Instance()->registerMotor(&this->gantryMotor, &hfdcan1, 0x01);
-        this->gantryMotor.controlMode = DMMotor::POS_SPD_MODE;
-        this->gantryMotor.torqueSet = 0.0f;
-        DMMotorHandler::Instance()->EnableMotor_Block(&this->gantryMotor);
-        this->gantry_max_spd = 4.0f;
 
 
         this->triggerMotor.Init(&htim1, TIM_CHANNEL_3);
@@ -537,7 +546,6 @@ class TaskMotors
         this->stringMotorL.Init(&hfdcan3, 2, 0);
         this->stringMotorR.Init(&hfdcan3, 1, 1); //?这个positive_dir是什么来着
 
-        this->yawMotor.Init(&hfdcan2, 1, 0);
 
     }   
 

@@ -110,9 +110,7 @@ float debug_syn_tq;
         }
         last_trigger_release = motorctrl.trigger_release;
 
-        motor.yawMotor.X_V2_Vel_LC_Control(motor.yawMotor.id, motor.yawMotor.dir, 1000,
-                                            motor.yawMotor.ParseSpeed(motorctrl.yaw_spd * 100), 
-                                            false, 5000);
+
 
 
         if (motorctrl.string_able)
@@ -206,6 +204,10 @@ float debug_syn_tq;
             motor.synbeltMotor.speedSet = 0.0f;
             break;
         }
+
+        //! 目前yaw相当于不动
+        motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
+
         DMMotorHandler::Instance()->sendControlData();
 
         // gantry电机状态error check
