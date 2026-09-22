@@ -14,14 +14,14 @@ DM8009P::DM8009P()
     motorFeedback.temMOS = 0.0f;
     motorFeedback.temRotor = 0.0f;
     // DM8009P 的最大最小位置、速度、扭矩值，需要再上位机中设置和确认
-    P_MAX = 12.5f;
-    P_MIN = -12.5f;
+    P_MAX = 12.5664f;
+    P_MIN = -12.5664f;
 
-    V_MAX = 45.0f;
-    V_MIN = -45.0f;
+    V_MAX = 15.0f;
+    V_MIN = -15.0f;
 
-    T_MAX = 54.0f;
-    T_MIN = -54.0f;
+    T_MAX =20.0f;
+    T_MIN = -20.0f;
     motorState = MOTOR_OFFLINE;
 
     AliveFlag = 0;
