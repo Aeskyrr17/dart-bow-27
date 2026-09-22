@@ -91,8 +91,10 @@ void Force_R_Request080();
 
     uint32_t g4_force_lost_ticks = 0;
 
+#ifndef USING_G4_FORCE_SENSOR
     HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
+#endif
 
     for (;;)
     {

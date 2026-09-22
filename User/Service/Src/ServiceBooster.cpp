@@ -19,10 +19,10 @@ extern TX_SEMAPHORE RemoterGot;
 extern uint8_t RemoterThreadStack[1024];
 extern void RemoterThreadFun(ULONG initial_input);
 
-// extern TX_THREAD IMUThread;
-// extern TX_SEMAPHORE IMUThreadSem;
-// extern uint8_t IMUThreadStack[4096];
-// extern void IMUThreadFun(ULONG initial_input);
+extern TX_THREAD IMUThread;
+extern TX_SEMAPHORE IMUThreadSem;
+extern uint8_t IMUThreadStack[4096];
+extern void IMUThreadFun(ULONG initial_input);
 
 // extern TX_THREAD IMUTempThread;
 // extern uint8_t IMUTempThreadStack[1024];
@@ -90,6 +90,7 @@ extern "C" void ServiceBooster()
     tx_semaphore_create(&my_semaphore1, TX_NAME("my_semaphore1"), 0);
     tx_semaphore_create(&RemoterGot, TX_NAME("RemoterGot"), 0);
     tx_semaphore_create(&RefereeThreadSem, TX_NAME("RefereeThreadSem"), 0);
+    tx_semaphore_create(&IMUThreadSem, TX_NAME("IMUThreadSem"), 0);
 
     /* Create my_thread! */
     tx_thread_create(&my_thread1, TX_NAME("my_thread1"),
@@ -104,11 +105,9 @@ extern "C" void ServiceBooster()
         RemoterThreadFun, 0x1234, RemoterThreadStack, sizeof(RemoterThreadStack),
         2, 2, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    // tx_thread_create(&IMUThread, TX_NAME("IMUThread"),
-    //     IMUThreadFun, 0x1234, IMUThreadStack, sizeof(IMUThreadStack),
-    //     3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    // tx_semaphore_create(&IMUThreadSem, TX_NAME("IMUThreadSem"), 0);
+    tx_thread_create(&IMUThread, TX_NAME("IMUThread"),
+        IMUThreadFun, 0x1234, IMUThreadStack, sizeof(IMUThreadStack),
+        3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     // tx_thread_create(&IMUTempThread, TX_NAME("IMUTempThread"),
     //     IMUTempThreadFun, 0x1234, IMUTempThreadStack, sizeof(IMUTempThreadStack),

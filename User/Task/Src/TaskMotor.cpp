@@ -55,6 +55,7 @@ PID yaw_spd_pid(20.0f, 0.0f, 0.0f, 10.0f, 1.0f,
 constexpr float yaw_target_position_rate_rad_s = 0.5f;
 constexpr float yaw_control_period_s = 0.001f;
 constexpr float yaw_cmd_deadzone = 0.01f;
+constexpr float yaw_imu_spd_sign = 1.0f;
 
 constexpr float yaw_static_torque_pos_nm = 1.2f;
 constexpr float yaw_static_torque_neg_nm = 1.2f;
@@ -67,6 +68,8 @@ struct yaw_debug_t
     float pos_fdb;
     float spd_ref;
     float spd_fdb;
+    float spd_fdb_motor;
+    float spd_fdb_imu;
     float torque_ref;
     float torque_fdb;
 };
@@ -91,6 +94,8 @@ float debug_syn_tq;
     msg_motor_ctrl_t motorctrl{};
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
     msg_sensor_t sensor{};
+    om_suber_t *ins_suber = om_subscribe(om_find_topic("ins", UINT32_MAX));
+    msg_ins_t ins{};
 
     motor.MotorsInit();
 
@@ -123,6 +128,7 @@ float debug_syn_tq;
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
+        om_suber_export(ins_suber, &ins, false);
 
         //撒放机构处理逻辑
         if (motorctrl.trigger_release && !last_trigger_release) 
@@ -281,8 +287,9 @@ float debug_syn_tq;
             yaw_pos_pid.UpdateResult();
             motor.yawMotor.speedSet = yaw_pos_pid.result;
 
+            const float yaw_imu_spd_fdb = yaw_imu_spd_sign * ins.gyro_y;
             yaw_spd_pid.ref = motor.yawMotor.speedSet;
-            yaw_spd_pid.fdb = motor.yawMotor.motorFeedback.speedFdb;
+            yaw_spd_pid.fdb = yaw_imu_spd_fdb;
             yaw_spd_pid.UpdateResult();
 
             float yaw_friction_ff = 0.0f;
@@ -346,7 +353,9 @@ float debug_syn_tq;
         yaw_debug.pos_ref = motor.yawMotor.positionSet;
         yaw_debug.pos_fdb = motor.yawMotor.motorFeedback.positionFdb;
         yaw_debug.spd_ref = motor.yawMotor.speedSet;
-        yaw_debug.spd_fdb = motor.yawMotor.motorFeedback.speedFdb;
+        yaw_debug.spd_fdb = yaw_imu_spd_sign * ins.gyro_y;
+        yaw_debug.spd_fdb_motor = motor.yawMotor.motorFeedback.speedFdb;
+        yaw_debug.spd_fdb_imu = ins.gyro_y;
         yaw_debug.torque_ref = motor.yawMotor.torqueSet;
         yaw_debug.torque_fdb = motor.yawMotor.motorFeedback.torqueFdb;
 #endif
