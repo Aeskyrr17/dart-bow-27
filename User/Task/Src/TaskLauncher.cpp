@@ -52,7 +52,7 @@ msg_motorfdb_t debug_motorfdb{};
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -25.2f;
     const float syn_pos_2 = -17.8f;
-    const float syn_pos_3 = -36.75f;
+    const float syn_pos_3 = -35.75f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 2.08f;
 
@@ -110,13 +110,19 @@ msg_motorfdb_t debug_motorfdb{};
         motorctrl.gantry_target_slot = DART_SLOT_NONE;
         motorctrl.synbelt_mode = POS;
         motorctrl.synbelt_spd = 0.0f;
-        motorctrl.string_L_tension_kg = cmd.tension_kg;
-        motorctrl.string_R_tension_kg = cmd.tension_kg;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
+        motorctrl.string_L_tension_kg = cmd.tension_left_kg;
+        motorctrl.string_R_tension_kg = cmd.tension_right_kg;  //!要确定一下一开始需要张紧到多少是由谁决定的?或者不这么写？？？
         motorctrl.string_able = false;
 
 
         //直接处理yaw
-        motorctrl.yaw_spd = cmd.yaw*0.1f;
+        motorctrl.yaw_spd = cmd.yaw;
+        motorctrl.yaw_mode = POS;
+        motorctrl.yaw_tq = 0.0f;
+        if (cmd.source == CONTROL_SOURCE_REMOTER && cmd.action == DART_RELAX)
+        {
+            motorctrl.yaw_mode = TORQUE;
+        }
 
         //todo: 处理error信息[to test]
         bool string_force_error = (Numeric::abs(sensor.string_L_force_kg) > string_force_error_limit_kg) ||
@@ -212,10 +218,11 @@ msg_motorfdb_t debug_motorfdb{};
                 }
                 else if (cmd.action == DART_YAW_ADJUST)
                 {
-                    motorctrl.yaw_spd = cmd.yaw*0.1f;
+                    motorctrl.yaw_spd = cmd.yaw;
                 }
                 else if (cmd.action == DART_FIRE)
                 {
+                    launcher.fire_source = cmd.source;
                     launcher.fsm_state = FIRING;
                     break;
                 }
@@ -223,6 +230,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
+                    launcher.prepare_profile = cmd.prepare_profile;
                     launcher.prep_state = RETRACT;
                 }
                 else if (cmd.action == DART_TRIGGER_CLOSE)
@@ -252,6 +260,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
+                    launcher.prepare_profile = cmd.prepare_profile;
                     launcher.prep_state = RETRACT;
                 }
                 break;
@@ -260,8 +269,8 @@ msg_motorfdb_t debug_motorfdb{};
             {
 
                 motorctrl.string_able = true;
-                motorctrl.string_L_tension_kg = cmd.tension_kg;
-                motorctrl.string_R_tension_kg = cmd.tension_kg;
+                motorctrl.string_L_tension_kg = cmd.tension_left_kg;
+                motorctrl.string_R_tension_kg = cmd.tension_right_kg;
                 motorctrl.synbelt_mode = POS;
                 motorctrl.synbelt_pos +=0 ;
 
@@ -269,6 +278,7 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     launcher.fsm_state = PREPARING;
                     launcher.current_slot = cmd.next_dart_slot;
+                    launcher.prepare_profile = cmd.prepare_profile;
                     launcher.prep_state = RETRACT;
                 }
                 else if (cmd.action == DART_RELAX)
@@ -300,7 +310,8 @@ msg_motorfdb_t debug_motorfdb{};
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos = syn_pos_1;
 
-                        if (cmd.current_shot_number == 1)
+                        if (launcher.prepare_profile == DIRECT ||
+                            (launcher.prepare_profile == NORMAL_RELOAD && cmd.current_shot_number == 1))
                         {
                             launcher.prep_state = SYN_TRIGGER_READY;    //第一发镖直接上膛
                             break;
@@ -377,8 +388,8 @@ msg_motorfdb_t debug_motorfdb{};
 
 
 
-                        bool string_L_ok = Numeric::abs(sensor.string_L_force_kg - cmd.tension_kg) <= string_tension_deadzone_kg;
-                        bool string_R_ok = Numeric::abs(sensor.string_R_force_kg - cmd.tension_kg) <= string_tension_deadzone_kg;
+                        bool string_L_ok = Numeric::abs(sensor.string_L_force_kg - cmd.tension_left_kg) <= string_tension_deadzone_kg;
+                        bool string_R_ok = Numeric::abs(sensor.string_R_force_kg - cmd.tension_right_kg) <= string_tension_deadzone_kg;
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_5) <= syn_pos_deadzone;
 
                         if (string_L_ok && string_R_ok && syn_reset)
@@ -389,8 +400,8 @@ msg_motorfdb_t debug_motorfdb{};
                         {
                             if (!string_L_ok || !string_R_ok)
                             {
-                                motorctrl.string_L_tension_kg = cmd.tension_kg;
-                                motorctrl.string_R_tension_kg = cmd.tension_kg;
+                                motorctrl.string_L_tension_kg = cmd.tension_left_kg;
+                                motorctrl.string_R_tension_kg = cmd.tension_right_kg;
                             }
                         }                           
                         break;
@@ -405,12 +416,13 @@ msg_motorfdb_t debug_motorfdb{};
             {
                 motorctrl.trigger_release = false;
                 motorctrl.string_able = true;
-                motorctrl.string_L_tension_kg = cmd.tension_kg;//保持力矩
-                motorctrl.string_R_tension_kg = cmd.tension_kg;
+                motorctrl.string_L_tension_kg = cmd.tension_left_kg;//保持力矩
+                motorctrl.string_R_tension_kg = cmd.tension_right_kg;
 
                 if (cmd.action == DART_FIRE &&
                     ready_fire_delay.Reach(750, fsm_state_changed))
                 {
+                    launcher.fire_source = cmd.source;
                     launcher.fsm_state = FIRING;
                 }
                 break;
@@ -449,6 +461,8 @@ msg_motorfdb_t debug_motorfdb{};
 
          //更新历史状态
         lch2sys.current_state = launcher.fsm_state;
+        lch2sys.prepare_state = launcher.prep_state;
+        lch2sys.fire_source = launcher.fire_source;
         lch2sys.is_fire_finished = launcher.is_fire_done;
         lch2sys.last_fire_finished = launcher.last_fire_done;
         om_publish(lch2sys_topic, &lch2sys, sizeof(msg_launcher2sysctrl_t), true, false);

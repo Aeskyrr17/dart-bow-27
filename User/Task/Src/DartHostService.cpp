@@ -11,6 +11,7 @@ namespace
 constexpr uint8_t HOSTREQ_FIFO_LEN = 16;
 constexpr uint8_t HOSTREQ_MAX_PROCESS_PER_POLL = 4;
 constexpr ULONG HOST_FORCE_TELEMETRY_PERIOD_TICKS = 10;
+constexpr ULONG HOST_TEST_STATE_PERIOD_TICKS = 50;
 
 constexpr float HOST_YAW_MIN = -5.0f;
 constexpr float HOST_YAW_MAX = 5.0f;
@@ -163,6 +164,28 @@ void HostSendForceTelemetry(om_topic_t* topic, uint8_t seq,
     }
 }
 
+void HostSendTestState(om_topic_t* topic, uint8_t seq,
+                       bool test_mode_enabled, bool test_control_allowed,
+                       HOST_TEST_ACTION test_action,
+                       const msg_launcher2sysctrl_t& lch2sys,
+                       float tension_left, float tension_right)
+{
+    msg_hosttx_t tx{};
+    tx.valid = 1;
+    tx.type = HOST_TYPE_TEST_STATE;
+    tx.seq = seq;
+    tx.len = 14;
+    tx.payload[0] = test_mode_enabled ? 1U : 0U;
+    tx.payload[1] = test_control_allowed ? 1U : 0U;
+    tx.payload[2] = static_cast<uint8_t>(test_action);
+    tx.payload[3] = lch2sys.current_state;
+    tx.payload[4] = lch2sys.prepare_state;
+    tx.payload[5] = static_cast<uint8_t>(lch2sys.fire_source);
+    HostPutFloat(&tx.payload[6], tension_left);
+    HostPutFloat(&tx.payload[10], tension_right);
+    HostPublish(topic, tx);
+}
+
 bool HostFloatInRange(float value, float min_value, float max_value)
 {
     return std::isfinite(value) && value >= min_value && value <= max_value;
@@ -179,10 +202,19 @@ void DartHostService::Init()
     latest_motorctrl_ = {};
     last_force_telemetry_tick_ = 0;
     force_telemetry_seq_ = 0;
+    test_mode_enabled_ = false;
+    test_control_allowed_ = false;
+    test_tension_left_ = 0.0f;
+    test_tension_right_ = 0.0f;
+    test_action_ = HOST_TEST_ACTION_NONE;
+    last_host_activity_tick_ = 0;
+    last_test_state_tick_ = 0;
+    test_state_seq_ = 0;
     EnsureTopicsReady();
 }
 
-void DartHostService::Poll(DartLibrary& dart, const msg_launcher2sysctrl_t& lch2sys)
+void DartHostService::Poll(DartLibrary& dart, const msg_launcher2sysctrl_t& lch2sys,
+                           bool test_control_allowed, ULONG test_mode_timeout_ticks)
 {
     if (!EnsureTopicsReady())
     {
@@ -190,17 +222,59 @@ void DartHostService::Poll(DartLibrary& dart, const msg_launcher2sysctrl_t& lch2
     }
 
     UpdateForceTelemetrySources();
+    test_control_allowed_ = test_control_allowed;
+
+    const ULONG now = tx_time_get();
+    if (test_mode_enabled_ &&
+        (!test_control_allowed_ ||
+         static_cast<ULONG>(now - last_host_activity_tick_) >= test_mode_timeout_ticks))
+    {
+        DisableTestMode();
+    }
 
     msg_hostreq_t req{};
     for (uint8_t i = 0; i < HOSTREQ_MAX_PROCESS_PER_POLL && om_fifo_readable(hostreq_fifo_); i++)
     {
         if (om_fifo_read(hostreq_fifo_, &req) == OM_OK)
         {
-            ProcessRequest(req, lch2sys, dart);
+            last_host_activity_tick_ = tx_time_get();
+            ProcessRequest(req, lch2sys, test_control_allowed_, dart);
         }
     }
 
     PublishForceTelemetry();
+    PublishTestState(lch2sys);
+}
+
+bool DartHostService::IsTestModeEnabled() const
+{
+    return test_mode_enabled_;
+}
+
+float DartHostService::GetTestTensionLeft() const
+{
+    return test_tension_left_;
+}
+
+float DartHostService::GetTestTensionRight() const
+{
+    return test_tension_right_;
+}
+
+HOST_TEST_ACTION DartHostService::GetTestAction() const
+{
+    return test_action_;
+}
+
+void DartHostService::ClearTestAction()
+{
+    test_action_ = HOST_TEST_ACTION_NONE;
+}
+
+void DartHostService::DisableTestMode()
+{
+    test_mode_enabled_ = false;
+    test_action_ = HOST_TEST_ACTION_NONE;
 }
 
 bool DartHostService::EnsureTopicsReady()
@@ -269,6 +343,24 @@ void DartHostService::PublishForceTelemetry()
     HostSendForceTelemetry(hosttx_topic_, force_telemetry_seq_++, latest_motorctrl_, latest_sensor_);
 }
 
+void DartHostService::PublishTestState(const msg_launcher2sysctrl_t& lch2sys)
+{
+    if (hosttx_topic_ == nullptr)
+    {
+        return;
+    }
+
+    const ULONG now = tx_time_get();
+    if (static_cast<ULONG>(now - last_test_state_tick_) < HOST_TEST_STATE_PERIOD_TICKS)
+    {
+        return;
+    }
+
+    last_test_state_tick_ = now;
+    HostSendTestState(hosttx_topic_, test_state_seq_++, test_mode_enabled_, test_control_allowed_,
+                      test_action_, lch2sys, test_tension_left_, test_tension_right_);
+}
+
 bool DartHostService::IsResetTestRoundAllowed(const msg_launcher2sysctrl_t& lch2sys) const
 {
     switch (static_cast<LAUNCHER_FSM_STATE>(lch2sys.current_state))
@@ -289,7 +381,7 @@ bool DartHostService::IsResetTestRoundAllowed(const msg_launcher2sysctrl_t& lch2
 }
 
 void DartHostService::ProcessRequest(const msg_hostreq_t& req, const msg_launcher2sysctrl_t& lch2sys,
-                                     DartLibrary& dart)
+                                     bool test_control_allowed, DartLibrary& dart)
 {
     if (!req.valid || hosttx_topic_ == nullptr)
     {
@@ -447,6 +539,93 @@ void DartHostService::ProcessRequest(const msg_hostreq_t& req, const msg_launche
             dart.runtime.last_fire_finished = lch2sys.is_fire_finished;
             dart.runtime.autoAim.yaw_ok = false;
             HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_APPLIED, dart.config.config_revision);
+            break;
+
+        case HOST_REQ_SET_TEST_MODE:
+            if (req.test_mode == HOST_TEST_MODE_DISABLED)
+            {
+                DisableTestMode();
+                HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_APPLIED, dart.config.config_revision);
+                break;
+            }
+            if (req.test_mode != HOST_TEST_MODE_ENABLED)
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_INVALID_COMMAND, req.test_mode);
+                break;
+            }
+            if (!test_control_allowed)
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_PERMISSION_DENIED, 0);
+                break;
+            }
+            if (lch2sys.current_state != IDLE && lch2sys.current_state != PRE_TENSION)
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_STATE_FORBIDDEN, lch2sys.current_state);
+                break;
+            }
+            test_mode_enabled_ = true;
+            test_action_ = HOST_TEST_ACTION_NONE;
+            HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_APPLIED, dart.config.config_revision);
+            break;
+
+        case HOST_REQ_SET_TEST_TENSION:
+            if (!test_mode_enabled_)
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_PERMISSION_DENIED, 0);
+                break;
+            }
+            if (!HostFloatInRange(req.tension_left, HOST_TENSION_MIN, HOST_TENSION_MAX))
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_PARAM_OUT_OF_RANGE, 1);
+                break;
+            }
+            if (!HostFloatInRange(req.tension_right, HOST_TENSION_MIN, HOST_TENSION_MAX))
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_PARAM_OUT_OF_RANGE, 2);
+                break;
+            }
+            test_tension_left_ = req.tension_left;
+            test_tension_right_ = req.tension_right;
+            HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_APPLIED, dart.config.config_revision);
+            break;
+
+        case HOST_REQ_TEST_ACTION:
+            if (!test_mode_enabled_)
+            {
+                HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_PERMISSION_DENIED, 0);
+                break;
+            }
+            if (req.test_action == HOST_TEST_ACTION_ABORT)
+            {
+                DisableTestMode();
+                HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_APPLIED, dart.config.config_revision);
+                break;
+            }
+            if (req.test_action == HOST_TEST_ACTION_PREPARE)
+            {
+                if (lch2sys.current_state != IDLE &&
+                    lch2sys.current_state != PRE_TENSION &&
+                    lch2sys.current_state != READY)
+                {
+                    HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_STATE_FORBIDDEN, lch2sys.current_state);
+                    break;
+                }
+                test_action_ = HOST_TEST_ACTION_PREPARE;
+                HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_ACCEPTED, dart.config.config_revision);
+                break;
+            }
+            if (req.test_action == HOST_TEST_ACTION_FIRE)
+            {
+                if (lch2sys.current_state != READY)
+                {
+                    HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_STATE_FORBIDDEN, lch2sys.current_state);
+                    break;
+                }
+                test_action_ = HOST_TEST_ACTION_FIRE;
+                HostSendAck(hosttx_topic_, req.type, req.seq, HOST_ACK_ACCEPTED, dart.config.config_revision);
+                break;
+            }
+            HostSendError(hosttx_topic_, req.type, req.seq, HOST_ERR_INVALID_COMMAND, req.test_action);
             break;
 
         default:

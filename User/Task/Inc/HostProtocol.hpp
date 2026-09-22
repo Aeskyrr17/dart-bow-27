@@ -26,6 +26,9 @@ typedef enum
     HOST_TYPE_GET_PRE_TENSION = 0x14,
     HOST_TYPE_SET_PRE_TENSION = 0x15,
     HOST_TYPE_RESET_TEST_ROUND = 0x16,
+    HOST_TYPE_SET_TEST_MODE = 0x17,
+    HOST_TYPE_SET_TEST_TENSION = 0x18,
+    HOST_TYPE_TEST_ACTION = 0x19,
     HOST_TYPE_DART_PARAM_STATE = 0x20,
     HOST_TYPE_SEQUENCE_STATE = 0x21,
     HOST_TYPE_PRE_TENSION_STATE = 0x22,
@@ -33,6 +36,7 @@ typedef enum
     HOST_TYPE_DOOR_STATE = 0x24,
     HOST_TYPE_LAUNCHER_STATE = 0x25,
     HOST_TYPE_FAST_TELEMETRY = 0x26,
+    HOST_TYPE_TEST_STATE = 0x27,
     HOST_TYPE_ACK = 0x70,
     HOST_TYPE_ERROR_RSP = 0x7F,
 } HOST_FRAME_TYPE;
@@ -48,7 +52,24 @@ typedef enum
     HOST_REQ_GET_PRE_TENSION,
     HOST_REQ_SET_PRE_TENSION,
     HOST_REQ_RESET_TEST_ROUND,
+    HOST_REQ_SET_TEST_MODE,
+    HOST_REQ_SET_TEST_TENSION,
+    HOST_REQ_TEST_ACTION,
 } HOST_REQ_KIND;
+
+typedef enum
+{
+    HOST_TEST_MODE_DISABLED = 0,
+    HOST_TEST_MODE_ENABLED = 1,
+} HOST_TEST_MODE;
+
+typedef enum
+{
+    HOST_TEST_ACTION_NONE = 0,
+    HOST_TEST_ACTION_PREPARE = 1,
+    HOST_TEST_ACTION_FIRE = 2,
+    HOST_TEST_ACTION_ABORT = 3,
+} HOST_TEST_ACTION;
 
 typedef enum
 {
@@ -89,6 +110,11 @@ struct msg_hostreq_t
     float yaw_offset;
     float tension;
     float pre_tension;
+    float tension_left;
+    float tension_right;
+
+    uint8_t test_mode;
+    uint8_t test_action;
 
     uint8_t sequence[4];
 };

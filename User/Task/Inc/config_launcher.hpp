@@ -40,6 +40,8 @@ struct Launcher_Cxt_t
 {
     LAUNCHER_FSM_STATE fsm_state;
     PREPARE_STATE prep_state;
+    PrepareProfile prepare_profile;
+    ControlSource fire_source;
 
     DART_SLOT current_slot;
     bool is_first_dart;

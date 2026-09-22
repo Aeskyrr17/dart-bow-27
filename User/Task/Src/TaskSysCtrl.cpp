@@ -12,6 +12,7 @@
 #include "magicmsgs.hpp"
 #include "DartHostService.hpp"
 #include "TaskSysCtrl.hpp"
+#include "config_launcher.hpp"
 
 TX_THREAD SysctrlThread;
 uint8_t SysctrlThreadStack[2048] = {0};
@@ -26,12 +27,22 @@ DartHostService dart_host_service;
 DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float vision_distance);
 void Init_Dart_Config(DartLibrary* dart);
 void Build_Remoter_Command(const msg_remoter_t& remoter,float tension_kg,msg_cmd_t* cmd);
-void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
-                            DartLibrary* dart,msg_cmd_t* cmd);
+void Build_Host_Test_Command(const msg_launcher2sysctrl_t& lch2sys, msg_cmd_t* cmd);
+void Resolve_Final_Command(bool autoAim_control, bool hostTest_control,
+                            const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
+                            const msg_launcher2sysctrl_t& lch2sys,DartLibrary* dart,msg_cmd_t* cmd);
+void Set_Command_Tension(msg_cmd_t* cmd, float tension_left_kg, float tension_right_kg);
 
 #define FORCE_TABLING
 //! 测试的时候用dart_lib里面的固定值
 const bool auto_aim_on_power_up = false;
+const PrepareProfile remoter_prepare_profile = NORMAL_RELOAD;
+const PrepareProfile autoAim_prepare_profile = NORMAL_RELOAD;
+const PrepareProfile host_test_prepare_profile = DIRECT;
+const CTRL_STATE host_test_permit_left_sw = Up;
+const CTRL_STATE host_test_permit_right_sw = Down;
+const int autoAim_shot_count = 4;
+const ULONG host_test_mode_timeout_ticks = 1000;
 //! true: 直接run autoAim直到遥控器干预。
 //! false: 先用遥控器remoter Up/Up来开启autoAim并latch
 
@@ -146,7 +157,13 @@ void Init_Dart_Config(DartLibrary* dart)
         dart_lib.Update_Fired_State(&lch2sys);
         dart_lib.Update_Current_Dart_Id();
 
-        dart_host_service.Poll(dart_lib, lch2sys);
+        const bool host_test_control_allowed =
+            !remoter.offline &&
+            remoter.left_sw == host_test_permit_left_sw &&
+            remoter.right_sw == host_test_permit_right_sw;
+        dart_host_service.Poll(dart_lib, lch2sys, host_test_control_allowed,
+                               host_test_mode_timeout_ticks);
+        const bool hostTest_control = dart_host_service.IsTestModeEnabled();
 
         //遥控器离弦的自动模式锁存逻辑：上电后Up/Up开启autoAim，下电后保持，直到遥控器干预才关闭autoAim
         const bool autoAim_request = (!remoter.offline && remoter.left_sw == Up && remoter.right_sw == Up);
@@ -180,7 +197,9 @@ void Init_Dart_Config(DartLibrary* dart)
         int id = dart_lib.runtime.current_dart_id;
         dart_lib.runtime.current_aim_target = Resolve_Current_Aim_Target(dart_lib, vision_rx.distance);
 
-        cmd.tension_kg = dart_lib.runtime.current_aim_target.tension_kg;
+        Set_Command_Tension(&cmd,
+                            dart_lib.runtime.current_aim_target.tension_kg,
+                            dart_lib.runtime.current_aim_target.tension_kg);
         cmd.next_dart_slot = dart_lib.Get_Prepare_Slot();
         cmd.current_shot_number = dart_lib.runtime.current_shot_number;
 
@@ -204,7 +223,7 @@ void Init_Dart_Config(DartLibrary* dart)
         // }
 
         //遥控器offline保护和visionrx数据异常的灯控提示
-        const bool remoter_offline_safety = remoter.offline && !autoAim_control;
+        const bool remoter_offline_safety = remoter.offline && !autoAim_control && !hostTest_control;
         if (remoter_offline_safety)
         {
             cmd.action = DART_RELAX;
@@ -212,7 +231,8 @@ void Init_Dart_Config(DartLibrary* dart)
         }
         else
         {
-            Resolve_Final_Command(autoAim_control, remoter, vision_rx, &dart_lib, &cmd);
+            Resolve_Final_Command(autoAim_control, hostTest_control, remoter, vision_rx,
+                                  lch2sys, &dart_lib, &cmd);
         }
 
         //更新dart_lib的历史数据
@@ -268,6 +288,10 @@ DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float
  */
 void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_cmd_t* cmd)
 {
+    cmd->source = CONTROL_SOURCE_REMOTER;
+    cmd->prepare_profile = remoter_prepare_profile;
+    Set_Command_Tension(cmd, tension_kg, tension_kg);
+
     if (remoter.left_sw == Mid && remoter.right_sw == M2U)
     {
         cmd->action = DART_FIRE;
@@ -283,7 +307,7 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_c
         else if (remoter.right_sw == Mid)
         {
             cmd->action = DART_SYN_ADJUST;
-            cmd->rc_syn =  - remoter.right_y * 0.01f;
+            cmd->rc_syn = remoter.right_y * 0.01f;
         }
         else if (remoter.right_sw == Up)
         {
@@ -327,6 +351,40 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_c
     }
 }
 
+void Build_Host_Test_Command(const msg_launcher2sysctrl_t& lch2sys, msg_cmd_t* cmd)
+{
+    cmd->source = CONTROL_SOURCE_HOST_TEST;
+    cmd->prepare_profile = host_test_prepare_profile;
+    Set_Command_Tension(cmd,
+                        dart_host_service.GetTestTensionLeft(),
+                        dart_host_service.GetTestTensionRight());
+
+    switch (dart_host_service.GetTestAction())
+    {
+        case HOST_TEST_ACTION_PREPARE:
+            cmd->action = DART_PREPARE;
+            break;
+
+        case HOST_TEST_ACTION_FIRE:
+            if (lch2sys.current_state == FIRING)
+            {
+                dart_host_service.ClearTestAction();
+                cmd->action = DART_RELAX;
+            }
+            else
+            {
+                cmd->action = DART_FIRE;
+            }
+            break;
+
+        case HOST_TEST_ACTION_NONE:
+        case HOST_TEST_ACTION_ABORT:
+        default:
+            cmd->action = DART_RELAX;
+            break;
+    }
+}
+
 /**
  * @brief 处理cmd，判断是否进入autocontrol模式，并根据当前状态生成最终的cmd命令。
  * @todo 加入上位机控制逻辑
@@ -336,11 +394,18 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_c
  * @param dart 
  * @param cmd 
  */
-void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
-                            DartLibrary* dart,msg_cmd_t* cmd)
+void Resolve_Final_Command(bool autoAim_control, bool hostTest_control,
+                            const msg_remoter_t& remoter,const msg_visionrx_t& vision_rx,
+                            const msg_launcher2sysctrl_t& lch2sys,DartLibrary* dart,msg_cmd_t* cmd)
 {
-    if (autoAim_control)
+    if (hostTest_control)
     {
+        Build_Host_Test_Command(lch2sys, cmd);
+    }
+    else if (autoAim_control)
+    {
+        cmd->source = CONTROL_SOURCE_AUTOAIM;
+        cmd->prepare_profile = autoAim_prepare_profile;
         if (dart->runtime.game_status_stable == 4 &&
             dart->runtime.autoAim.autoaim_allow &&
             dart->runtime.fired_count_this_open < 2)
@@ -350,7 +415,7 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
         else
         {
             cmd->action = DART_PRE_TENSION;
-            cmd->tension_kg = dart->config.pre_tension_kg;
+            Set_Command_Tension(cmd, dart->config.pre_tension_kg, dart->config.pre_tension_kg);
         }
     }
     else
@@ -367,6 +432,11 @@ void Resolve_Final_Command(bool autoAim_control,const msg_remoter_t& remoter,con
  */
 void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cmd)
 {
+    cmd->source = CONTROL_SOURCE_AUTOAIM;
+    cmd->prepare_profile = autoAim_prepare_profile;
+    Set_Command_Tension(cmd,
+                        dart->runtime.current_aim_target.tension_kg,
+                        dart->runtime.current_aim_target.tension_kg);
     dart->runtime.autoAim.running = true;
     //比赛开始之前都不执行自动模式
     // if (dart->runtime.referee.game_status != 4)
@@ -375,7 +445,8 @@ void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cm
     //     return;
     // }
 
-    if (!(dart->runtime.current_shot_number >= 1 && dart->runtime.current_shot_number <= 4))
+    if (!(dart->runtime.current_shot_number >= 1 &&
+          dart->runtime.current_shot_number <= autoAim_shot_count))
     {
         cmd->action = DART_RELAX;
         cmd->tension_kg = dart->runtime.current_aim_target.tension_kg;
@@ -465,6 +536,13 @@ void Update_referee_data(msg_referee_t* referee_rx, DartLibrary* dart)
     }
 
     dart->runtime.game_status_ladar = payload->event == 1;
+}
+
+void Set_Command_Tension(msg_cmd_t* cmd, float tension_left_kg, float tension_right_kg)
+{
+    cmd->tension_left_kg = tension_left_kg;
+    cmd->tension_right_kg = tension_right_kg;
+    cmd->tension_kg = (tension_left_kg + tension_right_kg) * 0.5f;
 }
 
 
@@ -740,8 +818,18 @@ void DartLibrary::Update_Current_State(msg_launcher2sysctrl_t* msg)
 {
     if (msg->is_fire_finished && !runtime.last_fire_finished)
     {
-        runtime.current_shot_number++;
-        Update_Current_Dart_Id();
+        if (msg->fire_source == CONTROL_SOURCE_AUTOAIM)
+        {
+            runtime.current_shot_number++;
+            Update_Current_Dart_Id();
+        }
+        else if (msg->fire_source == CONTROL_SOURCE_REMOTER)
+        {
+            runtime.current_shot_number = runtime.current_shot_number >= autoAim_shot_count
+                ? 1
+                : runtime.current_shot_number + 1;
+            Update_Current_Dart_Id();
+        }
     }
 
 }
@@ -753,7 +841,8 @@ void DartLibrary::Update_Current_State(msg_launcher2sysctrl_t* msg)
  */
 void DartLibrary::Update_Fired_State(msg_launcher2sysctrl_t* msg)
 {
-    if (msg->is_fire_finished && !runtime.last_fire_finished)
+    if (msg->is_fire_finished && !runtime.last_fire_finished &&
+        msg->fire_source == CONTROL_SOURCE_AUTOAIM)
     {
         runtime.fired_count_this_open++;
     }

@@ -180,6 +180,19 @@ typedef enum
     DART_PRE_TENSION
 } LAUNCHER_ACTION;
 
+typedef enum
+{
+    CONTROL_SOURCE_REMOTER = 0,
+    CONTROL_SOURCE_AUTOAIM,
+    CONTROL_SOURCE_HOST_TEST,
+} ControlSource;
+
+typedef enum
+{
+    NORMAL_RELOAD = 0,
+    DIRECT,
+} PrepareProfile;
+
 /**
  * @brief Dart slot index
  * slot 1 is the preloaded first dart, slot 2~4 are the reload positions
@@ -198,11 +211,15 @@ typedef enum
 struct msg_cmd_t
 {
     LAUNCHER_ACTION action;
+    ControlSource source;
+    PrepareProfile prepare_profile;
     DART_SLOT next_dart_slot;
     uint8_t current_shot_number;
 
     float yaw;              //约定为-1~1
     float tension_kg;
+    float tension_left_kg;
+    float tension_right_kg;
     float pre_tension_kg;
     float rc_syn;
     float rc_string_L;
@@ -318,6 +335,8 @@ struct debug_motor_t
 struct msg_launcher2sysctrl_t
 {
     uint8_t current_state; //保留
+    uint8_t prepare_state;
+    ControlSource fire_source;
     bool is_fire_finished; //todo:发射是否完成,由launcher逻辑判断？
     bool last_fire_finished; //用于边缘检测
 };

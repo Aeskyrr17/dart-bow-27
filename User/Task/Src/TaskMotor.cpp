@@ -39,19 +39,43 @@ TaskMotors motor;
 
 #define MOTOR_DEBUG
 
-PID str_L_tension_pid(120.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
-PID str_R_tension_pid(120.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_L_tension_pid(60.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+PID str_R_tension_pid(60.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // PID syn_spd_pid(1.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 PID syn_pos_pid(10.0f, 0.0f, 10.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
+// Yaw cascade PID: position loop outputs speed, speed loop outputs MIT torque.
+PID yaw_pos_pid(15.0f, 0.0f, 0.0f, 0.5f, 0.0f, PID_POSITION);
+PID yaw_spd_pid(20.0f, 0.0f, 0.0f, 10.0f, 1.0f,
+                PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
+
+constexpr float yaw_target_position_rate_rad_s = 0.5f;
+constexpr float yaw_control_period_s = 0.001f;
+constexpr float yaw_cmd_deadzone = 0.01f;
+
+constexpr float yaw_static_torque_pos_nm = 1.2f;
+constexpr float yaw_static_torque_neg_nm = 1.2f;
+constexpr float yaw_ff_spd_deadzone_rad_s = 0.01f;
+constexpr float yaw_max_torque_nm = 10.0f;
+
+struct yaw_debug_t
+{
+    float pos_ref;
+    float pos_fdb;
+    float spd_ref;
+    float spd_fdb;
+    float torque_ref;
+    float torque_fdb;
+};
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
 debug_motor_t string_L_debug{};
 debug_motor_t string_R_debug{};
+yaw_debug_t yaw_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
 
 float debug_syn_tq;
@@ -71,6 +95,7 @@ float debug_syn_tq;
     motor.MotorsInit();
 
     motor.synbeltMotor.positionPid = syn_pos_pid;
+    motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
     // motor.synbeltMotor.speedPid = syn_spd_pid;
     // motor.gantryMotor.positionPid = gantry_pos_pid;
     // motor.gantryMotor.speedPid = gantry_spd_pid;
@@ -92,6 +117,7 @@ float debug_syn_tq;
 
     bool trigger_latched = false;
     bool last_trigger_release = false;
+    bool yaw_hold_latched = false;
 
     for (;;)
     {
@@ -115,25 +141,39 @@ float debug_syn_tq;
 
         if (motorctrl.string_able)
         {
-            str_L_tension_pid.ref = motorctrl.string_L_tension_kg;
-            str_L_tension_pid.fdb = sensor.string_L_force_kg;
-
-            str_L_tension_pid.UpdateResult();
-            float cmd_spd_L = Numeric::abs(str_L_tension_pid.result);
-            if (str_L_tension_pid.result > 0.0f)
-                string_L_spd = -cmd_spd_L;
+            if (sensor.string_L_force_kg == 0.0f)
+            {
+                string_L_spd = 0.0f;
+            }
             else
-                string_L_spd = cmd_spd_L;
+            {
+                str_L_tension_pid.ref = motorctrl.string_L_tension_kg;
+                str_L_tension_pid.fdb = sensor.string_L_force_kg;
 
-            str_R_tension_pid.ref = motorctrl.string_R_tension_kg;
-            str_R_tension_pid.fdb = sensor.string_R_force_kg;
+                str_L_tension_pid.UpdateResult();
+                float cmd_spd_L = Numeric::abs(str_L_tension_pid.result);
+                if (str_L_tension_pid.result > 0.0f)
+                    string_L_spd = -cmd_spd_L;
+                else
+                    string_L_spd = cmd_spd_L;
+            }
 
-            str_R_tension_pid.UpdateResult();
-            float cmd_spd_R = Numeric::abs(str_R_tension_pid.result);
-            if (str_R_tension_pid.result > 0.0f)
-                string_R_spd = -cmd_spd_R;
+            if (sensor.string_R_force_kg == 0.0f)
+            {
+                string_R_spd = 0.0f;
+            }
             else
-                string_R_spd = cmd_spd_R;
+            {
+                str_R_tension_pid.ref = motorctrl.string_R_tension_kg;
+                str_R_tension_pid.fdb = sensor.string_R_force_kg;
+
+                str_R_tension_pid.UpdateResult();
+                float cmd_spd_R = Numeric::abs(str_R_tension_pid.result);
+                if (str_R_tension_pid.result > 0.0f)
+                    string_R_spd = -cmd_spd_R;
+                else
+                    string_R_spd = cmd_spd_R;
+            }
 
         }
         else 
@@ -205,8 +245,61 @@ float debug_syn_tq;
             break;
         }
 
-        // motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
-        motor.yawMotor.speedSet = motorctrl.yaw_spd;
+        if (motorctrl.yaw_mode == TORQUE)
+        {
+            motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
+            motor.yawMotor.speedSet = 0.0f;
+            motor.yawMotor.torqueSet = motorctrl.yaw_tq;
+            yaw_pos_pid.Clear();
+            yaw_spd_pid.Clear();
+            yaw_hold_latched = true;
+        }
+        else
+        {
+            const bool yaw_cmd_active = std::abs(motorctrl.yaw_spd) > yaw_cmd_deadzone;
+            if (yaw_cmd_active)
+            {
+                yaw_hold_latched = false;
+                motor.yawMotor.positionSet -= motorctrl.yaw_spd *
+                                              yaw_target_position_rate_rad_s *
+                                              yaw_control_period_s;
+            }
+            else
+            {
+                if (!yaw_hold_latched)
+                {
+                    motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
+                    yaw_pos_pid.Clear();
+                    yaw_spd_pid.Clear();
+                    yaw_hold_latched = true;
+                }
+            }
+
+        // 速度环
+            yaw_pos_pid.ref = motor.yawMotor.positionSet;
+            yaw_pos_pid.fdb = motor.yawMotor.motorFeedback.positionFdb;
+            yaw_pos_pid.UpdateResult();
+            motor.yawMotor.speedSet = yaw_pos_pid.result;
+
+            yaw_spd_pid.ref = motor.yawMotor.speedSet;
+            yaw_spd_pid.fdb = motor.yawMotor.motorFeedback.speedFdb;
+            yaw_spd_pid.UpdateResult();
+
+            float yaw_friction_ff = 0.0f;
+            if (motor.yawMotor.speedSet > yaw_ff_spd_deadzone_rad_s)
+            {
+                yaw_friction_ff = yaw_static_torque_pos_nm;
+            }
+            else if (motor.yawMotor.speedSet < -yaw_ff_spd_deadzone_rad_s)
+            {
+                yaw_friction_ff = -yaw_static_torque_neg_nm;
+            }
+
+            motor.yawMotor.torqueSet =
+                FloatConstrain(yaw_spd_pid.result + yaw_friction_ff,
+                               -yaw_max_torque_nm,
+                               yaw_max_torque_nm);
+        }
 
         DMMotorHandler::Instance()->sendControlData();
 
@@ -250,6 +343,12 @@ float debug_syn_tq;
         debug_syn_tq = motor.synbeltMotor.motorFeedback.torqueFdb;
         string_L_debug.speed = motor.stringMotorL.speed;
         string_R_debug.speed = motor.stringMotorR.speed;
+        yaw_debug.pos_ref = motor.yawMotor.positionSet;
+        yaw_debug.pos_fdb = motor.yawMotor.motorFeedback.positionFdb;
+        yaw_debug.spd_ref = motor.yawMotor.speedSet;
+        yaw_debug.spd_fdb = motor.yawMotor.motorFeedback.speedFdb;
+        yaw_debug.torque_ref = motor.yawMotor.torqueSet;
+        yaw_debug.torque_fdb = motor.yawMotor.motorFeedback.torqueFdb;
 #endif
 
         tx_thread_sleep(1);

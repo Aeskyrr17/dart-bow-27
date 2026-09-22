@@ -525,10 +525,25 @@ class TaskMotors
         // this->gantry_max_spd = 4.0f;
 
 
+        // DMMotorHandler::Instance()->registerMotor(&this->yawMotor, &hfdcan2, 0x03);
+        // this->yawMotor.controlMode = DMMotor::SPD_MODE;
+        // this->yawMotor.torqueSet = 0.0f;
+        // this->synbeltMotor.speedSet = 0.0f;
+        // DMMotorHandler::Instance()->EnableMotor_Block(&this->yawMotor);
+
+        // DMMotorHandler::Instance()->registerMotor(&this->yawMotor, &hfdcan2, 0x03);
+        // this->yawMotor.controlMode = DMMotor::SPD_MODE;
+        // this->yawMotor.torqueSet = 0.0f;
+        // this->synbeltMotor.speedSet = 0.0f;
+        // DMMotorHandler::Instance()->EnableMotor_Block(&this->yawMotor);
+
+
         DMMotorHandler::Instance()->registerMotor(&this->yawMotor, &hfdcan2, 0x03);
-        this->yawMotor.controlMode = DMMotor::SPD_MODE;
+        // this->yawMotor.controlMode = DMMotor::POS_SPD_MODE;
+        // this->yawMotor.speedSet = 1.0f;
+        this->yawMotor.controlMode = DMMotor::MIT_MODE;
         this->yawMotor.torqueSet = 0.0f;
-        this->synbeltMotor.speedSet = 0.0f;
+        this->yawMotor.speedSet = 0.0f;
         DMMotorHandler::Instance()->EnableMotor_Block(&this->yawMotor);
         
         DMMotorHandler::Instance()->registerMotor(&this->synbeltMotor, &hfdcan1, 0x02);

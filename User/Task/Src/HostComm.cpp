@@ -271,6 +271,25 @@ DecodeResult DecodeFrame(const HostFrame& frame, msg_hostreq_t* req)
             req->kind = HOST_REQ_RESET_TEST_ROUND;
             return DecodeResult::Ok;
 
+        case HOST_TYPE_SET_TEST_MODE:
+            if (frame.len != 1) { return DecodeResult::LengthError; }
+            req->kind = HOST_REQ_SET_TEST_MODE;
+            req->test_mode = frame.payload[0];
+            return DecodeResult::Ok;
+
+        case HOST_TYPE_SET_TEST_TENSION:
+            if (frame.len != 8) { return DecodeResult::LengthError; }
+            req->kind = HOST_REQ_SET_TEST_TENSION;
+            req->tension_left = ReadFloat(frame.payload, 0);
+            req->tension_right = ReadFloat(frame.payload, 4);
+            return DecodeResult::Ok;
+
+        case HOST_TYPE_TEST_ACTION:
+            if (frame.len != 1) { return DecodeResult::LengthError; }
+            req->kind = HOST_REQ_TEST_ACTION;
+            req->test_action = frame.payload[0];
+            return DecodeResult::Ok;
+
         default:
             req->kind = HOST_REQ_NONE;
             return DecodeResult::UnknownType;
