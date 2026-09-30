@@ -46,8 +46,8 @@ PID str_R_tension_pid(60.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_In
 PID syn_pos_pid(10.0f, 0.0f, 10.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // Yaw cascade PID: position loop outputs speed, speed loop outputs MIT torque.
-PID yaw_pos_pid(15.0f, 0.0f, 0.0f, 0.5f, 0.0f, PID_POSITION);
-PID yaw_spd_pid(20.0f, 0.0f, 0.0f, 10.0f, 1.0f,
+PID yaw_pos_pid(2.0f, 0.0f, 0.0f, 0.5f, 0.0f, PID_POSITION);
+PID yaw_spd_pid(10.0f, 0.0f, 0.0f, 10.0f, 1.0f,
                 PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);

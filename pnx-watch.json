@@ -1,0 +1,110 @@
+{
+  "format": "pnx-watch",
+  "version": 1,
+  "groups": [
+    {
+      "id": "default",
+      "name": "默认组"
+    },
+    {
+      "id": "group-1790699491516",
+      "name": "曲线组 2"
+    }
+  ],
+  "plots": [
+    {
+      "id": "plot-1",
+      "name": "曲线 1",
+      "groupId": "default",
+      "seconds": 0.3814697265625002
+    },
+    {
+      "id": "plot-2",
+      "name": "曲线 2",
+      "groupId": "group-1790699491516",
+      "seconds": 120
+    }
+  ],
+  "variables": [
+    {
+      "expression": "yaw_debug.pos_ref",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "yaw_debug.pos_fdb",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "yaw_debug.spd_ref",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "yaw_debug.spd_fdb",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "yaw_debug.torque_ref",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "yaw_debug.torque_fdb",
+      "plotId": "plot-1"
+    },
+    {
+      "expression": "g4_force.L",
+      "plotId": "plot-2"
+    },
+    {
+      "expression": "g4_force.R",
+      "plotId": "plot-2"
+    },
+    {
+      "expression": "sensor_debug.is_coil_L_reset",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_coil_R_reset",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_coil_reset",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_door_open",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_string_tight",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_launchplat_return",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_fire_done",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.is_dart_loaded",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "sensor_debug.string_L_force_kg",
+      "plotId": "plot-2"
+    },
+    {
+      "expression": "sensor_debug.string_R_force_kg",
+      "plotId": "plot-2"
+    },
+    {
+      "expression": "sensor_debug.is_trigger_locked",
+      "plotId": "watch-only"
+    }
+  ],
+  "activeGroup": "default",
+  "columns": 2,
+  "seconds": 10,
+  "rate": 1000
+}
