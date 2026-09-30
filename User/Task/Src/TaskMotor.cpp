@@ -20,6 +20,8 @@
 #include "pid.hpp"
 #include "magicmsgs.hpp"
 #include "math.hpp"
+#include "bsp_dwt.hpp"
+#include <cmath>
 
 #include "config_launcher.hpp"
 #include "config_motor.hpp"
@@ -62,6 +64,33 @@ constexpr float yaw_static_torque_neg_nm = 1.2f;
 constexpr float yaw_ff_spd_deadzone_rad_s = 0.01f;
 constexpr float yaw_max_torque_nm = 10.0f;
 
+// Single-axis linear chirp. The motor's stored absolute-encoder zero is yaw=0.
+constexpr float yaw_ident_start_hz = 0.2f;
+constexpr float yaw_ident_end_hz = 3.0f;
+constexpr float yaw_ident_duration_s = 20.0f;
+constexpr float yaw_ident_torque_nm = 2.0f;
+constexpr float yaw_ident_start_rad = 5.0f * Pi / 180.0f;
+constexpr float yaw_ident_brake_rad = 20.0f * Pi / 180.0f;
+constexpr float yaw_ident_limit_rad = 30.0f * Pi / 180.0f;
+
+// Read yaw_ident_debug with ST-Link. One snapshot is updated on every motor tick.
+struct YawIdentDebug
+{
+    uint32_t timestamp_us;
+    uint32_t sample_seq;
+    uint32_t motor_rx_seq;
+    uint8_t state; // 0=idle, 1=chirp, 2=braking, 3=finished
+    float elapsed_s;
+    float frequency_hz;
+    float position_rad;
+    float gyro_yaw_rad_s;
+    float motor_speed_rad_s;
+    float torque_command_nm;
+    float torque_feedback_nm;
+};
+
+volatile YawIdentDebug yaw_ident_debug{};
+
 struct yaw_debug_t
 {
     float pos_ref;
@@ -96,6 +125,8 @@ float debug_syn_tq;
     msg_sensor_t sensor{};
     om_suber_t *ins_suber = om_subscribe(om_find_topic("ins", UINT32_MAX));
     msg_ins_t ins{};
+    om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
+    msg_remoter_t remoter{};
 
     motor.MotorsInit();
 
@@ -123,12 +154,19 @@ float debug_syn_tq;
     bool trigger_latched = false;
     bool last_trigger_release = false;
     bool yaw_hold_latched = false;
+    uint8_t yaw_ident_state = 0;
+    uint32_t yaw_ident_start_us = 0;
+    uint32_t yaw_ident_stop_us = 0;
+    uint32_t yaw_ident_last_rx_us = 0;
+    uint32_t yaw_ident_last_rx_seq = 0;
+    bool yaw_ident_switch_seen = false;
 
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
         om_suber_export(ins_suber, &ins, false);
+        om_suber_export(remoter_suber, &remoter, false);
 
         //撒放机构处理逻辑
         if (motorctrl.trigger_release && !last_trigger_release) 
@@ -251,7 +289,46 @@ float debug_syn_tq;
             break;
         }
 
-        if (motorctrl.yaw_mode == TORQUE)
+        const uint32_t yaw_ident_now_us = static_cast<uint32_t>(DWT_GetTimeline_us());
+        const float yaw_position_rad = motor.yawMotor.motorFeedback.positionFdb;
+        const uint32_t yaw_motor_rx_seq = motor.yawMotor.AliveFlag;
+        if (yaw_motor_rx_seq != yaw_ident_last_rx_seq)
+        {
+            yaw_ident_last_rx_seq = yaw_motor_rx_seq;
+            yaw_ident_last_rx_us = yaw_ident_now_us;
+        }
+        const bool yaw_feedback_fresh = yaw_motor_rx_seq != 0 &&
+            yaw_ident_now_us - yaw_ident_last_rx_us <= 20000U;
+        const bool yaw_ident_switch = !remoter.offline &&
+                                      remoter.left_sw == Up &&
+                                      remoter.right_sw == Down;
+        if (yaw_ident_switch && !yaw_ident_switch_seen && yaw_ident_state == 0 &&
+            yaw_feedback_fresh &&
+            motor.yawMotor.motorFeedback.ERR == DMMotor::ERR_ENABLE &&
+            std::isfinite(yaw_position_rad) &&
+            std::abs(yaw_position_rad) <= yaw_ident_start_rad)
+        {
+            yaw_ident_start_us = yaw_ident_now_us;
+            yaw_ident_state = 1;
+            yaw_pos_pid.Clear();
+            yaw_spd_pid.Clear();
+        }
+        yaw_ident_switch_seen = yaw_ident_switch;
+        if (!yaw_ident_switch && yaw_ident_state == 1)
+        {
+            yaw_ident_state = 2;
+            yaw_ident_stop_us = yaw_ident_now_us;
+        }
+        if (!yaw_ident_switch && yaw_ident_state == 3)
+        {
+            yaw_ident_state = 0;
+            motor.yawMotor.positionSet = yaw_position_rad;
+            yaw_hold_latched = true;
+            yaw_pos_pid.Clear();
+            yaw_spd_pid.Clear();
+        }
+
+        if (yaw_ident_state == 0 && motorctrl.yaw_mode == TORQUE)
         {
             motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
             motor.yawMotor.speedSet = 0.0f;
@@ -260,7 +337,7 @@ float debug_syn_tq;
             yaw_spd_pid.Clear();
             yaw_hold_latched = true;
         }
-        else
+        else if (yaw_ident_state == 0)
         {
             const bool yaw_cmd_active = std::abs(motorctrl.yaw_spd) > yaw_cmd_deadzone;
             if (yaw_cmd_active)
@@ -308,7 +385,75 @@ float debug_syn_tq;
                                yaw_max_torque_nm);
         }
 
+        float yaw_ident_elapsed_s = 0.0f;
+        float yaw_ident_frequency_hz = 0.0f;
+        if (yaw_ident_state == 1)
+        {
+            yaw_ident_elapsed_s =
+                static_cast<float>(yaw_ident_now_us - yaw_ident_start_us) * 1.0e-6f;
+            if (yaw_ident_elapsed_s >= yaw_ident_duration_s ||
+                !yaw_feedback_fresh ||
+                motor.yawMotor.motorFeedback.ERR != DMMotor::ERR_ENABLE ||
+                !std::isfinite(yaw_position_rad) ||
+                std::abs(yaw_position_rad) >= yaw_ident_brake_rad)
+            {
+                yaw_ident_state = 2;
+                yaw_ident_stop_us = yaw_ident_now_us;
+            }
+            else
+            {
+                const float slope =
+                    (yaw_ident_end_hz - yaw_ident_start_hz) / yaw_ident_duration_s;
+                yaw_ident_frequency_hz = yaw_ident_start_hz + slope * yaw_ident_elapsed_s;
+                const float phase = 2.0f * Pi *
+                    (yaw_ident_start_hz * yaw_ident_elapsed_s +
+                     0.5f * slope * yaw_ident_elapsed_s * yaw_ident_elapsed_s);
+                motor.yawMotor.torqueSet = yaw_ident_torque_nm * std::sin(phase);
+            }
+        }
+        if (yaw_ident_state == 2)
+        {
+            // Damping plus a small inward torque near the software boundary.
+            const float boundary_error = yaw_position_rad -
+                FloatConstrain(yaw_position_rad,
+                               -yaw_ident_brake_rad, yaw_ident_brake_rad);
+            const float brake_torque = -4.0f * ins.gyro_y - 10.0f * boundary_error;
+            motor.yawMotor.torqueSet =
+                std::isfinite(brake_torque)
+                    ? FloatConstrain(brake_torque, -4.0f, 4.0f)
+                    : 0.0f;
+            if (std::isfinite(yaw_position_rad) && std::isfinite(ins.gyro_y) &&
+                std::abs(yaw_position_rad) < yaw_ident_limit_rad &&
+                std::abs(ins.gyro_y) < 0.05f &&
+                yaw_ident_now_us - yaw_ident_stop_us > 200000U)
+            {
+                yaw_ident_state = 3;
+                motor.yawMotor.torqueSet = 0.0f;
+            }
+        }
+        if (yaw_ident_state == 3)
+        {
+            motor.yawMotor.torqueSet = 0.0f;
+        }
+        if (yaw_ident_state != 0)
+        {
+            motor.yawMotor.controlMode = DMMotor::MIT_MODE;
+            motor.yawMotor.positionSet = yaw_position_rad;
+            motor.yawMotor.speedSet = 0.0f;
+        }
+
         DMMotorHandler::Instance()->sendControlData();
+        yaw_ident_debug.timestamp_us = yaw_ident_now_us;
+        yaw_ident_debug.motor_rx_seq = yaw_motor_rx_seq;
+        yaw_ident_debug.state = yaw_ident_state;
+        yaw_ident_debug.elapsed_s = yaw_ident_elapsed_s;
+        yaw_ident_debug.frequency_hz = yaw_ident_frequency_hz;
+        yaw_ident_debug.position_rad = yaw_position_rad;
+        yaw_ident_debug.gyro_yaw_rad_s = ins.gyro_y;
+        yaw_ident_debug.motor_speed_rad_s = motor.yawMotor.motorFeedback.speedFdb;
+        yaw_ident_debug.torque_command_nm = motor.yawMotor.torqueSet;
+        yaw_ident_debug.torque_feedback_nm = motor.yawMotor.motorFeedback.torqueFdb;
+        ++yaw_ident_debug.sample_seq;
 
         // gantry电机状态error check
         gantry_alive_check_count++;

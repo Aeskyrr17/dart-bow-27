@@ -235,6 +235,14 @@ void Init_Dart_Config(DartLibrary* dart)
                                   lch2sys, &dart_lib, &cmd);
         }
 
+        // The yaw identification switch has priority over launcher commands.
+        if (!remoter.offline && remoter.left_sw == Up && remoter.right_sw == Down)
+        {
+            cmd.source = CONTROL_SOURCE_REMOTER;
+            cmd.action = DART_RELAX;
+            cmd.yaw = 0.0f;
+        }
+
         //更新dart_lib的历史数据
         dart_lib.Update_History(&lch2sys);
 

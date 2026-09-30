@@ -116,8 +116,10 @@ void DM8009P::ReceiveData(uint8_t *buffer)
     uint16_t t_int = ((buffer[4] & 0x0F) << 8) | buffer[5];
 
     // 使用 uint_to_float 进行转换
-    this->motorFeedback.positionFdb = LoopFloatConstrain(uint_to_float(p_int, this->Get_P_MIN(), this->Get_P_MAX(), 16), this->Get_P_MIN(), this->Get_P_MAX());
-    this->motorFeedback.positionFdb = LoopFloatConstrain(uint_to_float(p_int, this->Get_P_MIN(), this->Get_P_MAX(), 16), -Pi, Pi);
+    // Keep the absolute-encoder position for the yaw zero/boundary check.
+    // Wrapping it to [-pi, pi] would make an out-of-range angle look centered.
+    this->motorFeedback.positionFdb =
+        uint_to_float(p_int, this->Get_P_MIN(), this->Get_P_MAX(), 16);
     this->motorFeedback.speedFdb = uint_to_float(v_int, this->Get_V_MIN(), this->Get_V_MAX(), 12);
     this->motorFeedback.torqueFdb = uint_to_float(t_int, this->Get_T_MIN(), this->Get_T_MAX(), 12);
     // 温度信息
