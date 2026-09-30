@@ -105,6 +105,8 @@ struct msg_ins_t {
     float gyro_p;           ///< pitch角速度, rad/s
     float gyro_y;           ///< yaw角速度, rad/s
     float accel[3];
+    uint32_t gyro_sample_seq; ///< 仅在实际读取陀螺仪后递增
+    uint8_t imu_status;       ///< bit0: acc ID 错; bit1: gyro ID 错; bit2: 无有效采样
 };
 
 

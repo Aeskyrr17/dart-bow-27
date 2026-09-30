@@ -70,7 +70,7 @@ constexpr float yaw_ident_end_hz = 3.0f;
 constexpr float yaw_ident_duration_s = 20.0f;
 constexpr float yaw_ident_torque_nm = 6.0f;
 constexpr float yaw_ident_start_rad = 5.0f * Pi / 180.0f;
-constexpr float yaw_ident_brake_rad = 20.0f * Pi / 180.0f;
+constexpr float yaw_ident_brake_rad = 15.0f * Pi / 180.0f;
 constexpr float yaw_ident_limit_rad = 30.0f * Pi / 180.0f;
 
 // Read yaw_ident_debug with ST-Link. One snapshot is updated on every motor tick.
@@ -79,10 +79,14 @@ struct YawIdentDebug
     uint32_t timestamp_us;
     uint32_t sample_seq;
     uint32_t motor_rx_seq;
+    uint32_t imu_sample_seq;
     uint8_t state; // 0=idle, 1=chirp, 2=braking, 3=finished
+    uint8_t imu_status;
     float elapsed_s;
     float frequency_hz;
     float position_rad;
+    float gyro_roll_rad_s;
+    float gyro_pitch_rad_s;
     float gyro_yaw_rad_s;
     float motor_speed_rad_s;
     float torque_command_nm;
@@ -112,6 +116,9 @@ msg_motor_ctrl_t debug_motorctrl{};
 
 float debug_syn_tq;
 
+msg_ins_t ins{};
+
+
 [[noreturn]] void MotorThreadFun(ULONG initial_input) 
 {
     UNUSED(initial_input); 
@@ -124,7 +131,7 @@ float debug_syn_tq;
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
     msg_sensor_t sensor{};
     om_suber_t *ins_suber = om_subscribe(om_find_topic("ins", UINT32_MAX));
-    msg_ins_t ins{};
+    // msg_ins_t ins{};
     om_suber_t *remoter_suber = om_subscribe(om_find_topic("remoter", UINT32_MAX));
     msg_remoter_t remoter{};
 
@@ -413,18 +420,22 @@ float debug_syn_tq;
         }
         if (yaw_ident_state == 2)
         {
-            // Damping plus a small inward torque near the software boundary.
+            // Motor feedback stays available even if the IMU has no yaw samples.
+            // The capture showed zero gyro speed while the encoder was moving.
             const float boundary_error = yaw_position_rad -
                 FloatConstrain(yaw_position_rad,
                                -yaw_ident_brake_rad, yaw_ident_brake_rad);
-            const float brake_torque = -4.0f * ins.gyro_y - 10.0f * boundary_error;
+            const float motor_speed = motor.yawMotor.motorFeedback.speedFdb;
+            const float brake_torque = -4.0f * motor_speed - 10.0f * boundary_error;
             motor.yawMotor.torqueSet =
                 std::isfinite(brake_torque)
-                    ? FloatConstrain(brake_torque, -4.0f, 4.0f)
+                    ? FloatConstrain(brake_torque, -yaw_ident_torque_nm,
+                                     yaw_ident_torque_nm)
                     : 0.0f;
-            if (std::isfinite(yaw_position_rad) && std::isfinite(ins.gyro_y) &&
+            if (yaw_feedback_fresh && std::isfinite(yaw_position_rad) &&
+                std::isfinite(motor_speed) &&
                 std::abs(yaw_position_rad) < yaw_ident_limit_rad &&
-                std::abs(ins.gyro_y) < 0.05f &&
+                std::abs(motor_speed) < 0.05f &&
                 yaw_ident_now_us - yaw_ident_stop_us > 200000U)
             {
                 yaw_ident_state = 3;
@@ -445,10 +456,15 @@ float debug_syn_tq;
         DMMotorHandler::Instance()->sendControlData();
         yaw_ident_debug.timestamp_us = yaw_ident_now_us;
         yaw_ident_debug.motor_rx_seq = yaw_motor_rx_seq;
+        yaw_ident_debug.imu_sample_seq = ins.gyro_sample_seq;
         yaw_ident_debug.state = yaw_ident_state;
+        yaw_ident_debug.imu_status = ins.imu_status |
+            (ins.gyro_sample_seq == 0U ? 4U : 0U);
         yaw_ident_debug.elapsed_s = yaw_ident_elapsed_s;
         yaw_ident_debug.frequency_hz = yaw_ident_frequency_hz;
         yaw_ident_debug.position_rad = yaw_position_rad;
+        yaw_ident_debug.gyro_roll_rad_s = ins.gyro_r;
+        yaw_ident_debug.gyro_pitch_rad_s = ins.gyro_p;
         yaw_ident_debug.gyro_yaw_rad_s = ins.gyro_y;
         yaw_ident_debug.motor_speed_rad_s = motor.yawMotor.motorFeedback.speedFdb;
         yaw_ident_debug.torque_command_nm = motor.yawMotor.torqueSet;
