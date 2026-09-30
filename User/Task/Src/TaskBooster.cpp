@@ -31,7 +31,7 @@ extern uint8_t LogThreadStack[1024];
 extern void LogThreadFun(ULONG thread_input);
 
 extern TX_THREAD YawIdentUartThread;
-extern uint8_t YawIdentUartThreadStack[2048];
+extern uint8_t YawIdentUartThreadStack[3072];
 extern void YawIdentUartThreadFun(ULONG thread_input);
 
 extern TX_SEMAPHORE MotorAlive;

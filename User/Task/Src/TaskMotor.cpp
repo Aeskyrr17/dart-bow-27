@@ -65,14 +65,29 @@ constexpr float yaw_static_torque_neg_nm = 1.2f;
 constexpr float yaw_ff_spd_deadzone_rad_s = 0.01f;
 constexpr float yaw_max_torque_nm = 10.0f;
 
-// Single-axis linear chirp. The motor's stored absolute-encoder zero is yaw=0.
-constexpr float yaw_ident_start_hz = 0.4f;
-constexpr float yaw_ident_end_hz = 10.0f;
-constexpr float yaw_ident_duration_s = 30.0f;
-constexpr float yaw_ident_torque_nm = 8.0f;
-constexpr float yaw_ident_start_rad = 50.0f * Pi / 180.0f;
-constexpr float yaw_ident_brake_rad = 51.0f * Pi / 180.0f;
-constexpr float yaw_ident_limit_rad = 52.0f * Pi / 180.0f;
+// Static-friction trials use only the DM8009P MIT torque field.
+// The stored absolute-encoder zero is yaw=0.
+constexpr float yaw_friction_start_rad = 20.0f * Pi / 180.0f;
+constexpr float yaw_friction_cutoff_rad = 45.0f * Pi / 180.0f;
+constexpr float yaw_friction_max_torque_nm = 8.0f;
+constexpr float yaw_friction_ramp_nm_s = 0.5f;
+constexpr float yaw_friction_still_speed_rad_s = 0.04f;
+constexpr float yaw_friction_motion_speed_threshold_rad_s = 0.05f;
+constexpr float yaw_friction_still_position_rad = 0.002f;
+constexpr float yaw_friction_motion_position_threshold_rad = 0.003f;
+constexpr uint32_t yaw_friction_still_us = 500000U;
+constexpr uint32_t yaw_friction_onset_us = 20000U;
+constexpr uint8_t yaw_friction_trial_count = 6; // Three trials per direction.
+
+enum : uint8_t
+{
+    YAW_FRICTION_IDLE = 0,
+    YAW_FRICTION_SETTLE = 1,
+    YAW_FRICTION_RAMP = 2,
+    YAW_FRICTION_COAST = 3,
+    YAW_FRICTION_DONE = 4,
+    YAW_FRICTION_ABORTED = 5,
+};
 
 volatile YawIdentDebug yaw_ident_debug{};
 
@@ -142,12 +157,27 @@ msg_ins_t ins{};
     bool trigger_latched = false;
     bool last_trigger_release = false;
     bool yaw_hold_latched = false;
-    uint8_t yaw_ident_state = 0;
-    uint32_t yaw_ident_start_us = 0;
-    uint32_t yaw_ident_stop_us = 0;
+    uint8_t yaw_friction_state = YAW_FRICTION_IDLE;
+    uint8_t yaw_friction_trial = 0;
+    uint8_t yaw_friction_abort_reason = 0;
+    int8_t yaw_friction_direction = 0;
+    uint32_t yaw_friction_ramp_start_us = 0;
+    uint32_t yaw_friction_quiet_since_us = 0;
+    uint32_t yaw_friction_motion_since_us = 0;
     uint32_t yaw_ident_last_rx_us = 0;
     uint32_t yaw_ident_last_rx_seq = 0;
-    bool yaw_ident_switch_seen = false;
+    uint32_t yaw_friction_onset_seq = 0;
+    uint32_t yaw_friction_onset_timestamp_us = 0;
+    float yaw_friction_quiet_anchor_rad = 0.0f;
+    float yaw_friction_trial_start_rad = 0.0f;
+    float yaw_friction_baseline_feedback_nm = 0.0f;
+    float yaw_friction_pre_command_nm = 0.0f;
+    float yaw_friction_pre_feedback_nm = 0.0f;
+    float yaw_friction_onset_command_nm = 0.0f;
+    float yaw_friction_onset_feedback_nm = 0.0f;
+    float yaw_friction_onset_position_rad = 0.0f;
+    float yaw_friction_onset_speed_rad_s = 0.0f;
+    bool yaw_friction_switch_seen = false;
 
     for (;;)
     {
@@ -287,36 +317,55 @@ msg_ins_t ins{};
         }
         const bool yaw_feedback_fresh = yaw_motor_rx_seq != 0 &&
             yaw_ident_now_us - yaw_ident_last_rx_us <= 20000U;
-        const bool yaw_ident_switch = !remoter.offline &&
-                                      remoter.left_sw == Up &&
-                                      remoter.right_sw == Down;
-        if (yaw_ident_switch && !yaw_ident_switch_seen && yaw_ident_state == 0 &&
+        const float yaw_motor_speed_rad_s = motor.yawMotor.motorFeedback.speedFdb;
+        const float yaw_motor_feedback_nm = motor.yawMotor.motorFeedback.torqueFdb;
+        const bool yaw_friction_switch = !remoter.offline &&
+                                         remoter.left_sw == Up &&
+                                         remoter.right_sw == Down;
+        if (yaw_friction_switch && !yaw_friction_switch_seen &&
+            yaw_friction_state == YAW_FRICTION_IDLE &&
             yaw_feedback_fresh &&
             motor.yawMotor.motorFeedback.ERR == DMMotor::ERR_ENABLE &&
             std::isfinite(yaw_position_rad) &&
-            std::abs(yaw_position_rad) <= yaw_ident_start_rad)
+            std::isfinite(yaw_motor_speed_rad_s) &&
+            std::abs(yaw_position_rad) <= yaw_friction_start_rad &&
+            std::abs(yaw_motor_speed_rad_s) <= yaw_friction_still_speed_rad_s)
         {
-            yaw_ident_start_us = yaw_ident_now_us;
-            yaw_ident_state = 1;
+            yaw_friction_state = YAW_FRICTION_SETTLE;
+            yaw_friction_trial = 1;
+            yaw_friction_direction = 1;
+            yaw_friction_abort_reason = 0;
+            yaw_friction_quiet_since_us = yaw_ident_now_us;
+            yaw_friction_quiet_anchor_rad = yaw_position_rad;
+            yaw_friction_onset_seq = 0;
+            yaw_friction_onset_timestamp_us = 0;
+            yaw_friction_trial_start_rad = yaw_position_rad;
+            yaw_friction_baseline_feedback_nm = yaw_motor_feedback_nm;
+            yaw_friction_pre_command_nm = 0.0f;
+            yaw_friction_pre_feedback_nm = 0.0f;
+            yaw_friction_onset_command_nm = 0.0f;
+            yaw_friction_onset_feedback_nm = 0.0f;
+            yaw_friction_onset_position_rad = 0.0f;
+            yaw_friction_onset_speed_rad_s = 0.0f;
             yaw_pos_pid.Clear();
             yaw_spd_pid.Clear();
         }
-        yaw_ident_switch_seen = yaw_ident_switch;
-        if (!yaw_ident_switch && yaw_ident_state == 1)
+        yaw_friction_switch_seen = yaw_friction_switch;
+        bool yaw_friction_just_released = false;
+        if (!yaw_friction_switch && yaw_friction_state != YAW_FRICTION_IDLE)
         {
-            yaw_ident_state = 2;
-            yaw_ident_stop_us = yaw_ident_now_us;
-        }
-        if (!yaw_ident_switch && yaw_ident_state == 3)
-        {
-            yaw_ident_state = 0;
+            yaw_friction_state = YAW_FRICTION_IDLE;
+            yaw_friction_just_released = true;
+            motor.yawMotor.torqueSet = 0.0f;
             motor.yawMotor.positionSet = yaw_position_rad;
+            motor.yawMotor.speedSet = 0.0f;
             yaw_hold_latched = true;
             yaw_pos_pid.Clear();
             yaw_spd_pid.Clear();
         }
 
-        if (yaw_ident_state == 0 && motorctrl.yaw_mode == TORQUE)
+        if (yaw_friction_state == YAW_FRICTION_IDLE && !yaw_friction_just_released &&
+            motorctrl.yaw_mode == TORQUE)
         {
             motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
             motor.yawMotor.speedSet = 0.0f;
@@ -325,7 +374,7 @@ msg_ins_t ins{};
             yaw_spd_pid.Clear();
             yaw_hold_latched = true;
         }
-        else if (yaw_ident_state == 0)
+        else if (yaw_friction_state == YAW_FRICTION_IDLE && !yaw_friction_just_released)
         {
             const bool yaw_cmd_active = std::abs(motorctrl.yaw_spd) > yaw_cmd_deadzone;
             if (yaw_cmd_active)
@@ -373,62 +422,128 @@ msg_ins_t ins{};
                                yaw_max_torque_nm);
         }
 
-        float yaw_ident_elapsed_s = 0.0f;
-        float yaw_ident_frequency_hz = 0.0f;
-        if (yaw_ident_state == 1)
+        float yaw_friction_elapsed_s = 0.0f;
+        if (yaw_friction_state != YAW_FRICTION_IDLE)
         {
-            yaw_ident_elapsed_s =
-                static_cast<float>(yaw_ident_now_us - yaw_ident_start_us) * 1.0e-6f;
-            if (yaw_ident_elapsed_s >= yaw_ident_duration_s ||
-                !yaw_feedback_fresh ||
-                motor.yawMotor.motorFeedback.ERR != DMMotor::ERR_ENABLE ||
-                !std::isfinite(yaw_position_rad) ||
-                std::abs(yaw_position_rad) >= yaw_ident_brake_rad)
-            {
-                yaw_ident_state = 2;
-                yaw_ident_stop_us = yaw_ident_now_us;
-            }
-            else
-            {
-                const float slope =
-                    (yaw_ident_end_hz - yaw_ident_start_hz) / yaw_ident_duration_s;
-                yaw_ident_frequency_hz = yaw_ident_start_hz + slope * yaw_ident_elapsed_s;
-                const float phase = 2.0f * Pi *
-                    (yaw_ident_start_hz * yaw_ident_elapsed_s +
-                     0.5f * slope * yaw_ident_elapsed_s * yaw_ident_elapsed_s);
-                motor.yawMotor.torqueSet = yaw_ident_torque_nm * std::sin(phase);
-            }
-        }
-        if (yaw_ident_state == 2)
-        {
-            // Motor feedback stays available even if the IMU has no yaw samples.
-            // The capture showed zero gyro speed while the encoder was moving.
-            const float boundary_error = yaw_position_rad -
-                FloatConstrain(yaw_position_rad,
-                               -yaw_ident_brake_rad, yaw_ident_brake_rad);
-            const float motor_speed = motor.yawMotor.motorFeedback.speedFdb;
-            const float brake_torque = -4.0f * motor_speed - 10.0f * boundary_error;
-            motor.yawMotor.torqueSet =
-                std::isfinite(brake_torque)
-                    ? FloatConstrain(brake_torque, -yaw_ident_torque_nm,
-                                     yaw_ident_torque_nm)
-                    : 0.0f;
-            if (yaw_feedback_fresh && std::isfinite(yaw_position_rad) &&
-                std::isfinite(motor_speed) &&
-                std::abs(yaw_position_rad) < yaw_ident_limit_rad &&
-                std::abs(motor_speed) < 0.05f &&
-                yaw_ident_now_us - yaw_ident_stop_us > 200000U)
-            {
-                yaw_ident_state = 3;
-                motor.yawMotor.torqueSet = 0.0f;
-            }
-        }
-        if (yaw_ident_state == 3)
-        {
+            // Zero MIT torque in every phase except ramp. No yaw PID runs here.
             motor.yawMotor.torqueSet = 0.0f;
-        }
-        if (yaw_ident_state != 0)
-        {
+            if (yaw_friction_state <= YAW_FRICTION_COAST &&
+                (!yaw_feedback_fresh ||
+                 motor.yawMotor.motorFeedback.ERR != DMMotor::ERR_ENABLE ||
+                 !std::isfinite(yaw_position_rad) ||
+                 !std::isfinite(yaw_motor_speed_rad_s)))
+            {
+                yaw_friction_state = YAW_FRICTION_ABORTED;
+                yaw_friction_abort_reason = 3;
+            }
+            else if (yaw_friction_state <= YAW_FRICTION_COAST &&
+                     std::abs(yaw_position_rad) >= yaw_friction_cutoff_rad)
+            {
+                yaw_friction_state = YAW_FRICTION_ABORTED;
+                yaw_friction_abort_reason = 1;
+            }
+
+            if (yaw_friction_state == YAW_FRICTION_SETTLE)
+            {
+                if (std::abs(yaw_position_rad) > yaw_friction_start_rad)
+                {
+                    yaw_friction_state = YAW_FRICTION_ABORTED;
+                    yaw_friction_abort_reason = 4;
+                }
+                else if (std::abs(yaw_motor_speed_rad_s) > yaw_friction_still_speed_rad_s ||
+                         std::abs(yaw_position_rad - yaw_friction_quiet_anchor_rad) >
+                             yaw_friction_still_position_rad)
+                {
+                    yaw_friction_quiet_since_us = yaw_ident_now_us;
+                    yaw_friction_quiet_anchor_rad = yaw_position_rad;
+                }
+                else if (yaw_ident_now_us - yaw_friction_quiet_since_us >= yaw_friction_still_us)
+                {
+                    yaw_friction_state = YAW_FRICTION_RAMP;
+                    yaw_friction_ramp_start_us = yaw_ident_now_us;
+                    yaw_friction_trial_start_rad = yaw_position_rad;
+                    yaw_friction_baseline_feedback_nm = yaw_motor_feedback_nm;
+                    yaw_friction_pre_command_nm = 0.0f;
+                    yaw_friction_pre_feedback_nm = yaw_motor_feedback_nm;
+                    yaw_friction_onset_command_nm = 0.0f;
+                    yaw_friction_onset_feedback_nm = 0.0f;
+                    yaw_friction_onset_position_rad = 0.0f;
+                    yaw_friction_onset_speed_rad_s = 0.0f;
+                    yaw_friction_motion_since_us = 0;
+                }
+            }
+            else if (yaw_friction_state == YAW_FRICTION_RAMP)
+            {
+                yaw_friction_elapsed_s =
+                    static_cast<float>(yaw_ident_now_us - yaw_friction_ramp_start_us) * 1.0e-6f;
+                const float ramp_nm = yaw_friction_ramp_nm_s * yaw_friction_elapsed_s;
+                if (ramp_nm >= yaw_friction_max_torque_nm)
+                {
+                    yaw_friction_state = YAW_FRICTION_ABORTED;
+                    yaw_friction_abort_reason = 2;
+                }
+                else
+                {
+                    motor.yawMotor.torqueSet = yaw_friction_direction * ramp_nm;
+                    const bool moving =
+                        yaw_friction_direction * yaw_motor_speed_rad_s >
+                            yaw_friction_motion_speed_threshold_rad_s &&
+                        yaw_friction_direction *
+                            (yaw_position_rad - yaw_friction_trial_start_rad) >
+                            yaw_friction_motion_position_threshold_rad;
+                    if (!moving)
+                    {
+                        yaw_friction_motion_since_us = 0;
+                        yaw_friction_pre_command_nm = motor.yawMotor.torqueSet;
+                        yaw_friction_pre_feedback_nm = yaw_motor_feedback_nm;
+                    }
+                    else if (yaw_friction_motion_since_us == 0)
+                    {
+                        yaw_friction_motion_since_us = yaw_ident_now_us;
+                    }
+                    else if (yaw_ident_now_us - yaw_friction_motion_since_us >=
+                             yaw_friction_onset_us)
+                    {
+                        yaw_friction_onset_timestamp_us = yaw_ident_now_us;
+                        yaw_friction_onset_command_nm = motor.yawMotor.torqueSet;
+                        yaw_friction_onset_feedback_nm = yaw_motor_feedback_nm;
+                        yaw_friction_onset_position_rad = yaw_position_rad;
+                        yaw_friction_onset_speed_rad_s = yaw_motor_speed_rad_s;
+                        ++yaw_friction_onset_seq;
+                        yaw_friction_state = YAW_FRICTION_COAST;
+                        yaw_friction_quiet_since_us = yaw_ident_now_us;
+                        yaw_friction_quiet_anchor_rad = yaw_position_rad;
+                        motor.yawMotor.torqueSet = 0.0f;
+                    }
+                }
+            }
+            else if (yaw_friction_state == YAW_FRICTION_COAST)
+            {
+                if (std::abs(yaw_motor_speed_rad_s) > yaw_friction_still_speed_rad_s ||
+                    std::abs(yaw_position_rad - yaw_friction_quiet_anchor_rad) >
+                        yaw_friction_still_position_rad)
+                {
+                    yaw_friction_quiet_since_us = yaw_ident_now_us;
+                    yaw_friction_quiet_anchor_rad = yaw_position_rad;
+                }
+                else if (yaw_ident_now_us - yaw_friction_quiet_since_us >=
+                         yaw_friction_still_us)
+                {
+                    if (yaw_friction_trial >= yaw_friction_trial_count)
+                    {
+                        yaw_friction_state = YAW_FRICTION_DONE;
+                    }
+                    else
+                    {
+                        ++yaw_friction_trial;
+                        yaw_friction_direction = (yaw_friction_trial & 1U) ? 1 : -1;
+                        yaw_friction_state = YAW_FRICTION_SETTLE;
+                        yaw_friction_quiet_since_us = yaw_ident_now_us;
+                        yaw_friction_quiet_anchor_rad = yaw_position_rad;
+                    }
+                }
+            }
+
             motor.yawMotor.controlMode = DMMotor::MIT_MODE;
             motor.yawMotor.positionSet = yaw_position_rad;
             motor.yawMotor.speedSet = 0.0f;
@@ -439,11 +554,16 @@ msg_ins_t ins{};
         yaw_ident_debug.timestamp_us = yaw_ident_now_us;
         yaw_ident_debug.motor_rx_seq = yaw_motor_rx_seq;
         yaw_ident_debug.imu_sample_seq = ins.gyro_sample_seq;
-        yaw_ident_debug.state = yaw_ident_state;
+        yaw_ident_debug.state = yaw_friction_state;
         yaw_ident_debug.imu_status = ins.imu_status |
             (ins.gyro_sample_seq == 0U ? 4U : 0U);
-        yaw_ident_debug.elapsed_s = yaw_ident_elapsed_s;
-        yaw_ident_debug.frequency_hz = yaw_ident_frequency_hz;
+        yaw_ident_debug.trial = yaw_friction_trial;
+        yaw_ident_debug.direction = yaw_friction_direction;
+        yaw_ident_debug.abort_reason = yaw_friction_abort_reason;
+        yaw_ident_debug.onset_seq = yaw_friction_onset_seq;
+        yaw_ident_debug.onset_timestamp_us = yaw_friction_onset_timestamp_us;
+        yaw_ident_debug.elapsed_s = yaw_friction_elapsed_s;
+        yaw_ident_debug.frequency_hz = 0.0f;
         yaw_ident_debug.position_rad = yaw_position_rad;
         yaw_ident_debug.gyro_roll_rad_s = ins.gyro_r;
         yaw_ident_debug.gyro_pitch_rad_s = ins.gyro_p;
@@ -451,6 +571,14 @@ msg_ins_t ins{};
         yaw_ident_debug.motor_speed_rad_s = motor.yawMotor.motorFeedback.speedFdb;
         yaw_ident_debug.torque_command_nm = motor.yawMotor.torqueSet;
         yaw_ident_debug.torque_feedback_nm = motor.yawMotor.motorFeedback.torqueFdb;
+        yaw_ident_debug.trial_start_position_rad = yaw_friction_trial_start_rad;
+        yaw_ident_debug.baseline_feedback_nm = yaw_friction_baseline_feedback_nm;
+        yaw_ident_debug.pre_onset_command_nm = yaw_friction_pre_command_nm;
+        yaw_ident_debug.pre_onset_feedback_nm = yaw_friction_pre_feedback_nm;
+        yaw_ident_debug.onset_command_nm = yaw_friction_onset_command_nm;
+        yaw_ident_debug.onset_feedback_nm = yaw_friction_onset_feedback_nm;
+        yaw_ident_debug.onset_position_rad = yaw_friction_onset_position_rad;
+        yaw_ident_debug.onset_speed_rad_s = yaw_friction_onset_speed_rad_s;
         ++yaw_ident_debug.sample_seq;
         ++yaw_ident_debug.update_seq;
 

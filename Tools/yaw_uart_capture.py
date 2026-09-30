@@ -1,4 +1,4 @@
-"""Save the yaw identification stream from USART10 as MATLAB-ready CSV."""
+"""Save the yaw static-friction trials from USART10 as MATLAB-ready CSV."""
 
 import argparse
 import csv
@@ -7,10 +7,13 @@ import serial
 
 
 HEADER = [
-    "timestamp_us", "sample_seq", "state", "position_mrad",
-    "gyro_yaw_mrad_s", "motor_speed_mrad_s", "torque_command_mNm",
-    "torque_feedback_mNm", "frequency_mHz", "imu_status",
-    "motor_rx_seq", "imu_sample_seq",
+    "timestamp_us", "sample_seq", "state", "trial", "direction",
+    "position_mrad", "motor_speed_mrad_s", "gyro_yaw_mrad_s",
+    "torque_command_mNm", "torque_feedback_mNm", "trial_start_mrad",
+    "baseline_feedback_mNm", "pre_onset_command_mNm", "pre_onset_feedback_mNm",
+    "onset_command_mNm", "onset_feedback_mNm", "onset_position_mrad",
+    "onset_speed_mrad_s", "onset_timestamp_us", "onset_seq", "abort_reason",
+    "motor_rx_seq", "imu_status", "imu_sample_seq",
 ]
 
 
