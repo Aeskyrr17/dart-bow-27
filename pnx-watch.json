@@ -1,0 +1,68 @@
+{
+  "format": "pnx-watch",
+  "version": 1,
+  "groups": [
+    {
+      "id": "default",
+      "name": "默认组"
+    }
+  ],
+  "plots": [
+    {
+      "id": "plot-1",
+      "name": "曲线 1",
+      "groupId": "default",
+      "seconds": 10
+    }
+  ],
+  "variables": [
+    {
+      "expression": "yaw_ident_debug.timestamp_us",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.sample_seq",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.motor_rx_seq",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.state",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.elapsed_s",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.frequency_hz",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.position_rad",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.gyro_yaw_rad_s",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.motor_speed_rad_s",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.torque_command_nm",
+      "plotId": "watch-only"
+    },
+    {
+      "expression": "yaw_ident_debug.torque_feedback_nm",
+      "plotId": "watch-only"
+    }
+  ],
+  "activeGroup": "default",
+  "columns": 2,
+  "seconds": 10,
+  "rate": 2000
+}
