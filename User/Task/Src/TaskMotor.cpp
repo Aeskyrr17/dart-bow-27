@@ -65,13 +65,13 @@ constexpr float yaw_ff_spd_deadzone_rad_s = 0.01f;
 constexpr float yaw_max_torque_nm = 10.0f;
 
 // Single-axis linear chirp. The motor's stored absolute-encoder zero is yaw=0.
-constexpr float yaw_ident_start_hz = 0.2f;
-constexpr float yaw_ident_end_hz = 3.0f;
-constexpr float yaw_ident_duration_s = 20.0f;
-constexpr float yaw_ident_torque_nm = 6.0f;
-constexpr float yaw_ident_start_rad = 5.0f * Pi / 180.0f;
-constexpr float yaw_ident_brake_rad = 15.0f * Pi / 180.0f;
-constexpr float yaw_ident_limit_rad = 30.0f * Pi / 180.0f;
+constexpr float yaw_ident_start_hz = 0.4f;
+constexpr float yaw_ident_end_hz = 4.0f;
+constexpr float yaw_ident_duration_s = 30.0f;
+constexpr float yaw_ident_torque_nm = 8.0f;
+constexpr float yaw_ident_start_rad = 45.0f * Pi / 180.0f;
+constexpr float yaw_ident_brake_rad = 46.0f * Pi / 180.0f;
+constexpr float yaw_ident_limit_rad = 52.0f * Pi / 180.0f;
 
 // Read yaw_ident_debug with ST-Link. One snapshot is updated on every motor tick.
 struct YawIdentDebug
