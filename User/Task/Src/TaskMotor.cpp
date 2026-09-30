@@ -67,11 +67,11 @@ constexpr float yaw_max_torque_nm = 10.0f;
 
 // Single-axis linear chirp. The motor's stored absolute-encoder zero is yaw=0.
 constexpr float yaw_ident_start_hz = 0.4f;
-constexpr float yaw_ident_end_hz = 4.0f;
+constexpr float yaw_ident_end_hz = 10.0f;
 constexpr float yaw_ident_duration_s = 30.0f;
 constexpr float yaw_ident_torque_nm = 8.0f;
-constexpr float yaw_ident_start_rad = 45.0f * Pi / 180.0f;
-constexpr float yaw_ident_brake_rad = 46.0f * Pi / 180.0f;
+constexpr float yaw_ident_start_rad = 50.0f * Pi / 180.0f;
+constexpr float yaw_ident_brake_rad = 51.0f * Pi / 180.0f;
 constexpr float yaw_ident_limit_rad = 52.0f * Pi / 180.0f;
 
 volatile YawIdentDebug yaw_ident_debug{};
