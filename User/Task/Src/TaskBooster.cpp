@@ -30,9 +30,9 @@ extern TX_THREAD LogThread;
 extern uint8_t LogThreadStack[1024];
 extern void LogThreadFun(ULONG thread_input);
 
-extern TX_THREAD HostCommThread;
-extern uint8_t HostCommThreadStack[1024];
-extern void HostCommThreadFun(ULONG thread_input);
+extern TX_THREAD YawIdentUartThread;
+extern uint8_t YawIdentUartThreadStack[2048];
+extern void YawIdentUartThreadFun(ULONG thread_input);
 
 extern TX_SEMAPHORE MotorAlive;
 extern TX_SEMAPHORE CANErrorSem;
@@ -83,7 +83,9 @@ extern "C" void TaskBooster(void)
                      LogThreadStack, sizeof(LogThreadStack),
                      18, 18, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    tx_thread_create(&HostCommThread, TX_NAME("HostCommThread"), HostCommThreadFun, 0x1234,
-                     HostCommThreadStack, sizeof(HostCommThreadStack),
-                     17, 17, TX_NO_TIME_SLICE, TX_AUTO_START);
+    // USART10 is dedicated to the yaw identification CSV stream. HostComm's
+    // thread is intentionally not started because it also owns USART10.
+    tx_thread_create(&YawIdentUartThread, TX_NAME("YawIdentUartThread"), YawIdentUartThreadFun, 0,
+                     YawIdentUartThreadStack, sizeof(YawIdentUartThreadStack),
+                     20, 20, TX_NO_TIME_SLICE, TX_AUTO_START);
 }

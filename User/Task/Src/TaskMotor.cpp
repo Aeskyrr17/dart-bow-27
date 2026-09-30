@@ -25,6 +25,7 @@
 
 #include "config_launcher.hpp"
 #include "config_motor.hpp"
+#include "YawIdentDebug.hpp"
 
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -72,26 +73,6 @@ constexpr float yaw_ident_torque_nm = 8.0f;
 constexpr float yaw_ident_start_rad = 45.0f * Pi / 180.0f;
 constexpr float yaw_ident_brake_rad = 46.0f * Pi / 180.0f;
 constexpr float yaw_ident_limit_rad = 52.0f * Pi / 180.0f;
-
-// Read yaw_ident_debug with ST-Link. One snapshot is updated on every motor tick.
-struct YawIdentDebug
-{
-    uint32_t timestamp_us;
-    uint32_t sample_seq;
-    uint32_t motor_rx_seq;
-    uint32_t imu_sample_seq;
-    uint8_t state; // 0=idle, 1=chirp, 2=braking, 3=finished
-    uint8_t imu_status;
-    float elapsed_s;
-    float frequency_hz;
-    float position_rad;
-    float gyro_roll_rad_s;
-    float gyro_pitch_rad_s;
-    float gyro_yaw_rad_s;
-    float motor_speed_rad_s;
-    float torque_command_nm;
-    float torque_feedback_nm;
-};
 
 volatile YawIdentDebug yaw_ident_debug{};
 
@@ -454,6 +435,7 @@ msg_ins_t ins{};
         }
 
         DMMotorHandler::Instance()->sendControlData();
+        ++yaw_ident_debug.update_seq;
         yaw_ident_debug.timestamp_us = yaw_ident_now_us;
         yaw_ident_debug.motor_rx_seq = yaw_motor_rx_seq;
         yaw_ident_debug.imu_sample_seq = ins.gyro_sample_seq;
@@ -470,6 +452,7 @@ msg_ins_t ins{};
         yaw_ident_debug.torque_command_nm = motor.yawMotor.torqueSet;
         yaw_ident_debug.torque_feedback_nm = motor.yawMotor.motorFeedback.torqueFdb;
         ++yaw_ident_debug.sample_seq;
+        ++yaw_ident_debug.update_seq;
 
         // gantry电机状态error check
         gantry_alive_check_count++;
