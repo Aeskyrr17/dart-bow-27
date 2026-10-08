@@ -54,15 +54,15 @@ void Init_Dart_Config(DartLibrary* dart)
 {
     DartConfig& config = dart->config;
 
-    config.dart[1] = {1, -0.40f, 64.5f, 72.0f};
-    config.dart[2] = {2, -0.40f, 64.5f, 72.0f};
-    config.dart[3] = {3, -0.08f, 70.0f, 72.0f};
-    config.dart[4] = {4, -0.08f, 68.75f, 72.0f};
+    config.dart[1] = {1, -0.0f, 64.5f, 72.0f};
+    config.dart[2] = {2, -0.0f, 64.5f, 72.0f};
+    config.dart[3] = {3, -0.0f, 70.0f, 72.0f};
+    config.dart[4] = {4, -0.0f, 68.75f, 72.0f};
 
-    config.dart[5] = {5, -0.10f, 68.5f, 50.0f};
-    config.dart[6] = {6, -0.20f, 65.5f, 50.0f};
-    config.dart[7] = {7, -0.18f, 69.0f, 50.0f};
-    config.dart[8] = {8, -0.08f, 68.4f, 50.0f};
+    config.dart[5] = {5, -0.0f, 68.5f, 50.0f};
+    config.dart[6] = {6, -0.0f, 65.5f, 50.0f};
+    config.dart[7] = {7, -0.0f, 69.0f, 50.0f};
+    config.dart[8] = {8, -0.0f, 68.4f, 50.0f};
 
     config.dart[9]  = {9,  0.00f, 69.0f, 50.0f};
     config.dart[10] = {10, 0.00f, 69.0f, 50.0f};

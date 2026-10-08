@@ -46,13 +46,13 @@ PID str_R_tension_pid(60.0f, 0.0f, 0.0f, 5000.0f, 1000.0f, PID_POSITION | PID_In
 PID syn_pos_pid(10.0f, 0.0f, 10.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
 // Yaw cascade PID: position loop outputs speed, speed loop outputs MIT torque.
-PID yaw_pos_pid(2.0f, 0.0f, 0.0f, 0.5f, 0.0f, PID_POSITION);
-PID yaw_spd_pid(10.0f, 0.0f, 0.0f, 10.0f, 1.0f,
+PID yaw_pos_pid(6.0f, 0.002f, 0.0f, 0.5f, 0.0f, PID_POSITION);
+PID yaw_spd_pid(10.0f, 0.006f, 0.0f, 10.0f, 1.0f,
                 PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 
-constexpr float yaw_target_position_rate_rad_s = 0.5f;
+constexpr float yaw_target_position_rate_rad_s = 0.2f;
 constexpr float yaw_control_period_s = 0.001f;
 constexpr float yaw_cmd_deadzone = 0.01f;
 
@@ -117,7 +117,6 @@ float debug_syn_tq;
 
     bool trigger_latched = false;
     bool last_trigger_release = false;
-    bool yaw_hold_latched = false;
 
     for (;;)
     {
@@ -252,27 +251,15 @@ float debug_syn_tq;
             motor.yawMotor.torqueSet = motorctrl.yaw_tq;
             yaw_pos_pid.Clear();
             yaw_spd_pid.Clear();
-            yaw_hold_latched = true;
         }
         else
         {
             const bool yaw_cmd_active = std::abs(motorctrl.yaw_spd) > yaw_cmd_deadzone;
             if (yaw_cmd_active)
             {
-                yaw_hold_latched = false;
                 motor.yawMotor.positionSet -= motorctrl.yaw_spd *
                                               yaw_target_position_rate_rad_s *
                                               yaw_control_period_s;
-            }
-            else
-            {
-                if (!yaw_hold_latched)
-                {
-                    motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
-                    yaw_pos_pid.Clear();
-                    yaw_spd_pid.Clear();
-                    yaw_hold_latched = true;
-                }
             }
 
         // 速度环
