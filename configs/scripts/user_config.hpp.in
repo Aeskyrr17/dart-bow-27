@@ -15,6 +15,11 @@ namespace user_config
 #error Unsupported board
 #endif
 
+namespace usb
+{
+inline constexpr bool enabled = @_usb_enabled@;
+} // namespace usb
+
 inline constexpr imu::bmi088_heater_config bmi088_heater{
     @_heater_period_ms@, @_heater_timeout_ms@,
     @_heater_stable_time_ms@, @_heater_tolerance@, @_heater_priority@};

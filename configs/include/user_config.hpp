@@ -65,6 +65,11 @@ inline constexpr auto ps2_spi = bsp::spi::handle::none;
 #error Unsupported board
 #endif
 
+namespace usb
+{
+inline constexpr bool enabled = false;
+} // namespace usb
+
 inline constexpr imu::bmi088_heater_config bmi088_heater{
     125, 500,
     2000, 0.5f, 2};
