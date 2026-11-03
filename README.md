@@ -11,12 +11,13 @@
 | `libs` | 数学、控制、消息、CRC 等基础设施 |
 | `devices` | 由应用驱动的 LED、电机、遥控器和裁判 UI，不创建后台线程 |
 | `modules/imu` | BMI088/DMIMU 采集服务、姿态输出、ESKF 和 BMI088 温控 |
-| `modules/rfid` | 默认启动的 RFID data 读取、蜂鸣提示和遥控输入限制 |
+| `modules/rfid` | RFID data 读取、蜂鸣提示和遥控输入限制 |
 | `modules/referee` | 裁判接收线程、协议解析、类型缓存和可选类型回调 |
 | `configs` | 用户 JSON 配置及生成脚本、生成头文件 |
+| `apps/dart` | H723 飞镖遥控决策、发射状态机与机构控制 |
 
-根工程链接 `modules`，通过它引入设备、BSP 和基础库。固件在链接时接入 ThreadX 初始化入口，默认创建 RFID 读取线程；BSP 保持原有实现；
-其他服务仍由应用显式启动。RFID 的遥控限制在设备解码层执行，应用无需检查权限标志。
+根工程链接 `modules`，通过它引入设备、BSP 和基础库。H723 构建启动飞镖应用，不自动启动 RFID；
+F407 保持原有 RFID 启动方式。其他服务由应用显式启动。飞镖接线与遥控操作见 [飞镖应用](apps/dart/README.md)。
 
 ## 配置与接入
 
@@ -114,4 +115,4 @@ cmake --build --preset h723_mc02
 构建 F407 时将上述两个命令中的 preset 名称改为 `f407_cboard`。
 构建产物位于 `build/<preset名称>/`，编译数据库由 CMake 自动生成，供其他工具按需使用。
 
-RFID 默认读取线程及底层遥控限制见 [RFID 服务](modules/README.md#rfid)。
+F407 的 RFID 读取线程及底层遥控限制见 [RFID 服务](modules/README.md#rfid)。

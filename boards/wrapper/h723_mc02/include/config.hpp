@@ -63,6 +63,7 @@ namespace pwm
 enum class handle : uint8_t
 {
     none,
+    tim1,
     tim3,
     tim12
 };
@@ -148,6 +149,7 @@ inline constexpr adc::config adc1{4, 1, adc::sampling_time::cycles_1_5, adc::han
 
 // Timer kernel clocks before prescaling, not PWM output frequencies.
 // APB1 timers: RCC.Tim2OutputFreq_Value=260000000.
+inline constexpr pwm::config tim1{260000000U, pwm::handle::tim1, 0x04U};   // CH3
 inline constexpr pwm::config tim3{260000000U, pwm::handle::tim3, 0x08U};   // CH4
 inline constexpr pwm::config tim12{260000000U, pwm::handle::tim12, 0x02U}; // CH2
 
@@ -160,7 +162,7 @@ inline constexpr gpio::config pc15{gpio::port::c, 15};
 
 inline constexpr spi::config spi_configs[]{spi1, spi2, spi6};
 inline constexpr usart::config usart_configs[]{uart5, uart7, usart1, usart10};
-inline constexpr pwm::config pwm_configs[]{tim3, tim12};
+inline constexpr pwm::config pwm_configs[]{tim1, tim3, tim12};
 } // namespace bsp::peripherals
 
 // BMI088 pins labelled in h723_mc02.ioc; INT pins use rising-edge EXTI.

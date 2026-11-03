@@ -49,6 +49,8 @@ inline constexpr uint32_t heater_timeout_clock_hz = 260000000U;
 {
     switch (id)
     {
+        case pwm::handle::tim1:
+            return &htim1;
         case pwm::handle::tim3:
             return &htim3;
         case pwm::handle::tim12:
@@ -64,6 +66,9 @@ inline constexpr uint32_t heater_timeout_clock_hz = 260000000U;
     const pwm::config* resource = nullptr;
     switch (id)
     {
+        case pwm::handle::tim1:
+            resource = &tim1;
+            break;
         case pwm::handle::tim3:
             resource = &tim3;
             break;

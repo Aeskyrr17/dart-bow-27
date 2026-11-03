@@ -38,6 +38,7 @@ int main(void)
     MX_USB_OTG_HS_PCD_Init();
     MX_USART10_UART_Init();
     MX_TIM6_Init();
+    MX_TIM1_Init();
     tx_kernel_enter();
     return 1;
 }
