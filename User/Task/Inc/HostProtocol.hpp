@@ -29,6 +29,7 @@ typedef enum
     HOST_TYPE_SET_TEST_MODE = 0x17,
     HOST_TYPE_SET_TEST_TENSION = 0x18,
     HOST_TYPE_TEST_ACTION = 0x19,
+    HOST_TYPE_SET_TEST_AIM = 0x1A,
     HOST_TYPE_DART_PARAM_STATE = 0x20,
     HOST_TYPE_SEQUENCE_STATE = 0x21,
     HOST_TYPE_PRE_TENSION_STATE = 0x22,
@@ -55,6 +56,7 @@ typedef enum
     HOST_REQ_SET_TEST_MODE,
     HOST_REQ_SET_TEST_TENSION,
     HOST_REQ_TEST_ACTION,
+    HOST_REQ_SET_TEST_AIM,
 } HOST_REQ_KIND;
 
 typedef enum
@@ -69,7 +71,16 @@ typedef enum
     HOST_TEST_ACTION_PREPARE = 1,
     HOST_TEST_ACTION_FIRE = 2,
     HOST_TEST_ACTION_ABORT = 3,
+    HOST_TEST_ACTION_TENSION = 4,
 } HOST_TEST_ACTION;
+
+typedef enum
+{
+    HOST_TEST_AIM_IDLE = 0,
+    HOST_TEST_AIM_ADJUSTING = 1,
+    HOST_TEST_AIM_ALIGNED = 2,
+    HOST_TEST_AIM_INVALID = 3,
+} HOST_TEST_AIM_STATE;
 
 typedef enum
 {
@@ -115,6 +126,7 @@ struct msg_hostreq_t
 
     uint8_t test_mode;
     uint8_t test_action;
+    uint8_t test_aim;
 
     uint8_t sequence[4];
 };

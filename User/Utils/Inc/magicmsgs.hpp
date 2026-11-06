@@ -118,7 +118,6 @@ struct msg_visionrx_t
                             //1: green light visible and aim data valid 
                             //2: door open but green light occluded //绿灯被遮
                             //3: door not fully open/blocked
-    uint8_t stable_state;//0不稳定，1稳定
     float yaw; //! 目前下位机用的是旧版，rm26是相机中心和绿灯的像素点差，新版准备用绝对yaw_rad
     float distance;
     uint16_t checksum; // 校验和
@@ -155,7 +154,6 @@ struct logger_t
     uint8_t door_status;
     uint8_t last_light_detected;
     uint8_t vision_light_detected;
-    uint8_t vision_stable_state;
     bool door_session_active;
     bool autoaim_allow;
     bool door_close_inhibit_active;
@@ -216,6 +214,7 @@ struct msg_cmd_t
     DART_SLOT next_dart_slot;
     uint8_t current_shot_number;
 
+    CTRL_MODE yaw_mode;      // POS: moving position target; SPD: direct speed; TORQUE: release.
     float yaw;              //约定为-1~1
     float tension_kg;
     float tension_left_kg;
@@ -240,7 +239,7 @@ typedef enum TriggerStatus
  */
 struct msg_motor_ctrl_t
 {
-    float yaw_spd;
+    float yaw_spd;           // Normalized [-1, 1], converted to rad/s only by TaskMotor.
     float yaw_tq;
     float yaw_pos;
     CTRL_MODE yaw_mode;

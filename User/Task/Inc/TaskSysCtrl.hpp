@@ -3,6 +3,12 @@
 #include "DelayHelper.hpp"
 #include "magicmsgs.hpp"
 
+/**
+ * @brief 根据视觉 yaw 误差更新 cmd->yaw 和 yaw_mode，返回是否对准。
+ * 调整时 SPD，对准/无效时 POS 保持；不修改动作、张力或 AutoAim 状态。
+ */
+bool Update_Vision_Yaw(const msg_visionrx_t& vision_rx, msg_cmd_t* cmd);
+
 struct Dart_Config_t
 {
     int id;

@@ -290,6 +290,12 @@ DecodeResult DecodeFrame(const HostFrame& frame, msg_hostreq_t* req)
             req->test_action = frame.payload[0];
             return DecodeResult::Ok;
 
+        case HOST_TYPE_SET_TEST_AIM:
+            if (frame.len != 1) { return DecodeResult::LengthError; }
+            req->kind = HOST_REQ_SET_TEST_AIM;
+            req->test_aim = frame.payload[0];
+            return DecodeResult::Ok;
+
         default:
             req->kind = HOST_REQ_NONE;
             return DecodeResult::UnknownType;

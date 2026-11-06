@@ -65,7 +65,6 @@ extern Launcher_Cxt_t launcher;
         logger.door_status = static_cast<uint8_t>(dart_lib.runtime.vision_door_status);
         logger.last_light_detected = 0;
         logger.vision_light_detected = vision_rx.light_detected;
-        logger.vision_stable_state = vision_rx.stable_state;
         logger.door_session_active = 0;
         logger.autoaim_allow = dart_lib.runtime.autoAim.autoaim_allow;
         logger.door_close_inhibit_active = 0;

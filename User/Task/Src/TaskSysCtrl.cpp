@@ -7,6 +7,7 @@
 #include "main.h"
 #include "tx_api.h"
 #include <string.h>
+#include <cmath>
 
 #include "om.h"
 #include "magicmsgs.hpp"
@@ -142,9 +143,10 @@ void Init_Dart_Config(DartLibrary* dart)
     for (;;)
     {
         memset(&cmd, 0, sizeof(msg_cmd_t)); //每次循环清空cmd
+        cmd.yaw_mode = POS;
         om_suber_export(remoter_suber, &remoter, false);
         om_suber_export(lch2sys_suber, &lch2sys, false);
-        om_suber_export(visionrx_suber,&vision_rx,false);
+        const bool vision_updated = om_suber_export(visionrx_suber, &vision_rx, false) == OM_OK;
         om_suber_export(referee_suber,&referee_pack,false);
         om_suber_export(motorfdb_suber, &motorfdb, false);
         Update_referee_data(&referee_pack,&dart_lib);
@@ -162,7 +164,7 @@ void Init_Dart_Config(DartLibrary* dart)
             remoter.left_sw == host_test_permit_left_sw &&
             remoter.right_sw == host_test_permit_right_sw;
         dart_host_service.Poll(dart_lib, lch2sys, host_test_control_allowed,
-                               host_test_mode_timeout_ticks);
+                               host_test_mode_timeout_ticks, vision_rx, vision_updated);
         const bool hostTest_control = dart_host_service.IsTestModeEnabled();
 
         //遥控器离弦的自动模式锁存逻辑：上电后Up/Up开启autoAim，下电后保持，直到遥控器干预才关闭autoAim
@@ -227,6 +229,7 @@ void Init_Dart_Config(DartLibrary* dart)
         if (remoter_offline_safety)
         {
             cmd.action = DART_RELAX;
+            cmd.yaw_mode = TORQUE;
             dart_lib.Update_Fired_State(&lch2sys);
         }
         else
@@ -288,6 +291,7 @@ DartRuntime::AimTarget Resolve_Current_Aim_Target(const DartLibrary& dart, float
  */
 void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_cmd_t* cmd)
 {
+    cmd->yaw_mode = POS;
     cmd->source = CONTROL_SOURCE_REMOTER;
     cmd->prepare_profile = remoter_prepare_profile;
     Set_Command_Tension(cmd, tension_kg, tension_kg);
@@ -349,6 +353,8 @@ void Build_Remoter_Command(const msg_remoter_t& remoter, float tension_kg, msg_c
         cmd->action = DART_RELAX;
 
     }
+    if (cmd->action == DART_RELAX)
+        cmd->yaw_mode = TORQUE;
 }
 
 void Build_Host_Test_Command(const msg_launcher2sysctrl_t& lch2sys, msg_cmd_t* cmd)
@@ -358,9 +364,14 @@ void Build_Host_Test_Command(const msg_launcher2sysctrl_t& lch2sys, msg_cmd_t* c
     Set_Command_Tension(cmd,
                         dart_host_service.GetTestTensionLeft(),
                         dart_host_service.GetTestTensionRight());
+    cmd->yaw = dart_host_service.GetTestYawCommand();
+    cmd->yaw_mode = dart_host_service.GetTestYawMode();
 
     switch (dart_host_service.GetTestAction())
     {
+        case HOST_TEST_ACTION_TENSION:
+            cmd->action = DART_PRE_TENSION;
+            break;
         case HOST_TEST_ACTION_PREPARE:
             cmd->action = DART_PREPARE;
             break;
@@ -378,6 +389,10 @@ void Build_Host_Test_Command(const msg_launcher2sysctrl_t& lch2sys, msg_cmd_t* c
             break;
 
         case HOST_TEST_ACTION_NONE:
+            // Preserve preparation performed with the remote when switching to host mode.
+            cmd->action = (lch2sys.current_state == PREPARING ||
+                           lch2sys.current_state == READY) ? DART_PREPARE : DART_RELAX;
+            break;
         case HOST_TEST_ACTION_ABORT:
         default:
             cmd->action = DART_RELAX;
@@ -426,9 +441,75 @@ void Resolve_Final_Command(bool autoAim_control, bool hostTest_control,
 
 
 
+bool Update_Vision_Yaw(const msg_visionrx_t& vision_rx, msg_cmd_t* cmd)
+{
+    cmd->yaw = 0.0f;
+    cmd->yaw_mode = POS;
+    if (!std::isfinite(vision_rx.yaw) || vision_rx.yaw == 0)
+    {
+        return false;
+    }
+
+    if (vision_rx.yaw > 0.08f)
+    {
+        cmd->yaw = 0.8f;
+    }
+    else if (vision_rx.yaw < -0.08f)
+    {
+        cmd->yaw = -0.8f;
+    }
+    else if (vision_rx.yaw > 0.05f)
+    {
+        cmd->yaw = 0.4f;
+    }
+    else if (vision_rx.yaw < -0.05f)
+    {
+        cmd->yaw = -0.4f;
+    }
+    else if (vision_rx.yaw > 0.015f)
+    {
+        cmd->yaw = 0.10f;
+    }
+    else if (vision_rx.yaw < -0.015f)
+    {
+        cmd->yaw = -0.10f;
+    }
+    else if (vision_rx.yaw > 0.005f)
+    {
+        cmd->yaw = 0.05f;
+    }
+    else if (vision_rx.yaw < -0.005f)
+    {
+        cmd->yaw = -0.05f;
+    }
+    else if (vision_rx.yaw > 0.002f)
+    {
+        cmd->yaw = 0.01f;
+    }
+    else if (vision_rx.yaw < -0.002f)
+    {
+        cmd->yaw = -0.01f;
+    }
+    else if (vision_rx.yaw > 0.001f)
+    {
+        cmd->yaw = 0.005f;
+    }
+    else if (vision_rx.yaw < -0.001f)
+    {
+        cmd->yaw = -0.005f;
+    }
+    else
+    {
+        cmd->yaw = 0.0f;
+        return true;
+    }
+
+    cmd->yaw_mode = SPD;
+    return false;
+}
+
 /**
- * @brief Auto Mode，主要的视觉自动逻辑，更新cmd命令，进行最终的发射条件判断
- * 调整yaw，根据各条件判断是否可以发射
+ * @brief Auto Mode，调用视觉 yaw 调整并进行最终的发射条件判断。
  */
 void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cmd)
 {
@@ -457,47 +538,12 @@ void Run_Auto_Control(const msg_visionrx_t* rx,DartLibrary* dart,  msg_cmd_t* cm
     cmd->action = DART_PREPARE;
     cmd->tension_kg = dart->runtime.current_aim_target.tension_kg;
 
-    dart->runtime.autoAim.yaw_ok = false;
-    if (rx->yaw == 666)
-    {
-        cmd->yaw = 0;
-        return;
-    }
+    dart->runtime.autoAim.yaw_ok = Update_Vision_Yaw(*rx, cmd);
 
-    if      (rx->yaw > 0.08f)
-    {
-        cmd->yaw = 1.0f;
-    }
-    else if (rx->yaw < -0.08f)
-    {
-        cmd->yaw = -1.0f;
-    }
-    else if (rx->yaw > 0.05f)
-    {
-        cmd->yaw = 0.5f;
-    }
-    else if (rx->yaw < -0.05f)
-    {
-        cmd->yaw = -0.5f;
-    }
-    else if (rx->yaw > 0.015f)
-    {
-        cmd->yaw = 0.15f;
-    }
-    else if (rx->yaw < -0.015f)
-    {
-        cmd->yaw = -0.15f;
-    }
-    else if (rx->yaw <= 0.015f && rx->yaw >= -0.015f)
-    {
-        dart->runtime.autoAim.yaw_ok = true;
-    };
-
-    //最终的发射条件判断，门开着，当前门打开时发射数量小于2，yaw调整到位，视觉数据稳定
-    if ((dart->runtime.vision_door_status == DOOR_OPEN &&
+    //最终的发射条件判断：门开着、当前门打开时发射数量小于2、yaw调整到位。
+    if (dart->runtime.vision_door_status == DOOR_OPEN &&
         dart->runtime.fired_count_this_open < 2 &&
-        dart->runtime.autoAim.yaw_ok &&
-        rx->stable_state == 1))
+        dart->runtime.autoAim.yaw_ok)
     {
         cmd->action = DART_FIRE;
     }

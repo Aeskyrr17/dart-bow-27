@@ -20,6 +20,7 @@
 #include "pid.hpp"
 #include "magicmsgs.hpp"
 #include "math.hpp"
+#include <cmath>
 
 #include "config_launcher.hpp"
 #include "config_motor.hpp"
@@ -47,7 +48,7 @@ PID syn_pos_pid(10.0f, 0.0f, 10.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integr
 
 // Yaw cascade PID: position loop outputs speed, speed loop outputs MIT torque.
 PID yaw_pos_pid(6.0f, 0.002f, 0.0f, 0.5f, 0.0f, PID_POSITION);
-PID yaw_spd_pid(10.0f, 0.006f, 0.0f, 10.0f, 1.0f,
+PID yaw_spd_pid(14.0f, 0.006f, 0.5f, 10.0f, 1.0f,
                 PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_spd_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
 // PID gantry_pos_pid(0.0f, 0.0f, 0.0f, 10000.0f, 1000.0f, PID_POSITION | PID_Integral_Limit | PID_Trapezoid_Intergral);
@@ -56,8 +57,8 @@ constexpr float yaw_target_position_rate_rad_s = 0.2f;
 constexpr float yaw_control_period_s = 0.001f;
 constexpr float yaw_cmd_deadzone = 0.01f;
 
-constexpr float yaw_static_torque_pos_nm = 1.2f;
-constexpr float yaw_static_torque_neg_nm = 1.2f;
+constexpr float yaw_static_torque_pos_nm = 3.0f;
+constexpr float yaw_static_torque_neg_nm = 3.0f;
 constexpr float yaw_ff_spd_deadzone_rad_s = 0.01f;
 constexpr float yaw_max_torque_nm = 10.0f;
 
@@ -69,7 +70,19 @@ struct yaw_debug_t
     float spd_fdb;
     float torque_ref;
     float torque_fdb;
+    CTRL_MODE mode;
+    bool ins_fdb_active;
 };
+
+struct vision_motor_debug_t
+{
+    msg_visionrx_t vision;
+    float yaw_pos_ref;
+    float yaw_spd_ref;
+    float yaw_torque_ref;
+};
+
+vision_motor_debug_t vision_motor_debug{};
 
 debug_motor_t coil_L_debug{};
 debug_motor_t coil_R_debug{};
@@ -77,6 +90,9 @@ debug_motor_t string_L_debug{};
 debug_motor_t string_R_debug{};
 yaw_debug_t yaw_debug{};
 msg_motor_ctrl_t debug_motorctrl{};
+
+msg_ins_t ins{};
+
 
 float debug_syn_tq;
 
@@ -89,8 +105,11 @@ float debug_syn_tq;
 
     om_suber_t *motorctrl_suber = om_subscribe(om_find_topic("motorctrl", UINT32_MAX));
     msg_motor_ctrl_t motorctrl{};
+    motorctrl.yaw_mode = TORQUE;
     om_suber_t *sensor_suber = om_subscribe(om_find_topic("sensor", UINT32_MAX));
     msg_sensor_t sensor{};
+    om_suber_t *visionrx_suber = om_subscribe(om_find_topic("visionrx", UINT32_MAX));
+    // om_suber_t *ins_suber = nullptr;
 
     motor.MotorsInit();
 
@@ -117,11 +136,14 @@ float debug_syn_tq;
 
     bool trigger_latched = false;
     bool last_trigger_release = false;
+    CTRL_MODE last_yaw_mode = TORQUE;
+    bool last_ins_fdb_active = false;
 
     for (;;)
     {
         om_suber_export(motorctrl_suber, &motorctrl, false);
         om_suber_export(sensor_suber, &sensor, false);
+
 
         //撒放机构处理逻辑
         if (motorctrl.trigger_release && !last_trigger_release) 
@@ -140,7 +162,7 @@ float debug_syn_tq;
 
         if (motorctrl.string_able)
         {
-            if (sensor.string_L_force_kg == 0.0f)
+            if (sensor.string_L_force_kg <= 0.0f)
             {
                 string_L_spd = 0.0f;
             }
@@ -157,7 +179,7 @@ float debug_syn_tq;
                     string_L_spd = cmd_spd_L;
             }
 
-            if (sensor.string_R_force_kg == 0.0f)
+            if (sensor.string_R_force_kg <= 0.0f)
             {
                 string_R_spd = 0.0f;
             }
@@ -244,30 +266,55 @@ float debug_syn_tq;
             break;
         }
 
-        if (motorctrl.yaw_mode == TORQUE)
+        CTRL_MODE yaw_mode = motorctrl.yaw_mode;
+        if (yaw_mode != POS && yaw_mode != SPD && yaw_mode != TORQUE)
+            yaw_mode = TORQUE;
+        if (yaw_mode != last_yaw_mode)
         {
+            // SPD -> POS captures the angle reached by vision, without returning
+            // to the position target that existed before alignment started.
             motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
-            motor.yawMotor.speedSet = 0.0f;
-            motor.yawMotor.torqueSet = motorctrl.yaw_tq;
             yaw_pos_pid.Clear();
             yaw_spd_pid.Clear();
+            last_yaw_mode = yaw_mode;
         }
-        else
+
+        const float yaw_command = std::isfinite(motorctrl.yaw_spd)
+            ? FloatConstrain(motorctrl.yaw_spd, -1.0f, 1.0f) : 0.0f;
+        const bool yaw_cmd_active = std::abs(yaw_command) > yaw_cmd_deadzone;
+        switch (yaw_mode)
         {
-            const bool yaw_cmd_active = std::abs(motorctrl.yaw_spd) > yaw_cmd_deadzone;
+        case TORQUE:
+            motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
+            motor.yawMotor.speedSet = 0.0f;
+            motor.yawMotor.torqueSet = std::isfinite(motorctrl.yaw_tq)
+                ? FloatConstrain(motorctrl.yaw_tq, -yaw_max_torque_nm, yaw_max_torque_nm) : 0.0f;
+            yaw_pos_pid.Clear();
+            yaw_spd_pid.Clear();
+            break;
+        case SPD:
+            motor.yawMotor.positionSet = motor.yawMotor.motorFeedback.positionFdb;
+            yaw_pos_pid.Clear();
+            motor.yawMotor.speedSet = yaw_cmd_active
+                ? -yaw_command * yaw_target_position_rate_rad_s : 0.0f;
+            break;
+        case POS:
             if (yaw_cmd_active)
             {
-                motor.yawMotor.positionSet -= motorctrl.yaw_spd *
+                motor.yawMotor.positionSet -= yaw_command *
                                               yaw_target_position_rate_rad_s *
                                               yaw_control_period_s;
             }
-
-        // 速度环
-            yaw_pos_pid.ref = motor.yawMotor.positionSet;
+            motor.yawMotor.positionSet = std::remainder(motor.yawMotor.positionSet, Numeric::PiX2);
             yaw_pos_pid.fdb = motor.yawMotor.motorFeedback.positionFdb;
+            yaw_pos_pid.ref = yaw_pos_pid.fdb + std::remainder(
+                motor.yawMotor.positionSet - yaw_pos_pid.fdb, Numeric::PiX2);
             yaw_pos_pid.UpdateResult();
             motor.yawMotor.speedSet = yaw_pos_pid.result;
-
+            break;
+        }
+        if (yaw_mode != TORQUE)
+        {
             yaw_spd_pid.ref = motor.yawMotor.speedSet;
             yaw_spd_pid.fdb = motor.yawMotor.motorFeedback.speedFdb;
             yaw_spd_pid.UpdateResult();
@@ -326,6 +373,10 @@ float debug_syn_tq;
         om_publish(motorfdb_topic, &motorfdb, sizeof(msg_motorfdb_t), true, false);
 
 #ifdef MOTOR_DEBUG
+        om_suber_export(visionrx_suber, &vision_motor_debug.vision, false);
+        vision_motor_debug.yaw_pos_ref = motor.yawMotor.positionSet;
+        vision_motor_debug.yaw_spd_ref = motor.yawMotor.speedSet;
+        vision_motor_debug.yaw_torque_ref = motor.yawMotor.torqueSet;
         memcpy(&debug_motorctrl, &motorctrl,sizeof(motorctrl));
         debug_syn_tq = motor.synbeltMotor.motorFeedback.torqueFdb;
         string_L_debug.speed = motor.stringMotorL.speed;
@@ -336,6 +387,7 @@ float debug_syn_tq;
         yaw_debug.spd_fdb = motor.yawMotor.motorFeedback.speedFdb;
         yaw_debug.torque_ref = motor.yawMotor.torqueSet;
         yaw_debug.torque_fdb = motor.yawMotor.motorFeedback.torqueFdb;
+        yaw_debug.mode = yaw_mode;
 #endif
 
         tx_thread_sleep(1);

@@ -45,14 +45,13 @@ msg_motorfdb_t debug_motorfdb{};
 
     const float gantry_pos_deadzone = 0.03f;
     const float syn_pos_deadzone = 0.7f;
-    const float string_tension_deadzone_kg = 0.05f;
     const float string_relax_spd = 1.0f; //副弦慢速放松，norm
     const float string_relax_min_tension_kg = 29.0f;
 
     const float syn_pos_0 = 0.0f;  
     const float syn_pos_1 = -25.2f;
     const float syn_pos_2 = -17.8f;
-    const float syn_pos_3 = -35.75f;
+    const float syn_pos_3 = -40.00f;
     // const float syn_pos_4 = -26.5f; //原本用于“慢速离开扳机”的位置判断，现在暂时不用
     const float syn_pos_5 = 2.08f;
 
@@ -117,12 +116,8 @@ msg_motorfdb_t debug_motorfdb{};
 
         //直接处理yaw
         motorctrl.yaw_spd = cmd.yaw;
-        motorctrl.yaw_mode = POS;
+        motorctrl.yaw_mode = cmd.yaw_mode;
         motorctrl.yaw_tq = 0.0f;
-        if (cmd.source == CONTROL_SOURCE_REMOTER && cmd.action == DART_RELAX)
-        {
-            motorctrl.yaw_mode = TORQUE;
-        }
 
         //todo: 处理error信息[to test]
         bool string_force_error = (Numeric::abs(sensor.string_L_force_kg) > string_force_error_limit_kg) ||
@@ -158,7 +153,9 @@ msg_motorfdb_t debug_motorfdb{};
 
 
         //处理cmd以及各个fsm的优先级及切换
-        if (string_force_error || syn_tq_error || string_force_jump_error)
+        if (syn_tq_error ||
+            (cmd.source != CONTROL_SOURCE_HOST_TEST &&
+             (string_force_error || string_force_jump_error)))
         {
             launcher.fsm_state = ERROR_STOP;
         }
@@ -294,6 +291,12 @@ msg_motorfdb_t debug_motorfdb{};
                 {
                     case RETRACT:
                     {
+                        // Host test uses a manually tensioned string and latched trigger.
+                        if (cmd.source == CONTROL_SOURCE_HOST_TEST)
+                        {
+                            launcher.prep_state = TENSION_AND_RETRACT_AND_YAW;
+                            break;
+                        }
                         motorctrl.synbelt_mode = POS;
                         motorctrl.synbelt_pos +=0 ;
                         motorctrl.string_able = false;
@@ -370,7 +373,7 @@ msg_motorfdb_t debug_motorfdb{};
                     case TENSION_AND_RETRACT_AND_YAW:
                     {
                         motorctrl.trigger_release = false;
-                        if (motorfdb.syn_pos_fdb >= syn_pos_1)
+                        if (cmd.source != CONTROL_SOURCE_HOST_TEST && motorfdb.syn_pos_fdb >= syn_pos_1)
                         {
                             motorctrl.string_able = true; //保证同步带已经离开弓弦后再开始调整弓弦的力
                         }
@@ -388,22 +391,12 @@ msg_motorfdb_t debug_motorfdb{};
 
 
 
-                        bool string_L_ok = Numeric::abs(sensor.string_L_force_kg - cmd.tension_left_kg) <= string_tension_deadzone_kg;
-                        bool string_R_ok = Numeric::abs(sensor.string_R_force_kg - cmd.tension_right_kg) <= string_tension_deadzone_kg;
                         bool syn_reset = Numeric::abs(motorfdb.syn_pos_fdb - syn_pos_5) <= syn_pos_deadzone;
 
-                        if (string_L_ok && string_R_ok && syn_reset)
+                        if (syn_reset)
                         {
                             launcher.fsm_state = READY;
                         }
-                        else
-                        {
-                            if (!string_L_ok || !string_R_ok)
-                            {
-                                motorctrl.string_L_tension_kg = cmd.tension_left_kg;
-                                motorctrl.string_R_tension_kg = cmd.tension_right_kg;
-                            }
-                        }                           
                         break;
                     }
                     default:
@@ -415,7 +408,7 @@ msg_motorfdb_t debug_motorfdb{};
             case READY:
             {
                 motorctrl.trigger_release = false;
-                motorctrl.string_able = true;
+                motorctrl.string_able = false;
                 motorctrl.string_L_tension_kg = cmd.tension_left_kg;//保持力矩
                 motorctrl.string_R_tension_kg = cmd.tension_right_kg;
 
@@ -457,6 +450,14 @@ msg_motorfdb_t debug_motorfdb{};
                 }
                 break;
             }
+        }
+
+        // String motion is manual only, including the loop that leaves HAND_CONTROL.
+        motorctrl.string_able = false;
+        if (launcher.fsm_state != HAND_CONTROL || current_fsm_state != HAND_CONTROL)
+        {
+            motorctrl.string_L_spd = 0.0f;
+            motorctrl.string_R_spd = 0.0f;
         }
 
          //更新历史状态

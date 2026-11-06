@@ -224,7 +224,7 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
   usbx_cdc_acm_watch.read.entry_count++;
   usbx_cdc_acm_watch.read.phase = 1;
 
-  struct msg_visionrx_t msg_visionrx;
+  struct msg_visionrx_t msg_visionrx = {0};
 
   om_topic_t *visionrx_topic = om_config_topic(NULL, "ca", "visionrx", sizeof(msg_visionrx));
   // tx_thread_sleep(TX_WAIT_FOREVER);
@@ -251,11 +251,11 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
       usbx_cdc_acm_watch.read.after_transfer_count++;
       usbx_cdc_acm_watch.read.phase = 5;
 
-      if (actual_length >= sizeof(msg_visionrx))
+      if (read_status == UX_SUCCESS && actual_length >= sizeof(msg_visionrx))
       {
         memcpy(&msg_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
         memcpy(&debug_visionrx, (UCHAR *)UserRxBufferFS, sizeof(msg_visionrx));
-
+        om_publish(visionrx_topic, &msg_visionrx, sizeof(msg_visionrx), true, false);
       }
         // tx_thread_sleep(1); //测试过有没有这个1都能正常收发
     }
@@ -265,7 +265,6 @@ VOID usbx_cdc_acm_read_thread_entry(ULONG thread_input)
       usbx_cdc_acm_watch.read.phase = 10;
     }
     usbx_cdc_acm_watch.read.phase = 6;
-    om_publish(visionrx_topic, &msg_visionrx, sizeof(msg_visionrx), true, false);
     usbx_cdc_acm_watch.read.sleep_count++;
     tx_thread_sleep(2);
 
@@ -335,7 +334,7 @@ VOID usbx_cdc_acm_write_thread_entry(ULONG thread_input)
       actual_length = 0;
       usbx_cdc_acm_watch.write.before_transfer_count++;
       usbx_cdc_acm_watch.write.phase = 6;
-      write_status = ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_log , sizeof(msg_log) , &actual_length);
+      // write_status = ux_device_class_cdc_acm_write(cdc_acm, (UCHAR *)&msg_log , sizeof(msg_log) , &actual_length);
       usbx_cdc_acm_watch.write.transfer_status = write_status;
       usbx_cdc_acm_watch.write.actual_length = actual_length;
       usbx_cdc_acm_watch.write.after_transfer_count++;
