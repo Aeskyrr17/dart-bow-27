@@ -17,6 +17,7 @@
 
 #include "crc.hpp"
 #include "config_sensor.hpp"
+#include "displacement_sensor.hpp"
 
 TX_THREAD SensorThread;
 uint8_t SensorThreadStack[2048] = {0};
@@ -90,12 +91,34 @@ void Force_R_Request080();
     sensor.string_R_force_kg = 0.0f;
 
     uint32_t g4_force_lost_ticks = 0;
+    DisplacementSensor* displacement[2] = {
+        DisplacementSensor::Instance(1), DisplacementSensor::Instance(2)};
+    const uint32_t start = tx_time_get();
+    uint32_t last_displacement_poll[2] = {
+        start - displacement[0]->cfg.poll_period_ms,
+        start - displacement[1]->cfg.poll_period_ms / 2U};
 
     HAL_UART_Receive_IT(&huart2, u2_rx_buffer, FORCE_DATA_RX_SIZE);
     HAL_UART_Receive_IT(&huart3, u3_rx_buffer, FORCE_DATA_RX_SIZE);
 
     for (;;)
     {
+        const uint32_t now = tx_time_get();
+        for (uint8_t i = 0; i < 2; ++i)
+        {
+            DisplacementSensor* current = displacement[i];
+            if (current->cfg.poll_period_ms != 0U &&
+                now - last_displacement_poll[i] >= current->cfg.poll_period_ms)
+            {
+                last_displacement_poll[i] = now;
+                current->Poll();
+            }
+            const UINT irq_state = tx_interrupt_control(TX_INT_DISABLE);
+            current->Update();
+            tx_interrupt_control(irq_state);
+        }
+        sensor.displacement_L_mm = displacement[0]->position_mm;
+        sensor.displacement_R_mm = displacement[1]->position_mm;
         // hall.is_R_reset = (HAL_GPIO_ReadPin(HALL_R_PORT, HALL_R_PIN) == GPIO_PIN_RESET);
         // hall.is_L_reset = (HAL_GPIO_ReadPin(HALL_L_PORT, HALL_L_PIN) == GPIO_PIN_RESET);
         sensor.is_trigger_locked = (HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_RESET);

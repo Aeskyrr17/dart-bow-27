@@ -150,13 +150,15 @@ void HostSendForceTelemetry(om_topic_t* topic, uint8_t seq,
     tx.valid = 1;
     tx.type = HOST_TYPE_FAST_TELEMETRY;
     tx.seq = seq;
-    tx.len = 21;
+    tx.len = 29;
     HostPutU32(&tx.payload[0], tx_time_get());
     HostPutFloat(&tx.payload[4], motorctrl.string_L_tension_kg);
     HostPutFloat(&tx.payload[8], motorctrl.string_R_tension_kg);
     HostPutFloat(&tx.payload[12], sensor.string_L_force_kg);
     HostPutFloat(&tx.payload[16], sensor.string_R_force_kg);
     tx.payload[20] = motorctrl.string_able ? 1U : 0U;
+    HostPutFloat(&tx.payload[21], sensor.displacement_L_mm);
+    HostPutFloat(&tx.payload[25], sensor.displacement_R_mm);
 
     // Telemetry is best effort so it never holds up the control thread.
     if (topic != nullptr)

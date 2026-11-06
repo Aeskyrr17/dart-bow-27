@@ -1,6 +1,7 @@
 #include "main.h"
 #include "tx_api.h"
 #include "bsp_can.hpp"
+#include "displacement_sensor.hpp"
 
 extern TX_THREAD UIThread;
 extern uint8_t UIThreadStack[2048];
@@ -53,6 +54,13 @@ extern "C" void TaskBooster(void)
     tx_semaphore_create(&GantryMotorErrorSem, TX_NAME("GantryMotorErrorSem"), 0);
 
 
+    DisplacementSensor::Config displacement_config;
+    displacement_config.hcan = &hfdcan2;
+    for (uint8_t id = 1; id <= 2; ++id)
+    {
+        displacement_config.node_id = id;
+        DisplacementSensor::Instance(id)->Init(displacement_config);
+    }
     CAN_Init();
 
     tx_thread_create(&UIThread, TX_NAME("UIThread"), UIThreadFun, 0x1234,

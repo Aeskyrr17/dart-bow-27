@@ -4,6 +4,7 @@
 #include "LKMotorHandler.hpp"
 #include "DMMotorHandler.hpp"
 #include "config_motor.hpp"
+#include "displacement_sensor.hpp"
 
 #include "om.h"
 #include "magicmsgs.hpp"
@@ -104,7 +105,15 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 
     FDCAN_RxHeaderTypeDef rx_header;
     uint8_t rx_data[8];
-    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data);
+    if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data) != HAL_OK) return;
+    if (hfdcan == &hfdcan2 && rx_header.IdType == FDCAN_STANDARD_ID &&
+        rx_header.RxFrameType == FDCAN_DATA_FRAME &&
+        (rx_header.Identifier == 1U || rx_header.Identifier == 2U))
+    {
+        DisplacementSensor::Instance(static_cast<uint8_t>(rx_header.Identifier))
+            ->OnFrame(rx_data, static_cast<uint16_t>(rx_header.DataLength));
+        return;
+    }
 
     /*--------------------------------------------------步进电机数据--------------------------------------------------*/
     //由于张大头步进电机的id是动态的（ID = (功能码*32) + 设备ID），先处理can3数据

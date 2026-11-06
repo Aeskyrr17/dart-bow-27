@@ -319,6 +319,8 @@ struct msg_sensor_t
     bool is_dart_loaded;        //飞镖装填完毕
     float string_L_force_kg;    //左副弦拉力，单位kg
     float string_R_force_kg;    //右副弦拉力，单位kg
+    float displacement_L_mm; // CAN2 ID 0x01
+    float displacement_R_mm; // CAN2 ID 0x02
     bool is_trigger_locked;     //扳机是否锁定
 };
 
